@@ -1,0 +1,87 @@
+#!/bin/bash
+
+# Hook para validar mensagens de commit seguindo Conventional Commits
+# Este script valida se a mensagem de commit segue o padrão Conventional Commits
+
+# Cores para output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Arquivo da mensagem de commit
+commit_msg_file=$1
+commit_msg=$(cat $commit_msg_file)
+
+# Função para imprimir mensagens coloridas
+print_error() {
+    echo -e "${RED}❌ ERRO: $1${NC}"
+}
+
+print_success() {
+    echo -e "${GREEN}✅ $1${NC}"
+}
+
+print_warning() {
+    echo -e "${YELLOW}⚠️  $1${NC}"
+}
+
+print_info() {
+    echo -e "${BLUE}ℹ️  $1${NC}"
+}
+
+# Padrão para Conventional Commits com emoji opcional
+# Formato: [emoji] tipo(escopo): descrição
+conventional_pattern="^(🎉|🚀|✨|🐛|🔧|📝|💄|🔥|♻️|⚡|🎨|📦|🔒|🚨|🏗️|💚|👷|📈|🔖|🚑|💥|🍱|♿|💡|🗃️|🔊|🔇|🙈|🤡|🥅|✅|🔍|⚗️|👽|🚚|📄|💬|🗂️|🔈|🌐)?[ ]?(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\(.+\))?: .{1,50}"
+
+# Verifica se a mensagem segue o padrão
+if [[ $commit_msg =~ $conventional_pattern ]]; then
+    print_success "Mensagem de commit válida!"
+    
+    # Verificações adicionais
+    first_line=$(echo "$commit_msg" | head -n1)
+    word_count=$(echo "$first_line" | wc -w)
+    
+    # Recomendação: primeira linha com no máximo 4 palavras (excluindo tipo e escopo)
+    if [ $word_count -gt 6 ]; then
+        print_warning "Recomendação: A primeira linha tem muitas palavras ($word_count). Considere usar no máximo 4 palavras após o tipo."
+    fi
+    
+    # Verifica se tem emoji
+    if [[ ! $commit_msg =~ ^(🎉|🚀|✨|🐛|🔧|📝|💄|🔥|♻️|⚡|🎨|📦|🔒|🚨|🏗️|💚|👷|📈|🔖|🚑|💥|🍱|♿|💡|🗃️|🔊|🔇|🙈|🤡|🥅|✅|🔍|⚗️|👽|🚚|📄|💬|🗂️|🔈|🌐) ]]; then
+        print_info "Dica: Considere adicionar um emoji no início da mensagem para melhor visualização."
+    fi
+    
+    exit 0
+else
+    print_error "Mensagem de commit inválida!"
+    echo ""
+    print_info "Formato esperado: [emoji] tipo(escopo): descrição"
+    echo ""
+    echo -e "${BLUE}Tipos válidos:${NC}"
+    echo "  • feat     - Nova funcionalidade"
+    echo "  • fix      - Correção de bug"
+    echo "  • docs     - Documentação"
+    echo "  • style    - Formatação, estilo"
+    echo "  • refactor - Refatoração de código"
+    echo "  • perf     - Melhoria de performance"
+    echo "  • test     - Testes"
+    echo "  • build    - Sistema de build"
+    echo "  • ci       - Integração contínua"
+    echo "  • chore    - Tarefas de manutenção"
+    echo "  • revert   - Reverter commit"
+    echo ""
+    echo -e "${BLUE}Exemplos válidos:${NC}"
+    echo "  ✨ feat: adicionar login de usuário"
+    echo "  🐛 fix(auth): corrigir validação de token"
+    echo "  📝 docs: atualizar README"
+    echo "  🔧 chore: configurar husky"
+    echo ""
+    echo -e "${BLUE}Emojis recomendados:${NC}"
+    echo "  ✨ feat   🐛 fix    📝 docs   💄 style"
+    echo "  ♻️  refactor ⚡ perf  ✅ test  📦 build"
+    echo "  💚 ci     🔧 chore  🔥 remove 🚑 hotfix"
+    echo ""
+    exit 1
+fi
