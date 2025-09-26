@@ -25,8 +25,14 @@ if exist ".githooks\commit-msg" (
     echo ✅ Hook commit-msg instalado com sucesso!
 ) else (
     echo ❌ ERRO: Arquivo .githooks\commit-msg não encontrado!
-    pause
-    exit /b 1
+)
+
+REM Copia o hook pre-commit
+if exist ".githooks\pre-commit" (
+    copy ".githooks\pre-commit" ".git\hooks\pre-commit" >nul
+    echo ✅ Hook pre-commit instalado com sucesso!
+) else (
+    echo ⚠️  Aviso: Arquivo .githooks\pre-commit não encontrado, pulando.
 )
 
 echo.
@@ -34,7 +40,7 @@ echo 🎉 Git Hooks configurados com sucesso!
 echo.
 echo 📋 Agora todos os commits devem seguir o padrão Conventional Commits:
 echo    ✨ feat: nova funcionalidade
-echo    🐛 fix: correção de bug  
+echo    🐛 fix: correção de bug
 echo    📝 docs: documentação
 echo.
 echo 💡 Consulte o arquivo CONVENTIONAL_COMMITS.md para mais informações.

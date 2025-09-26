@@ -1,0 +1,61 @@
+#!/bin/bash
+# Hook pre-commit para formatar arquivos com Prettier e aplicar ESLint em arquivos JS/TS.
+# Requisitos: dependencias instaladas (npm install)
+
+# Lista de extensões suportadas pelo Prettier
+EXTENSIONS="js,ts,jsx,tsx,json,md,yml,yaml,java"
+
+if [ ! -d "node_modules" ]; then
+  echo "[pre-commit][WARN] node_modules não encontrado. Execute: npm install"
+  exit 0
+fi
+
+# Arquivos staged para formatação
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E "\.($(echo $EXTENSIONS | sed 's/,/|/g'))$")
+
+if [ -z "$STAGED_FILES" ]; then
+  echo "[pre-commit] Nenhum arquivo suportado para formatar."
+else
+  echo "[pre-commit] Formatando arquivos com Prettier..."
+  FAILED=0
+  for file in $STAGED_FILES; do
+    if [ -f "$file" ]; then
+      npx --no-install prettier "$file" --write >/dev/null 2>&1
+      if [ $? -ne 0 ]; then
+        echo "[pre-commit][ERRO] Falha ao formatar $file"
+        FAILED=1
+      else
+        git add "$file"
+        echo "  ✔ $file"
+      fi
+    fi
+  done
+  if [ $FAILED -ne 0 ]; then
+    echo "[pre-commit] Erros de formatação ocorreram. Abortando commit."
+    exit 1
+  fi
+  echo "[pre-commit] Formatação concluída."
+fi
+
+# ESLint somente para arquivos JS/TS
+JS_TS_STAGED=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(js|cjs|mjs|ts|tsx)$')
+if [ -n "$JS_TS_STAGED" ]; then
+  echo "[pre-commit] Rodando ESLint --fix em arquivos JS/TS..."
+  # Executa ESLint; se falhar, aborta
+  npx --no-install eslint $JS_TS_STAGED --fix
+  ESLINT_STATUS=$?
+  if [ $ESLINT_STATUS -ne 0 ]; then
+    echo "[pre-commit][ERRO] ESLint encontrou problemas não corrigidos automaticamente."
+    exit 1
+  fi
+  # Re-adiciona (pode ter modificado)
+  for file in $JS_TS_STAGED; do
+    if [ -f "$file" ]; then
+      git add "$file"
+    fi
+  done
+  echo "[pre-commit] ESLint finalizado com sucesso."
+fi
+
+echo "[pre-commit] OK"
+exit 0

@@ -1,0 +1,23 @@
+{
+  "name": "api-know-hall-prettier",
+  "private": true,
+  "version": "0.0.1",
+  "description": "Configuração de Prettier para o projeto Spring Boot",
+  "license": "MIT",
+  "scripts": {
+    "format": "prettier . --write",
+    "format:check": "prettier . --check",
+    "lint": "eslint . --ext .js,.cjs,.mjs,.ts,.tsx",
+    "lint:fix": "eslint . --ext .js,.cjs,.mjs,.ts,.tsx --fix"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "eslint": "^9.0.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-import": "^2.29.0",
+    "prettier": "^3.3.3",
+    "prettier-plugin-java": "^2.3.0",
+    "typescript": "^5.5.0"
+  }
+}

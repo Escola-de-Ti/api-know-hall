@@ -1,0 +1,11 @@
+# Ignorar build outputs
+/target
+**/target/**
+/node_modules
+
+# Arquivos Maven
+pom.xml
+
+# Outros possivelmente grandes
+*.log
+
