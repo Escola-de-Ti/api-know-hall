@@ -3,8 +3,6 @@ name: Java CI/CD with Docker and Render
 on:
   push:
     branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
 # Teste
 # Define variáveis de ambiente para o nome da imagem Docker
 env:
