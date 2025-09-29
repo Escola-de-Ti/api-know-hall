@@ -26,11 +26,6 @@ Clonou o repositório e quer tudo pronto rápido?
    ```bash
    ./mvnw spring-boot:run
    ```
-5. (Opcional) Verifique formatação e lint:
-   ```bash
-   npm run format:check
-   npm run lint
-   ```
 
 > Se preferir seguir passo a passo manual, veja a seção abaixo.
 
@@ -100,16 +95,6 @@ Commits fora do padrão são rejeitados. Leia [`CONVENTIONAL_COMMITS.md`](CONVEN
   npm run format:check  # só verificar
   ```
   Se o hook não rodar, reinstale: `install-hooks.bat` ou `./install-hooks.sh`.
-
-### 🔍 Lint (ESLint)
-
-- Config flat em `eslint.config.cjs` (ESLint v9+).
-- Hook `pre-commit` também roda ESLint (--fix) em arquivos JS/TS.
-- Ignorados definidos na chave `ignores` (o `.eslintignore` é legado).
-- Comandos:
-  ```bash
-  npm run lint      # verificar
-  npm run lint:fix  # corrigir automaticamente
   ```
 
 ### 🏃‍♂️ Executar o Projeto
