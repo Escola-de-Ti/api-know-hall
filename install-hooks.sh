@@ -1,4 +1,4 @@
-#!/bin/bash
+!/bin/bash
 # Script para instalar hooks do Git no Linux/macOS
 # Execute este arquivo após clonar o repositório
 

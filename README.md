@@ -8,7 +8,7 @@ Clonou o repositório e quer tudo pronto rápido?
 
 1. Clone:
    ```bash
-   git clone https://github.com/willyantomaz/knowhall.git
+   git clone https://github.com/Escola-de-Ti/api-know-hall
    cd knowhall
    ```
 2. Rode o script de setup (cria .env se faltar, instala dependências, hooks e prepara build):
