@@ -2,7 +2,10 @@ name: Java CI/CD with Docker and Render
 
 on:
   push:
-    branches: [ "master" ]
+    # 1. ATUALIZAÇÃO DO GATILHO:
+    # Agora o workflow roda em pushes para 'master' E 'development'.
+    branches: [ "master", "development" ]
+
 env:
   IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}
 
@@ -25,7 +28,9 @@ jobs:
   build-and-push-docker:
     needs: build-and-test
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+    # 2. REMOÇÃO DA CONDIÇÃO:
+    # Este job agora roda para qualquer branch do gatilho ('master' ou 'development').
+    if: github.event_name == 'push'
 
     steps:
       - name: Checkout repository
@@ -43,6 +48,14 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.IMAGE_NAME }}
+          # 3. TAGS INTELIGENTES:
+          # Gera a tag 'latest' para a branch master e o nome da branch para as outras.
+          # Ex: push na 'master' -> tag 'latest'
+          # Ex: push na 'development' -> tag 'development'
+          tags: |
+            type=ref,event=branch
+            type=sha
+            type=raw,value=latest,enable={{is_default_branch}}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
@@ -52,11 +65,25 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
-  deploy-to-render:
+  # 4. JOB DE DEPLOY PARA PRODUÇÃO (ANTIGO 'deploy-to-render')
+  deploy-to-prod-render:
     needs: build-and-push-docker
     runs-on: ubuntu-latest
+    # A condição permanece, garantindo que este job só rode para a branch 'master'.
     if: github.ref == 'refs/heads/master' && github.event_name == 'push'
 
     steps:
-      - name: Trigger Render Deploy Hook
+      - name: Trigger Render Production Deploy
         run: curl "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
+
+  # 5. NOVO JOB DE DEPLOY PARA DESENVOLVIMENTO
+  deploy-to-dev-render:
+    needs: build-and-push-docker
+    runs-on: ubuntu-latest
+    # A condição agora verifica se a branch é 'development'.
+    if: github.ref == 'refs/heads/development' && github.event_name == 'push'
+
+    steps:
+      - name: Trigger Render Development Deploy
+        # Usa um NOVO secret para o ambiente de desenvolvimento.
+        run: curl "${{ secrets.RENDER_DEV_DEPLOY_HOOK_URL }}"
