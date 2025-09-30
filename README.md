@@ -36,7 +36,6 @@ Clonou o repositório e quer tudo pronto rápido?
 - Java 21
 - PostgreSQL
 - Git
-- (Opcional) Node.js >= 18 para formatação automática
 
 ### 🔧 Configuração do Ambiente
 
