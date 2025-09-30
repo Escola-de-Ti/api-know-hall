@@ -32,16 +32,6 @@ fi
 echo "📦 Baixando dependências Maven (offline cache)..."
 ./mvnw -q dependency:go-offline || echo "⚠️  Não foi possível preparar totalmente o cache offline (pode continuar)."
 
-# 4. Instala dependências Node (se package.json existir e Node instalado)
-if [ -f package.json ]; then
-  if command -v node >/dev/null 2>&1; then
-    echo "📦 Instalando dependências Node..."
-    npm install --no-audit --no-fund
-  else
-    echo "⚠️  Node não encontrado; pulando instalação de dependências JS (opcional)."
-  fi
-fi
-
 # 5. Instala hooks
 if [ -f install-hooks.sh ]; then
   bash install-hooks.sh

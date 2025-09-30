@@ -32,17 +32,6 @@ if exist mvnw.cmd (
   echo ❌ mvnw.cmd não encontrado
 )
 
-REM 4. Instala dependencias Node se existir package.json
-if exist package.json (
-  where node >nul 2>nul
-  if %ERRORLEVEL%==0 (
-    echo 📦 Instalando dependencias Node...
-    call npm install --no-audit --no-fund
-  ) else (
-    echo ⚠️ Node não encontrado, pulando dependencias JS
-  )
-)
-
 REM 5. Instala hooks
 if exist install-hooks.bat (
   call install-hooks.bat >nul

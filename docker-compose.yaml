@@ -1,0 +1,34 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: local-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: userLocal
+      POSTGRES_PASSWORD: senhaLocal
+      POSTGRES_DB: devdb
+    ports:
+      - "8000:8000"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: local-api
+    restart: always
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/devdb
+      SPRING_DATASOURCE_USERNAME: userLocal
+      SPRING_DATASOURCE_PASSWORD: senhaLocal
+      BOOLEAN_SQL: "true"
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+
+volumes:
+  pgdata:
