@@ -6,9 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class ApiKnowHallApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(
-			ApiKnowHallApplication.class, args);
-	}
-
+  public static void main(String[] args) {
+    SpringApplication.run(ApiKnowHallApplication.class, args);
+  }
 }

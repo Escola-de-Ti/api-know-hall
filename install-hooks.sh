@@ -1,4 +1,4 @@
-#!/bin/bash
+!/bin/bash
 # Script para instalar hooks do Git no Linux/macOS
 # Execute este arquivo após clonar o repositório
 
@@ -25,7 +25,15 @@ if [ -f ".githooks/commit-msg" ]; then
     echo "✅ Hook commit-msg instalado com sucesso!"
 else
     echo "❌ ERRO: Arquivo .githooks/commit-msg não encontrado!"
-    exit 1
+fi
+
+# Copia o hook pre-commit
+if [ -f ".githooks/pre-commit" ]; then
+    cp ".githooks/pre-commit" ".git/hooks/pre-commit"
+    chmod +x ".git/hooks/pre-commit"
+    echo "✅ Hook pre-commit instalado com sucesso!"
+else
+    echo "⚠️  Aviso: Arquivo .githooks/pre-commit não encontrado, pulando."
 fi
 
 echo
@@ -33,7 +41,7 @@ echo "🎉 Git Hooks configurados com sucesso!"
 echo
 echo "📋 Agora todos os commits devem seguir o padrão Conventional Commits:"
 echo "   ✨ feat: nova funcionalidade"
-echo "   🐛 fix: correção de bug"  
+echo "   🐛 fix: correção de bug"
 echo "   📝 docs: documentação"
 echo
 echo "💡 Consulte o arquivo CONVENTIONAL_COMMITS.md para mais informações."
