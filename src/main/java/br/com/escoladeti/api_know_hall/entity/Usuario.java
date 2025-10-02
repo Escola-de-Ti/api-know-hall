@@ -19,10 +19,10 @@ public class Usuario {
   @Column(name = "id_usuario", nullable = false)
   private Integer idUsuario;
 
-  @Column(name = "email", nullable = false)
+  @Column(name = "email", nullable = false, unique = true)
   private String email;
 
-  @Column(name = "cpf", nullable = false)
+  @Column(name = "cpf", nullable = false, unique = true, length = 11)
   private String cpf;
 
   @Column(name = "telefone")
