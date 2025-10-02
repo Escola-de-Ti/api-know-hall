@@ -1,5 +1,7 @@
 package br.com.escoladeti.api_know_hall.controller;
 
+import br.com.escoladeti.api_know_hall.dto.UsuarioCreateDTO;
+import br.com.escoladeti.api_know_hall.dto.UsuarioUpdateDTO;
 import br.com.escoladeti.api_know_hall.entity.Usuario;
 import br.com.escoladeti.api_know_hall.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,7 +50,7 @@ public class UsuarioController {
     }
 
     @PostMapping
-    public ResponseEntity<Usuario> createUsuario(@RequestBody Usuario usuario) {
+    public ResponseEntity<Usuario> createUsuario(@RequestBody UsuarioCreateDTO usuario) {
         try {
             Usuario createdUsuario = usuarioService.createUsuario(usuario);
             return ResponseEntity.status(HttpStatus.CREATED).body(createdUsuario);
@@ -58,7 +60,7 @@ public class UsuarioController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Usuario> updateUsuario(@PathVariable Integer id, @RequestBody Usuario usuarioDetails) {
+    public ResponseEntity<Usuario> updateUsuario(@PathVariable Integer id, @RequestBody UsuarioUpdateDTO usuarioDetails) {
         try {
             Usuario updatedUsuario = usuarioService.updateUsuario(id, usuarioDetails);
             if (updatedUsuario != null) {
