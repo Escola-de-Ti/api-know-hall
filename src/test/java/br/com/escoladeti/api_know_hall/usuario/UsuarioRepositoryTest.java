@@ -52,7 +52,7 @@ class UsuarioRepositoryTest {
     void findById_WithValidId_ShouldReturnUsuario() {
         Usuario savedUsuario = entityManager.persistAndFlush(usuario);
 
-        Optional<Usuario> found = usuarioRepository.findById(savedUsuario.getIdUsuario());
+        Optional<Usuario> found = usuarioRepository.findById(savedUsuario.getId());
 
         assertTrue(found.isPresent());
         assertEquals("test@test.com", found.get().getEmail());
@@ -69,10 +69,10 @@ class UsuarioRepositoryTest {
     void save_ShouldPersistUsuario() {
         Usuario savedUsuario = usuarioRepository.save(usuario);
 
-        assertNotNull(savedUsuario.getIdUsuario());
+        assertNotNull(savedUsuario.getId());
         assertEquals("test@test.com", savedUsuario.getEmail());
-        
-        Usuario foundUsuario = entityManager.find(Usuario.class, savedUsuario.getIdUsuario());
+
+        Usuario foundUsuario = entityManager.find(Usuario.class, savedUsuario.getId());
         assertNotNull(foundUsuario);
         assertEquals("test@test.com", foundUsuario.getEmail());
     }
@@ -80,7 +80,7 @@ class UsuarioRepositoryTest {
     @Test
     void deleteById_ShouldRemoveUsuario() {
         Usuario savedUsuario = entityManager.persistAndFlush(usuario);
-        Integer id = savedUsuario.getIdUsuario();
+        Integer id = savedUsuario.getId();
 
         usuarioRepository.deleteById(id);
         entityManager.flush();

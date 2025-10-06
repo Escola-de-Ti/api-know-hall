@@ -13,9 +13,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureWebMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Arrays;
@@ -34,7 +34,7 @@ class UsuarioControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private UsuarioService usuarioService;
 
     @Autowired
@@ -47,7 +47,7 @@ class UsuarioControllerTest {
     @BeforeEach
     void setUp() {
         usuario = new Usuario();
-        usuario.setIdUsuario(1);
+        usuario.setId(1);
         usuario.setEmail("test@test.com");
         usuario.setCpf("12345678901");
         usuario.setNome("Test User");

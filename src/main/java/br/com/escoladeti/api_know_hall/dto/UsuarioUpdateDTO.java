@@ -4,16 +4,9 @@ import br.com.escoladeti.api_know_hall.entity.Usuario;
 import br.com.escoladeti.api_know_hall.enums.StatusUsuario;
 import br.com.escoladeti.api_know_hall.enums.TipoUsuario;
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
+
 public class UsuarioUpdateDTO {
 
   @Email(message = "Email deve ter um formato válido")
@@ -36,9 +29,105 @@ public class UsuarioUpdateDTO {
   private TipoUsuario tipoUsuario;
   private StatusUsuario statusUsuario;
 
-    public Usuario toUpdateEntity(Usuario usuario) {
+  public UsuarioUpdateDTO(String email, String cpf, String telefone, String telefone2, String nome, String biografia, String senha, Integer idImagemPerfil, TipoUsuario tipoUsuario, StatusUsuario statusUsuario) {
+    this.email = email;
+    this.cpf = cpf;
+    this.telefone = telefone;
+    this.telefone2 = telefone2;
+    this.nome = nome;
+    this.biografia = biografia;
+    this.senha = senha;
+    this.idImagemPerfil = idImagemPerfil;
+    this.tipoUsuario = tipoUsuario;
+    this.statusUsuario = statusUsuario;
+  }
+
+  public UsuarioUpdateDTO() {
+  }
+
+  public @Email(message = "Email deve ter um formato válido") String getEmail() {
+    return email;
+  }
+
+  public void setEmail(@Email(message = "Email deve ter um formato válido") String email) {
+    this.email = email;
+  }
+
+  public @Size(min = 11, max = 11, message = "CPF deve ter exatamente 11 caracteres") String getCpf() {
+    return cpf;
+  }
+
+  public void setCpf(@Size(min = 11, max = 11, message = "CPF deve ter exatamente 11 caracteres") String cpf) {
+    this.cpf = cpf;
+  }
+
+  public @Size(max = 13, message = "Telefone deve ter no máximo 14 caracteres") String getTelefone() {
+    return telefone;
+  }
+
+  public void setTelefone(@Size(max = 13, message = "Telefone deve ter no máximo 14 caracteres") String telefone) {
+    this.telefone = telefone;
+  }
+
+  public @Size(max = 13, message = "Telefone deve ter no máximo 14 caracteres") String getTelefone2() {
+    return telefone2;
+  }
+
+  public void setTelefone2(@Size(max = 13, message = "Telefone deve ter no máximo 14 caracteres") String telefone2) {
+    this.telefone2 = telefone2;
+  }
+
+  public String getNome() {
+    return nome;
+  }
+
+  public void setNome(String nome) {
+    this.nome = nome;
+  }
+
+  public String getBiografia() {
+    return biografia;
+  }
+
+  public void setBiografia(String biografia) {
+    this.biografia = biografia;
+  }
+
+  public @Size(min = 6, message = "Senha deve ter pelo menos 6 caracteres") String getSenha() {
+    return senha;
+  }
+
+  public void setSenha(@Size(min = 6, message = "Senha deve ter pelo menos 6 caracteres") String senha) {
+    this.senha = senha;
+  }
+
+  public Integer getIdImagemPerfil() {
+    return idImagemPerfil;
+  }
+
+  public void setIdImagemPerfil(Integer idImagemPerfil) {
+    this.idImagemPerfil = idImagemPerfil;
+  }
+
+  public TipoUsuario getTipoUsuario() {
+    return tipoUsuario;
+  }
+
+  public void setTipoUsuario(TipoUsuario tipoUsuario) {
+    this.tipoUsuario = tipoUsuario;
+  }
+
+  public StatusUsuario getStatusUsuario() {
+    return statusUsuario;
+  }
+
+  public void setStatusUsuario(StatusUsuario statusUsuario) {
+    this.statusUsuario = statusUsuario;
+  }
+
+  public Usuario toUpdateEntity(Usuario usuario) {
         return new Usuario(
-            usuario.getIdUsuario(),
+            usuario.getId(),
             this.email != null ? this.email : usuario.getEmail(),
             this.cpf != null ? this.cpf : usuario.getCpf(),
             this.telefone != null ? this.telefone : usuario.getTelefone(),

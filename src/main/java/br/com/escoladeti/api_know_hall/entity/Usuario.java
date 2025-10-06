@@ -3,21 +3,15 @@ package br.com.escoladeti.api_know_hall.entity;
 import br.com.escoladeti.api_know_hall.enums.StatusUsuario;
 import br.com.escoladeti.api_know_hall.enums.TipoUsuario;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "USUARIO")
-@AllArgsConstructor
-@NoArgsConstructor
-@Data
 public class Usuario {
 
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
-  @Column(name = "id_usuario", nullable = false)
-  private Integer idUsuario;
+  @Column(name = "id", nullable = false)
+  private Integer id;
 
   @Column(name = "email", nullable = false, unique = true)
   private String email;
@@ -51,4 +45,109 @@ public class Usuario {
   @Enumerated(EnumType.STRING)
   private TipoUsuario tipoUsuario;
 
+  public Usuario(Integer id, String email, String cpf, String telefone, String telefone2, String nome, String biografia, String senhaHash, Integer idImagemPerfil, StatusUsuario statusUsuario, TipoUsuario tipoUsuario) {
+
+    this.id = id;
+    this.email = email;
+    this.cpf = cpf;
+    this.telefone = telefone;
+    this.telefone2 = telefone2;
+    this.nome = nome;
+    this.biografia = biografia;
+    this.senhaHash = senhaHash;
+    this.idImagemPerfil = idImagemPerfil;
+    this.statusUsuario = statusUsuario;
+    this.tipoUsuario = tipoUsuario;
+  }
+
+  public Usuario() {
+  }
+
+  public Integer getId() {
+    return id;
+  }
+
+  public void setId(Integer id) {
+    this.id = id;
+  }
+
+  public String getEmail() {
+    return email;
+  }
+
+  public void setEmail(String email) {
+    this.email = email;
+  }
+
+  public String getCpf() {
+    return cpf;
+  }
+
+  public void setCpf(String cpf) {
+    this.cpf = cpf;
+  }
+
+  public String getTelefone() {
+    return telefone;
+  }
+
+  public void setTelefone(String telefone) {
+    this.telefone = telefone;
+  }
+
+  public String getTelefone2() {
+    return telefone2;
+  }
+
+  public void setTelefone2(String telefone2) {
+    this.telefone2 = telefone2;
+  }
+
+  public String getNome() {
+    return nome;
+  }
+
+  public void setNome(String nome) {
+    this.nome = nome;
+  }
+
+  public String getBiografia() {
+    return biografia;
+  }
+
+  public void setBiografia(String biografia) {
+    this.biografia = biografia;
+  }
+
+  public String getSenhaHash() {
+    return senhaHash;
+  }
+
+  public void setSenhaHash(String senhaHash) {
+    this.senhaHash = senhaHash;
+  }
+
+  public Integer getIdImagemPerfil() {
+    return idImagemPerfil;
+  }
+
+  public void setIdImagemPerfil(Integer idImagemPerfil) {
+    this.idImagemPerfil = idImagemPerfil;
+  }
+
+  public StatusUsuario getStatusUsuario() {
+    return statusUsuario;
+  }
+
+  public void setStatusUsuario(StatusUsuario statusUsuario) {
+    this.statusUsuario = statusUsuario;
+  }
+
+  public TipoUsuario getTipoUsuario() {
+    return tipoUsuario;
+  }
+
+  public void setTipoUsuario(TipoUsuario tipoUsuario) {
+    this.tipoUsuario = tipoUsuario;
+  }
 }
