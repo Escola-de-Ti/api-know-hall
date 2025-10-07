@@ -36,3 +36,4 @@ build/
 ### application ###
 .env
 package-lock.json
+htmlReport
