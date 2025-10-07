@@ -1,6 +1,7 @@
 package br.com.escoladeti.api_know_hall.controller;
 
 import br.com.escoladeti.api_know_hall.dto.UsuarioCreateDTO;
+import br.com.escoladeti.api_know_hall.dto.UsuarioLoginDTO;
 import br.com.escoladeti.api_know_hall.dto.UsuarioUpdateDTO;
 import br.com.escoladeti.api_know_hall.entity.Usuario;
 import br.com.escoladeti.api_know_hall.service.UsuarioService;
@@ -78,6 +79,20 @@ public class UsuarioController {
         try {
             usuarioService.deleteUsuario(id);
             return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<String> login(@RequestBody UsuarioLoginDTO loginDTO) {
+        try {
+            String token = usuarioService.login(loginDTO.email(), loginDTO.senha());
+            if (token != null) {
+                return ResponseEntity.ok(token);
+            } else {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
