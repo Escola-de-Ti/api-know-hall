@@ -30,7 +30,7 @@ public class JwtTokenService {
               .withExpiresAt(expiresAt)
               .withSubject(user)
               .sign(algorithm);
-      return new JwtTokenDTO(token, expiresAt.toEpochMilli());
+      return new JwtTokenDTO(token,"Bearer", expiresAt.toEpochMilli());
     } catch (JWTCreationException exception){
       throw new JWTCreationException("Erro ao gerar token.", exception);
     }
