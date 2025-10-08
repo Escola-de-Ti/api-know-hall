@@ -1,5 +1,6 @@
 package br.com.escoladeti.api_know_hall.controller;
 
+import br.com.escoladeti.api_know_hall.dto.JwtTokenDTO;
 import br.com.escoladeti.api_know_hall.dto.UsuarioCreateDTO;
 import br.com.escoladeti.api_know_hall.dto.UsuarioLoginDTO;
 import br.com.escoladeti.api_know_hall.dto.UsuarioUpdateDTO;
@@ -85,9 +86,9 @@ public class UsuarioController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody UsuarioLoginDTO loginDTO) {
+    public ResponseEntity<JwtTokenDTO> login(@RequestBody UsuarioLoginDTO loginDTO) {
         try {
-            String token = usuarioService.login(loginDTO.email(), loginDTO.senha());
+          JwtTokenDTO token = usuarioService.login(loginDTO.email(), loginDTO.senha());
             if (token != null) {
                 return ResponseEntity.ok(token);
             } else {

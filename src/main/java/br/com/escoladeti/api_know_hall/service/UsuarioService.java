@@ -1,8 +1,10 @@
 package br.com.escoladeti.api_know_hall.service;
 
 import br.com.escoladeti.api_know_hall.config.JwtTokenService;
+import br.com.escoladeti.api_know_hall.dto.JwtTokenDTO;
 import br.com.escoladeti.api_know_hall.dto.UsuarioUpdateDTO;
 import br.com.escoladeti.api_know_hall.entity.Usuario;
+import br.com.escoladeti.api_know_hall.enums.StatusUsuario;
 import br.com.escoladeti.api_know_hall.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,6 +18,8 @@ public class UsuarioService {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
+    @Autowired
+    private JwtTokenService jwtTokenService;
 
     public List<Usuario> getAllUsuarios() {
         return usuarioRepository.findAll();
@@ -43,10 +47,10 @@ public class UsuarioService {
         usuarioRepository.deleteById(id);
     }
 
-    public String login(String email, String senha) {
+    public JwtTokenDTO login(String email, String senha) {
         Usuario usuario = usuarioRepository.findByEmail(email);
-        if (usuario != null && usuario.getSenhaHash().equals(senha)) {
-          return new JwtTokenService().generateToken(email);
+        if (usuario != null && usuario.getSenhaHash().equals(senha) && usuario.getStatusUsuario() == StatusUsuario.ATIVO) {
+          return jwtTokenService.generateTokenWithExpiration(usuario.getEmail());
         }
         return null;
     }

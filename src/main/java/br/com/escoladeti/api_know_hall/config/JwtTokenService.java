@@ -1,6 +1,6 @@
 package br.com.escoladeti.api_know_hall.config;
 
-import br.com.escoladeti.api_know_hall.dto.UsuarioLoginDTO;
+import br.com.escoladeti.api_know_hall.dto.JwtTokenDTO;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTCreationException;
@@ -14,30 +14,32 @@ import java.time.ZonedDateTime;
 
 @Service
 public class JwtTokenService {
-  @Value("${PRIVATE_KEY}")
-    private static String secretKey;
 
-  private static final String SECRET_KEY = secretKey;
+  @Value("${jwt.secret}")
+  private String jwtSecret;
 
   private static final String ISSUER = "api-know-hall";
 
-  public String generateToken(String user) {
+  public JwtTokenDTO generateTokenWithExpiration(String user) {
     try {
-      Algorithm algorithm = Algorithm.HMAC256(SECRET_KEY);
-      return JWT.create()
-        .withIssuer(ISSUER)
-        .withIssuedAt(creationDate())
-        .withExpiresAt(expirationDate())
-        .withSubject(user)
-        .sign(algorithm);
+      Algorithm algorithm = Algorithm.HMAC256(jwtSecret);
+      Instant expiresAt = expirationDate();
+      String token = JWT.create()
+              .withIssuer(ISSUER)
+              .withIssuedAt(creationDate())
+              .withExpiresAt(expiresAt)
+              .withSubject(user)
+              .sign(algorithm);
+      return new JwtTokenDTO(token, expiresAt.toEpochMilli());
     } catch (JWTCreationException exception){
       throw new JWTCreationException("Erro ao gerar token.", exception);
     }
   }
 
+
   public String getSubjectFromToken(String token) {
     try {
-      Algorithm algorithm = Algorithm.HMAC256(SECRET_KEY);
+      Algorithm algorithm = Algorithm.HMAC256(jwtSecret);
       return JWT.require(algorithm)
         .withIssuer(ISSUER)
         .build()
@@ -53,7 +55,7 @@ public class JwtTokenService {
   }
 
   private Instant expirationDate() {
-    return ZonedDateTime.now(ZoneId.of("America/Sao_Paul")).plusHours(1).toInstant();
+    return ZonedDateTime.now(ZoneId.of("America/Sao_Paulo")).plusHours(1).toInstant();
   }
 
 }
