@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+    http://www.liquibase.org/xml/ns/pro
+    http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
+
+  <changeSet id="1" author="seu-nome">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <tableExists tableName="USUARIO"/>
+      </not>
+    </preConditions>
+    <createTable tableName="USUARIO">
+      <column name="id" type="INTEGER" autoIncrement="true">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+      <column name="email" type="VARCHAR(255)">
+        <constraints nullable="false" unique="true"/>
+      </column>
+      <column name="cpf" type="VARCHAR(11)">
+        <constraints nullable="false" unique="true"/>
+      </column>
+      <column name="telefone" type="VARCHAR(20)"/>
+      <column name="telefone2" type="VARCHAR(20)"/>
+      <column name="nome" type="VARCHAR(255)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="sobrenome" type="VARCHAR(255)"/>
+      <column name="senha_hash" type="VARCHAR(255)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="id_imagem_perfil" type="INTEGER"/>
+      <column name="status_usuario" type="VARCHAR(50)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="tipo_usuario" type="VARCHAR(50)">
+        <constraints nullable="false"/>
+      </column>
+    </createTable>
+    <comment>Criação da tabela USUARIO</comment>
+  </changeSet>
+
+  <changeSet id="KH-2" author="Gabriel Marassi">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <tableExists tableName="TAGS"/>
+      </not>
+    </preConditions>
+    <createTable tableName="TAGS">
+      <column name="id" type="BIGINT" autoIncrement="true">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+      <column name="name" type="VARCHAR(255)"/>
+    </createTable>
+    <comment>Criação da tabela TAGS</comment>
+  </changeSet>
+
+</databaseChangeLog>
