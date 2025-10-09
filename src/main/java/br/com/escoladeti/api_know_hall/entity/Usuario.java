@@ -4,6 +4,8 @@ import br.com.escoladeti.api_know_hall.enums.StatusUsuario;
 import br.com.escoladeti.api_know_hall.enums.TipoUsuario;
 import jakarta.persistence.*;
 
+import java.math.BigInteger;
+
 @Entity
 @Table(name = "USUARIO")
 public class Usuario {
@@ -11,7 +13,7 @@ public class Usuario {
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
   @Column(name = "id", nullable = false)
-  private Integer id;
+  private BigInteger id;
 
   @Column(name = "email", nullable = false, unique = true)
   private String email;
@@ -45,7 +47,7 @@ public class Usuario {
   @Enumerated(EnumType.STRING)
   private TipoUsuario tipoUsuario;
 
-  public Usuario(Integer id, String email, String cpf, String telefone, String telefone2, String nome, String biografia, String senhaHash, Integer idImagemPerfil, StatusUsuario statusUsuario, TipoUsuario tipoUsuario) {
+  public Usuario(BigInteger id, String email, String cpf, String telefone, String telefone2, String nome, String biografia, String senhaHash, Integer idImagemPerfil, StatusUsuario statusUsuario, TipoUsuario tipoUsuario) {
 
     this.id = id;
     this.email = email;
@@ -63,11 +65,11 @@ public class Usuario {
   public Usuario() {
   }
 
-  public Integer getId() {
+  public BigInteger getId() {
     return id;
   }
 
-  public void setId(Integer id) {
+  public void setId(BigInteger id) {
     this.id = id;
   }
 
