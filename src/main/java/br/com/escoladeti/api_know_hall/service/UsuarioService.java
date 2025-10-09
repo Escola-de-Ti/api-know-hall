@@ -6,7 +6,9 @@ import br.com.escoladeti.api_know_hall.dto.UsuarioUpdateDTO;
 import br.com.escoladeti.api_know_hall.entity.Usuario;
 import br.com.escoladeti.api_know_hall.enums.StatusUsuario;
 import br.com.escoladeti.api_know_hall.repository.UsuarioRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Service;
 import br.com.escoladeti.api_know_hall.dto.UsuarioCreateDTO;
 
@@ -48,11 +50,11 @@ public class UsuarioService {
     }
 
     public JwtTokenDTO login(String email, String senha) {
-        Usuario usuario = usuarioRepository.findByEmail(email);
-        if (usuario != null && usuario.getSenhaHash().equals(senha) && usuario.getStatusUsuario() == StatusUsuario.ATIVO) {
-          return jwtTokenService.generateTokenWithExpiration(usuario.getEmail());
-        }
-        return null;
-    }
+        Usuario usuario = usuarioRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("Email ou senha inválidos"));
 
+        if(!usuario.getStatusUsuario().equals(StatusUsuario.ATIVO)){
+            throw new IllegalStateException("Usuario inativo");
+          }
+        return jwtTokenService.generateTokenWithExpiration(usuario.getEmail());
+    }
 }
