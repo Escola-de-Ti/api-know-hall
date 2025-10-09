@@ -39,7 +39,7 @@ class UsuarioServiceTest {
     @BeforeEach
     void setUp() {
         usuario = new Usuario();
-        usuario.setIdUsuario(1);
+        usuario.setId(1);
         usuario.setEmail("test@test.com");
         usuario.setCpf("12345678901");
         usuario.setNome("Test User");
@@ -95,7 +95,7 @@ class UsuarioServiceTest {
 
     @Test
     void createUsuario_WithValidData_ShouldReturnCreatedUsuario() {
-    
+
         when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuario);
 
         Usuario result = usuarioService.createUsuario(usuarioCreateDTO);

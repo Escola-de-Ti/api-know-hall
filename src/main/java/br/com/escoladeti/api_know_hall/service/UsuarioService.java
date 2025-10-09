@@ -28,14 +28,14 @@ public class UsuarioService {
     }
 
     public Usuario createUsuario(UsuarioCreateDTO usuario) {
-        Usuario newUsuario = usuario.toEntity();
+        Usuario newUsuario = new Usuario(usuario);
         return usuarioRepository.save(newUsuario);
     }
 
     public Usuario updateUsuario(Integer id, UsuarioUpdateDTO usuarioDetails) {
       Usuario usuario = usuarioRepository.findById(id).orElseThrow(() -> new RuntimeException("Erro na busca do usuário"));
       if (usuario != null){
-        usuario = usuarioDetails.toUpdateEntity(usuario);
+        usuario = new Usuario(usuarioDetails);
         return usuarioRepository.save(usuario);
       }
       return null;

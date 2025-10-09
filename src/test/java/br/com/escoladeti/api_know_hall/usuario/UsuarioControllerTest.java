@@ -47,7 +47,7 @@ class UsuarioControllerTest {
     @BeforeEach
     void setUp() {
         usuario = new Usuario();
-        usuario.setIdUsuario(1);
+        usuario.setId(1);
         usuario.setEmail("test@test.com");
         usuario.setCpf("12345678901");
         usuario.setNome("Test User");
