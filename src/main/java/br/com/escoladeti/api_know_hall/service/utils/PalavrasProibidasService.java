@@ -40,7 +40,7 @@ public class PalavrasProibidasService {
     "SUICIDIO", "SUICIDA",
 
     // Abreviações e gírias ofensivas
-    "FDP", "PQP", "VSF", "TMJ", "KRL", "PNC"
+    "PQP", "VSF", "TMJ", "KRL", "PNC"
   );
 
   // Padrões regex para detectar variações e burlas
