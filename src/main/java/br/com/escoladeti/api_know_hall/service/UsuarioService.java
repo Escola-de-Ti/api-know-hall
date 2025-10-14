@@ -27,13 +27,14 @@ public class UsuarioService {
   }
 
   public Usuario createUsuario(UsuarioCreateDTO usuario) {
-    Usuario newUsuario = usuario.toEntity();
+    Usuario newUsuario = new Usuario(usuario);
     return usuarioRepository.save(newUsuario);
   }
 
   public Usuario updateUsuario(BigInteger id, UsuarioUpdateDTO usuarioDetails) {
-    Usuario usuario = usuarioRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Usuario não encontrado"));
-    usuario = usuarioDetails.toUpdateEntity(usuario);
+    Usuario usuario = usuarioRepository.findById(id)
+      .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
+    usuario.applyUpdate(usuarioDetails);
     return usuarioRepository.save(usuario);
   }
 
