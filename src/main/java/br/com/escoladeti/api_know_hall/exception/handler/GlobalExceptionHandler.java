@@ -2,6 +2,7 @@ package br.com.escoladeti.api_know_hall.exception.handler;
 
 import br.com.escoladeti.api_know_hall.dto.ErrorResponse;
 import br.com.escoladeti.api_know_hall.exception.PalavraProibidaException;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -54,5 +55,15 @@ public class GlobalExceptionHandler {
       LocalDateTime.now()
     );
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+  }
+
+  @ExceptionHandler(EntityNotFoundException.class)
+  public ResponseEntity<ErrorResponse> handleEntityNotFound(EntityNotFoundException ex) {
+    ErrorResponse error = new ErrorResponse(
+      HttpStatus.NOT_FOUND.value(),
+      ex.getMessage(),
+      LocalDateTime.now()
+    );
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
   }
 }
