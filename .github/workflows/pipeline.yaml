@@ -22,11 +22,8 @@ jobs:
           cache: maven
       - name: Build and test with Maven (Dev)
         env:
-          SPRING_DATASOURCE_URL: ${{ secrets.SPRING_DATASOURCE_URL }}
-          SPRING_DATASOURCE_USERNAME: ${{ secrets.SPRING_DATASOURCE_USERNAME }}
-          SPRING_DATASOURCE_PASSWORD: ${{ secrets.SPRING_DATASOURCE_PASSWORD }}
-          BOOLEAN_SQL: ${{ vars.BOOLEAN_SQL }}
-        run: mvn -B verify --file pom.xml
+          SPRING_PROFILES_ACTIVE: test
+        run: mvn -B clean verify --file pom.xml
 
   build-and-test-prod:
     if: github.ref == 'refs/heads/master'
@@ -42,11 +39,8 @@ jobs:
           cache: maven
       - name: Build and test with Maven (Prod)
         env:
-          SPRING_DATASOURCE_URL: ${{ secrets.SPRING_DATASOURCE_URL }}
-          SPRING_DATASOURCE_USERNAME: ${{ secrets.SPRING_DATASOURCE_USERNAME }}
-          SPRING_DATASOURCE_PASSWORD: ${{ secrets.SPRING_DATASOURCE_PASSWORD }}
-          BOOLEAN_SQL: ${{ vars.BOOLEAN_SQL }}
-        run: mvn -B verify --file pom.xml
+          SPRING_PROFILES_ACTIVE: test
+        run: mvn -B clean verify --file pom.xml
 
   build-and-push-docker:
     needs: [build-and-test-dev, build-and-test-prod]
