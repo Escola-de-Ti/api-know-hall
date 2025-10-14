@@ -23,7 +23,7 @@ public class UsuarioService {
   }
 
   public Usuario getUsuarioById(BigInteger id) {
-    return usuarioRepository.findById(id).orElse(null);
+    return usuarioRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Usuario não encontrado"));
   }
 
   public Usuario createUsuario(UsuarioCreateDTO usuario) {
@@ -33,7 +33,7 @@ public class UsuarioService {
 
   public Usuario updateUsuario(BigInteger id, UsuarioUpdateDTO usuarioDetails) {
     Usuario usuario = usuarioRepository.findById(id)
-      .orElseThrow(() -> new EntityNotFoundException("Erro na busca do usuário"));
+      .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
     usuario.applyUpdate(usuarioDetails);
     return usuarioRepository.save(usuario);
   }

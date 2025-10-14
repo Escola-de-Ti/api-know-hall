@@ -34,11 +34,9 @@ public class UsuarioController {
   public ResponseEntity<Usuario> getUsuarioById(@PathVariable BigInteger id) {
     try {
       Usuario usuario = usuarioService.getUsuarioById(id);
-      if (usuario != null) {
-        return ResponseEntity.ok(usuario);
-      } else {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-      }
+      return ResponseEntity.ok(usuario);
+    } catch (EntityNotFoundException e) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     } catch (Exception e) {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
@@ -59,10 +57,9 @@ public class UsuarioController {
     try {
       Usuario updatedUsuario = usuarioService.updateUsuario(id, usuarioDetails);
       return ResponseEntity.ok(updatedUsuario);
+    } catch (EntityNotFoundException e) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     } catch (Exception e) {
-      if (e instanceof EntityNotFoundException) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-      }
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
   }
