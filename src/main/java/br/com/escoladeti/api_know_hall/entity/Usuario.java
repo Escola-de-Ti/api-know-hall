@@ -8,9 +8,9 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+
+import java.math.BigInteger;
 
 @Entity
 @Table(name = "USUARIO")
@@ -23,7 +23,7 @@ public class Usuario {
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
   @Column(name = "id", nullable = false)
-  private Integer id;
+  private BigInteger id;
 
   @Column(name = "email", nullable = false, unique = true)
   private String email;
@@ -65,20 +65,6 @@ public class Usuario {
   )
   private List<Tag> tags = new ArrayList<>();
 
-  public Usuario(UsuarioUpdateDTO dto) {
-    this.email = dto.getEmail();
-    this.cpf = dto.getCpf();
-    this.telefone = dto.getTelefone();
-    this.telefone2 = dto.getTelefone2();
-    this.nome = dto.getNome();
-    this.biografia = dto.getBiografia();
-    this.senhaHash = dto.getSenha();
-    this.idImagemPerfil = dto.getIdImagemPerfil();
-    this.statusUsuario = dto.getStatusUsuario();
-    this.tipoUsuario = dto.getTipoUsuario();
-    this.tags = dto.getTags();
-  }
-
   public Usuario(UsuarioCreateDTO dto) {
     this.id = null;
     this.email = dto.getEmail();
@@ -92,5 +78,22 @@ public class Usuario {
     this.statusUsuario = StatusUsuario.CONFIRMACAO_PENDENTE;
     this.tipoUsuario = dto.getTipoUsuario();
     this.tags = dto.getTags();
+  }
+
+  public void applyUpdate(UsuarioUpdateDTO dto) {
+    if (dto.getEmail() != null) this.email = dto.getEmail();
+    if (dto.getCpf() != null) this.cpf = dto.getCpf();
+    if (dto.getTelefone() != null) this.telefone = dto.getTelefone();
+    if (dto.getTelefone2() != null) this.telefone2 = dto.getTelefone2();
+    if (dto.getNome() != null) this.nome = dto.getNome();
+    if (dto.getBiografia() != null) this.biografia = dto.getBiografia();
+    if (dto.getSenha() != null) this.senhaHash = dto.getSenha();
+    if (dto.getIdImagemPerfil() != null) this.idImagemPerfil = dto.getIdImagemPerfil();
+    if (dto.getStatusUsuario() != null) this.statusUsuario = dto.getStatusUsuario();
+    if (dto.getTipoUsuario() != null) this.tipoUsuario = dto.getTipoUsuario();
+    if (dto.getTags() != null) {
+      this.tags.clear();
+      this.tags.addAll(dto.getTags());
+    }
   }
 }

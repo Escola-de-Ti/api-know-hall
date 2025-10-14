@@ -11,14 +11,15 @@
     http://www.liquibase.org/xml/ns/pro
     http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
 
-  <changeSet id="1" author="seu-nome">
+
+  <changeSet id="KH-1" author="WILLYAN TOMAZ">
     <preConditions onFail="MARK_RAN">
       <not>
         <tableExists tableName="USUARIO"/>
       </not>
     </preConditions>
     <createTable tableName="USUARIO">
-      <column name="id" type="INTEGER" autoIncrement="true">
+      <column name="id" type="BIGINT" autoIncrement="true">
         <constraints primaryKey="true" nullable="false"/>
       </column>
       <column name="email" type="VARCHAR(255)">

@@ -1,48 +1,45 @@
 package br.com.escoladeti.api_know_hall.service;
 
+import br.com.escoladeti.api_know_hall.dto.UsuarioCreateDTO;
 import br.com.escoladeti.api_know_hall.dto.UsuarioUpdateDTO;
 import br.com.escoladeti.api_know_hall.entity.Usuario;
-import br.com.escoladeti.api_know_hall.enums.StatusUsuario;
 import br.com.escoladeti.api_know_hall.repository.UsuarioRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import br.com.escoladeti.api_know_hall.dto.UsuarioCreateDTO;
-import org.springframework.web.client.HttpStatusCodeException;
 
+import java.math.BigInteger;
 import java.util.List;
 
 @Service
 public class UsuarioService {
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+  @Autowired
+  private UsuarioRepository usuarioRepository;
 
 
+  public List<Usuario> getAllUsuarios() {
+    return usuarioRepository.findAll();
+  }
 
-    public List<Usuario> getAllUsuarios() {
-        return usuarioRepository.findAll();
-    }
+  public Usuario getUsuarioById(BigInteger id) {
+    return usuarioRepository.findById(id).orElse(null);
+  }
 
-    public Usuario getUsuarioById(Integer id) {
-        return usuarioRepository.findById(id).orElse(null);
-    }
+  public Usuario createUsuario(UsuarioCreateDTO usuario) {
+    Usuario newUsuario = new Usuario(usuario);
+    return usuarioRepository.save(newUsuario);
+  }
 
-    public Usuario createUsuario(UsuarioCreateDTO usuario) {
-        Usuario newUsuario = new Usuario(usuario);
-        return usuarioRepository.save(newUsuario);
-    }
+  public Usuario updateUsuario(BigInteger id, UsuarioUpdateDTO usuarioDetails) {
+    Usuario usuario = usuarioRepository.findById(id)
+      .orElseThrow(() -> new EntityNotFoundException("Erro na busca do usuário"));
+    usuario.applyUpdate(usuarioDetails);
+    return usuarioRepository.save(usuario);
+  }
 
-    public Usuario updateUsuario(Integer id, UsuarioUpdateDTO usuarioDetails) {
-      Usuario usuario = usuarioRepository.findById(id).orElseThrow(() -> new RuntimeException("Erro na busca do usuário"));
-      if (usuario != null){
-        usuario = new Usuario(usuarioDetails);
-        return usuarioRepository.save(usuario);
-      }
-      return null;
-    }
-
-    public void deleteUsuario(Integer id) {
-        usuarioRepository.deleteById(id);
-    }
+  public void deleteUsuario(BigInteger id) {
+    usuarioRepository.deleteById(id);
+  }
 
 }
