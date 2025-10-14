@@ -8,6 +8,7 @@ import br.com.escoladeti.api_know_hall.enums.StatusUsuario;
 import br.com.escoladeti.api_know_hall.enums.TipoUsuario;
 import br.com.escoladeti.api_know_hall.service.UsuarioService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -96,7 +97,8 @@ class UsuarioControllerTest {
 
   @Test
   void getUsuarioById_WithInvalidId_ShouldReturnNotFound() throws Exception {
-    when(usuarioService.getUsuarioById(BigInteger.valueOf(999))).thenReturn(null);
+    when(usuarioService.getUsuarioById(BigInteger.valueOf(999)))
+      .thenThrow(new EntityNotFoundException("Usuario não encontrado"));
 
     mockMvc.perform(get("/usuarios/999"))
       .andExpect(status().isNotFound());

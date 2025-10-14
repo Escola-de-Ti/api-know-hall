@@ -7,6 +7,7 @@ import br.com.escoladeti.api_know_hall.enums.StatusUsuario;
 import br.com.escoladeti.api_know_hall.enums.TipoUsuario;
 import br.com.escoladeti.api_know_hall.repository.UsuarioRepository;
 import br.com.escoladeti.api_know_hall.service.UsuarioService;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -84,12 +85,15 @@ class UsuarioServiceTest {
   }
 
   @Test
-  void getUsuarioById_WithInvalidId_ShouldReturnNull() {
+  void getUsuarioById_WithInvalidId_ShouldThrowEntityNotFoundException() {
     when(usuarioRepository.findById(BigInteger.valueOf(999))).thenReturn(Optional.empty());
 
-    Usuario result = usuarioService.getUsuarioById(BigInteger.valueOf(999));
+    EntityNotFoundException exception = assertThrows(
+      EntityNotFoundException.class,
+      () -> usuarioService.getUsuarioById(BigInteger.valueOf(999))
+    );
 
-    assertNull(result);
+    assertEquals("Usuario não encontrado", exception.getMessage());
     verify(usuarioRepository, times(1)).findById(BigInteger.valueOf(999));
   }
 
