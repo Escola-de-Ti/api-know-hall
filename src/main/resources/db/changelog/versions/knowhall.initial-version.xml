@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+
+  <changeSet id="KH-1" author="WILLYAN TOMAZ">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <tableExists tableName="USUARIO"/>
+      </not>
+    </preConditions>
+    <createTable tableName="USUARIO">
+      <column name="id" type="BIGINT" autoIncrement="true">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+      <column name="email" type="VARCHAR(255)">
+        <constraints nullable="false" unique="true"/>
+      </column>
+      <column name="cpf" type="VARCHAR(11)">
+        <constraints nullable="false" unique="true"/>
+      </column>
+      <column name="telefone" type="VARCHAR(20)"/>
+      <column name="telefone2" type="VARCHAR(20)"/>
+      <column name="nome" type="VARCHAR(255)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="sobrenome" type="VARCHAR(255)"/>
+      <column name="senha_hash" type="VARCHAR(255)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="id_imagem_perfil" type="INTEGER"/>
+      <column name="status_usuario" type="VARCHAR(50)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="tipo_usuario" type="VARCHAR(50)">
+        <constraints nullable="false"/>
+      </column>
+    </createTable>
+    <comment>Criação da tabela USUARIO</comment>
+  </changeSet>
+
+</databaseChangeLog>
