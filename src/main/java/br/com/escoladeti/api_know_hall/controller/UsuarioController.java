@@ -6,11 +6,13 @@ import br.com.escoladeti.api_know_hall.dto.UsuarioLoginDTO;
 import br.com.escoladeti.api_know_hall.dto.UsuarioUpdateDTO;
 import br.com.escoladeti.api_know_hall.entity.Usuario;
 import br.com.escoladeti.api_know_hall.service.UsuarioService;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigInteger;
 import java.util.List;
 
 @RestController
@@ -31,14 +33,12 @@ public class UsuarioController {
   }
 
   @GetMapping("/{id}")
-  public ResponseEntity<Usuario> getUsuarioById(@PathVariable Integer id) {
+  public ResponseEntity<Usuario> getUsuarioById(@PathVariable BigInteger id) {
     try {
       Usuario usuario = usuarioService.getUsuarioById(id);
-      if (usuario != null) {
-        return ResponseEntity.ok(usuario);
-      } else {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-      }
+      return ResponseEntity.ok(usuario);
+    } catch (EntityNotFoundException e) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     } catch (Exception e) {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
@@ -55,21 +55,19 @@ public class UsuarioController {
   }
 
   @PutMapping("/{id}")
-  public ResponseEntity<Usuario> updateUsuario(@PathVariable Integer id, @RequestBody UsuarioUpdateDTO usuarioDetails) {
+  public ResponseEntity<Usuario> updateUsuario(@PathVariable BigInteger id, @RequestBody UsuarioUpdateDTO usuarioDetails) {
     try {
       Usuario updatedUsuario = usuarioService.updateUsuario(id, usuarioDetails);
-      if (updatedUsuario != null) {
-        return ResponseEntity.ok(updatedUsuario);
-      } else {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-      }
+      return ResponseEntity.ok(updatedUsuario);
+    } catch (EntityNotFoundException e) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     } catch (Exception e) {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
   }
 
   @DeleteMapping("/{id}")
-  public ResponseEntity<Void> deleteUsuario(@PathVariable Integer id) {
+  public ResponseEntity<Void> deleteUsuario(@PathVariable BigInteger id) {
     try {
       usuarioService.deleteUsuario(id);
       return ResponseEntity.noContent().build();
@@ -77,7 +75,6 @@ public class UsuarioController {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
   }
-
   @PostMapping("/login")
   public ResponseEntity<?> login(@RequestBody UsuarioLoginDTO loginDTO) {
     try {
@@ -92,3 +89,4 @@ public class UsuarioController {
     }
   }
 }
+

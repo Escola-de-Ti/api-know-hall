@@ -1,46 +1,53 @@
 package br.com.escoladeti.api_know_hall.dto;
 
-import br.com.escoladeti.api_know_hall.entity.Usuario;
-import br.com.escoladeti.api_know_hall.enums.StatusUsuario;
+import br.com.escoladeti.api_know_hall.entity.Tag;
 import br.com.escoladeti.api_know_hall.enums.TipoUsuario;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class UsuarioCreateDTO {
 
-    @NotBlank(message = "Email é obrigatório")
-    @Email(message = "Email deve ter um formato válido")
-    private String email;
+  @NotBlank(message = "Email é obrigatório")
+  @Email(message = "Email deve ter um formato válido")
+  private String email;
 
-    @NotBlank(message = "CPF é obrigatório")
-    @Size(min = 11, max = 11, message = "CPF deve ter exatamente 11 caracteres")
-    private String cpf;
+  @NotBlank(message = "CPF é obrigatório")
+  @Size(min = 11, max = 11, message = "CPF deve ter exatamente 11 caracteres")
+  private String cpf;
 
-    @Size(max = 13, message = "Telefone deve ter no máximo 14 caracteres")
-    private String telefone;
+  @Size(max = 13, message = "Telefone deve ter no máximo 14 caracteres")
+  private String telefone;
 
-    @Size(max = 13, message = "Telefone deve ter no máximo 14 caracteres")
-    private String telefone2;
+  @Size(max = 13, message = "Telefone deve ter no máximo 14 caracteres")
+  private String telefone2;
 
-    @NotBlank(message = "Nome é obrigatório")
-    private String nome;
+  @NotBlank(message = "Nome é obrigatório")
+  private String nome;
 
-    private String biografia;
+  private String biografia;
 
-    @NotBlank(message = "Senha é obrigatória")
-    @Size(min = 6, message = "Senha deve ter pelo menos 6 caracteres")
-    private String senha;
+  @NotBlank(message = "Senha é obrigatória")
+  @Size(min = 6, message = "Senha deve ter pelo menos 6 caracteres")
+  private String senha;
 
-    private Integer idImagemPerfil;
+  private Integer idImagemPerfil;
 
-    @NotNull(message = "Tipo de usuário é obrigatório")
-    private TipoUsuario tipoUsuario;
+  @NotNull(message = "Tipo de usuário é obrigatório")
+  private TipoUsuario tipoUsuario;
 
-  public UsuarioCreateDTO(String email, String cpf, String telefone, String telefone2, String nome, String biografia, String senha, Integer idImagemPerfil, TipoUsuario tipoUsuario) {
+  private List<Tag> tags = new ArrayList<>();
+
+  public UsuarioCreateDTO() {
+  }
+
+  public UsuarioCreateDTO(String email, String cpf, String telefone, String telefone2, String nome, String biografia, String senha, Integer idImagemPerfil, TipoUsuario tipoUsuario, List<Tag> tags) {
     this.email = email;
     this.cpf = cpf;
     this.telefone = telefone;
@@ -50,48 +57,46 @@ public class UsuarioCreateDTO {
     this.senha = senha;
     this.idImagemPerfil = idImagemPerfil;
     this.tipoUsuario = tipoUsuario;
+    this.tags = tags;
   }
 
-  public UsuarioCreateDTO() {
-  }
-
-  public @NotBlank(message = "Email é obrigatório") @Email(message = "Email deve ter um formato válido") String getEmail() {
+  public String getEmail() {
     return email;
   }
 
-  public void setEmail(@NotBlank(message = "Email é obrigatório") @Email(message = "Email deve ter um formato válido") String email) {
+  public void setEmail(String email) {
     this.email = email;
   }
 
-  public @NotBlank(message = "CPF é obrigatório") @Size(min = 11, max = 11, message = "CPF deve ter exatamente 11 caracteres") String getCpf() {
+  public String getCpf() {
     return cpf;
   }
 
-  public void setCpf(@NotBlank(message = "CPF é obrigatório") @Size(min = 11, max = 11, message = "CPF deve ter exatamente 11 caracteres") String cpf) {
+  public void setCpf(String cpf) {
     this.cpf = cpf;
   }
 
-  public @Size(max = 13, message = "Telefone deve ter no máximo 14 caracteres") String getTelefone() {
+  public String getTelefone() {
     return telefone;
   }
 
-  public void setTelefone(@Size(max = 13, message = "Telefone deve ter no máximo 14 caracteres") String telefone) {
+  public void setTelefone(String telefone) {
     this.telefone = telefone;
   }
 
-  public @Size(max = 13, message = "Telefone deve ter no máximo 14 caracteres") String getTelefone2() {
+  public String getTelefone2() {
     return telefone2;
   }
 
-  public void setTelefone2(@Size(max = 13, message = "Telefone deve ter no máximo 14 caracteres") String telefone2) {
+  public void setTelefone2(String telefone2) {
     this.telefone2 = telefone2;
   }
 
-  public @NotBlank(message = "Nome é obrigatório") String getNome() {
+  public String getNome() {
     return nome;
   }
 
-  public void setNome(@NotBlank(message = "Nome é obrigatório") String nome) {
+  public void setNome(String nome) {
     this.nome = nome;
   }
 
@@ -103,11 +108,11 @@ public class UsuarioCreateDTO {
     this.biografia = biografia;
   }
 
-  public @NotBlank(message = "Senha é obrigatória") @Size(min = 6, message = "Senha deve ter pelo menos 6 caracteres") String getSenha() {
+  public String getSenha() {
     return senha;
   }
 
-  public void setSenha(@NotBlank(message = "Senha é obrigatória") @Size(min = 6, message = "Senha deve ter pelo menos 6 caracteres") String senha) {
+  public void setSenha(String senha) {
     this.senha = senha;
   }
 
@@ -119,27 +124,19 @@ public class UsuarioCreateDTO {
     this.idImagemPerfil = idImagemPerfil;
   }
 
-  public @NotNull(message = "Tipo de usuário é obrigatório") TipoUsuario getTipoUsuario() {
+  public TipoUsuario getTipoUsuario() {
     return tipoUsuario;
   }
 
-  public void setTipoUsuario(@NotNull(message = "Tipo de usuário é obrigatório") TipoUsuario tipoUsuario) {
+  public void setTipoUsuario(TipoUsuario tipoUsuario) {
     this.tipoUsuario = tipoUsuario;
   }
 
-  public Usuario toEntity() {
-    return new Usuario(
-        null,
-        this.email,
-        this.cpf,
-        this.telefone,
-        this.telefone2,
-        this.nome,
-        this.biografia,
-        this.senha,
-        this.idImagemPerfil,
-        StatusUsuario.CONFIRMACAO_PENDENTE,
-        this.tipoUsuario
-    );
+  public List<Tag> getTags() {
+    return tags;
+  }
+
+  public void setTags(List<Tag> tags) {
+    this.tags = tags;
   }
 }

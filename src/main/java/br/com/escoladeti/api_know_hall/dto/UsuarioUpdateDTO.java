@@ -1,10 +1,15 @@
 package br.com.escoladeti.api_know_hall.dto;
 
+import br.com.escoladeti.api_know_hall.entity.Tag;
 import br.com.escoladeti.api_know_hall.entity.Usuario;
 import br.com.escoladeti.api_know_hall.enums.StatusUsuario;
 import br.com.escoladeti.api_know_hall.enums.TipoUsuario;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
+import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class UsuarioUpdateDTO {
@@ -28,52 +33,54 @@ public class UsuarioUpdateDTO {
   private Integer idImagemPerfil;
   private TipoUsuario tipoUsuario;
   private StatusUsuario statusUsuario;
-
-  public UsuarioUpdateDTO(String email, String cpf, String telefone, String telefone2, String nome, String biografia, String senha, Integer idImagemPerfil, TipoUsuario tipoUsuario, StatusUsuario statusUsuario) {
-    this.email = email;
-    this.cpf = cpf;
-    this.telefone = telefone;
-    this.telefone2 = telefone2;
-    this.nome = nome;
-    this.biografia = biografia;
-    this.senha = senha;
-    this.idImagemPerfil = idImagemPerfil;
-    this.tipoUsuario = tipoUsuario;
-    this.statusUsuario = statusUsuario;
-  }
+  private List<Tag> tags = new ArrayList<>();
 
   public UsuarioUpdateDTO() {
   }
 
-  public @Email(message = "Email deve ter um formato válido") String getEmail() {
-    return email;
-  }
-
-  public void setEmail(@Email(message = "Email deve ter um formato válido") String email) {
+  public UsuarioUpdateDTO(List<Tag> tags, StatusUsuario statusUsuario, TipoUsuario tipoUsuario, Integer idImagemPerfil, String senha, String biografia, String nome, String telefone2, String telefone, String cpf, String email) {
+    this.tags = tags;
+    this.statusUsuario = statusUsuario;
+    this.tipoUsuario = tipoUsuario;
+    this.idImagemPerfil = idImagemPerfil;
+    this.senha = senha;
+    this.biografia = biografia;
+    this.nome = nome;
+    this.telefone2 = telefone2;
+    this.telefone = telefone;
+    this.cpf = cpf;
     this.email = email;
   }
 
-  public @Size(min = 11, max = 11, message = "CPF deve ter exatamente 11 caracteres") String getCpf() {
+  public String getEmail() {
+    return email;
+  }
+
+  public void setEmail(String email) {
+    this.email = email;
+  }
+
+  public String getCpf() {
     return cpf;
   }
 
-  public void setCpf(@Size(min = 11, max = 11, message = "CPF deve ter exatamente 11 caracteres") String cpf) {
+  public void setCpf(String cpf) {
     this.cpf = cpf;
   }
 
-  public @Size(max = 13, message = "Telefone deve ter no máximo 14 caracteres") String getTelefone() {
+  public String getTelefone() {
     return telefone;
   }
 
-  public void setTelefone(@Size(max = 13, message = "Telefone deve ter no máximo 14 caracteres") String telefone) {
+  public void setTelefone(String telefone) {
     this.telefone = telefone;
   }
 
-  public @Size(max = 13, message = "Telefone deve ter no máximo 14 caracteres") String getTelefone2() {
+  public String getTelefone2() {
     return telefone2;
   }
 
-  public void setTelefone2(@Size(max = 13, message = "Telefone deve ter no máximo 14 caracteres") String telefone2) {
+  public void setTelefone2(String telefone2) {
     this.telefone2 = telefone2;
   }
 
@@ -93,11 +100,11 @@ public class UsuarioUpdateDTO {
     this.biografia = biografia;
   }
 
-  public @Size(min = 6, message = "Senha deve ter pelo menos 6 caracteres") String getSenha() {
+  public String getSenha() {
     return senha;
   }
 
-  public void setSenha(@Size(min = 6, message = "Senha deve ter pelo menos 6 caracteres") String senha) {
+  public void setSenha(String senha) {
     this.senha = senha;
   }
 
@@ -125,19 +132,11 @@ public class UsuarioUpdateDTO {
     this.statusUsuario = statusUsuario;
   }
 
-  public Usuario toUpdateEntity(Usuario usuario) {
-        return new Usuario(
-            usuario.getId(),
-            this.email != null ? this.email : usuario.getEmail(),
-            this.cpf != null ? this.cpf : usuario.getCpf(),
-            this.telefone != null ? this.telefone : usuario.getTelefone(),
-            this.telefone2 != null ? this.telefone2 : usuario.getTelefone2(),
-            this.nome != null ? this.nome : usuario.getNome(),
-            this.biografia != null ? this.biografia : usuario.getBiografia(),
-            this.senha != null ? this.senha : usuario.getSenhaHash(),
-            this.idImagemPerfil != null ? this.idImagemPerfil : usuario.getIdImagemPerfil(),
-            this.statusUsuario != null ? this.statusUsuario : usuario.getStatusUsuario(),
-            this.tipoUsuario != null ? this.tipoUsuario : usuario.getTipoUsuario()
-        );
-    }
+  public List<Tag> getTags() {
+    return tags;
+  }
+
+  public void setTags(List<Tag> tags) {
+    this.tags = tags;
+  }
 }

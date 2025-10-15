@@ -4,6 +4,10 @@ on:
   push:
     branches: [ "master", "development" ]
 
+permissions:
+  contents: read
+  packages: write
+
 env:
   IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}
 
@@ -22,11 +26,8 @@ jobs:
           cache: maven
       - name: Build and test with Maven (Dev)
         env:
-          SPRING_DATASOURCE_URL: ${{ secrets.SPRING_DATASOURCE_URL }}
-          SPRING_DATASOURCE_USERNAME: ${{ secrets.SPRING_DATASOURCE_USERNAME }}
-          SPRING_DATASOURCE_PASSWORD: ${{ secrets.SPRING_DATASOURCE_PASSWORD }}
-          BOOLEAN_SQL: ${{ vars.BOOLEAN_SQL }}
-        run: mvn -B verify --file pom.xml
+          SPRING_PROFILES_ACTIVE: test
+        run: mvn -B clean verify --file pom.xml
 
   build-and-test-prod:
     if: github.ref == 'refs/heads/master'
@@ -42,16 +43,16 @@ jobs:
           cache: maven
       - name: Build and test with Maven (Prod)
         env:
-          SPRING_DATASOURCE_URL: ${{ secrets.SPRING_DATASOURCE_URL }}
-          SPRING_DATASOURCE_USERNAME: ${{ secrets.SPRING_DATASOURCE_USERNAME }}
-          SPRING_DATASOURCE_PASSWORD: ${{ secrets.SPRING_DATASOURCE_PASSWORD }}
-          BOOLEAN_SQL: ${{ vars.BOOLEAN_SQL }}
-        run: mvn -B verify --file pom.xml
+          SPRING_PROFILES_ACTIVE: test
+        run: mvn -B clean verify --file pom.xml
 
   build-and-push-docker:
     needs: [build-and-test-dev, build-and-test-prod]
     runs-on: ubuntu-latest
-    if: github.event_name == 'push'
+    if: |
+      always() &&
+      (needs.build-and-test-dev.result == 'success' || needs.build-and-test-prod.result == 'success') &&
+      !contains(needs.*.result, 'failure')
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -81,7 +82,11 @@ jobs:
   deploy-to-prod-render:
     needs: build-and-push-docker
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+    if: |
+      always() &&
+      needs.build-and-push-docker.result == 'success' &&
+      github.ref == 'refs/heads/master' &&
+      github.event_name == 'push'
     steps:
       - name: Trigger Render Production Deploy
         run: curl "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
@@ -89,7 +94,11 @@ jobs:
   deploy-to-dev-render:
     needs: build-and-push-docker
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/development' && github.event_name == 'push'
+    if: |
+      always() &&
+      needs.build-and-push-docker.result == 'success' &&
+      github.ref == 'refs/heads/development' &&
+      github.event_name == 'push'
     steps:
       - name: Trigger Render Development Deploy
         run: curl "${{ secrets.RENDER_DEV_DEPLOY_HOOK_URL }}"

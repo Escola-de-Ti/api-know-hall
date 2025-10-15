@@ -19,7 +19,7 @@
       </not>
     </preConditions>
     <createTable tableName="USUARIO">
-      <column name="id" type="BIGINTEGER" autoIncrement="true">
+      <column name="id" type="BIGINT" autoIncrement="true">
         <constraints primaryKey="true" nullable="false"/>
       </column>
       <column name="email" type="VARCHAR(255)">
@@ -46,6 +46,21 @@
       </column>
     </createTable>
     <comment>Criação da tabela USUARIO</comment>
+  </changeSet>
+
+  <changeSet id="KH-2" author="Gabriel Marassi">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <tableExists tableName="TAGS"/>
+      </not>
+    </preConditions>
+    <createTable tableName="TAGS">
+      <column name="id" type="BIGINT" autoIncrement="true">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+      <column name="name" type="VARCHAR(255)"/>
+    </createTable>
+    <comment>Criação da tabela TAGS</comment>
   </changeSet>
 
 </databaseChangeLog>

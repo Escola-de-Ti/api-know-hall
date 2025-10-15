@@ -2,6 +2,7 @@ package br.com.escoladeti.api_know_hall.service;
 
 import br.com.escoladeti.api_know_hall.config.JwtTokenService;
 import br.com.escoladeti.api_know_hall.dto.JwtTokenDTO;
+import br.com.escoladeti.api_know_hall.dto.UsuarioCreateDTO;
 import br.com.escoladeti.api_know_hall.dto.UsuarioUpdateDTO;
 import br.com.escoladeti.api_know_hall.entity.Usuario;
 import br.com.escoladeti.api_know_hall.enums.StatusUsuario;
@@ -12,49 +13,49 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Service;
 import br.com.escoladeti.api_know_hall.dto.UsuarioCreateDTO;
 
+import java.math.BigInteger;
 import java.util.List;
 
 @Service
 public class UsuarioService {
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+  @Autowired
+  private UsuarioRepository usuarioRepository;
 
-    @Autowired
-    private JwtTokenService jwtTokenService;
+  @Autowired
+  private JwtTokenService jwtTokenService;
 
-    public List<Usuario> getAllUsuarios() {
-        return usuarioRepository.findAll();
+
+  public List<Usuario> getAllUsuarios() {
+    return usuarioRepository.findAll();
+  }
+
+  public Usuario getUsuarioById(BigInteger id) {
+    return usuarioRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Usuario não encontrado"));
+  }
+
+  public Usuario createUsuario(UsuarioCreateDTO usuario) {
+    Usuario newUsuario = new Usuario(usuario);
+    return usuarioRepository.save(newUsuario);
+  }
+
+  public Usuario updateUsuario(BigInteger id, UsuarioUpdateDTO usuarioDetails) {
+    Usuario usuario = usuarioRepository.findById(id)
+      .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
+    usuario.applyUpdate(usuarioDetails);
+    return usuarioRepository.save(usuario);
+  }
+
+  public void deleteUsuario(BigInteger id) {
+    usuarioRepository.deleteById(id);
+  }
+
+  public JwtTokenDTO login(String email, String senha) {
+    Usuario usuario = usuarioRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("Email ou senha inválidos"));
+
+    if (!usuario.getStatusUsuario().equals(StatusUsuario.ATIVO)) {
+      throw new IllegalStateException("Usuario inativo");
     }
-
-    public Usuario getUsuarioById(Integer id) {
-        return usuarioRepository.findById(id).orElse(null);
-    }
-
-    public Usuario createUsuario(UsuarioCreateDTO usuario) {
-        Usuario newUsuario = usuario.toEntity();
-        return usuarioRepository.save(newUsuario);
-    }
-
-    public Usuario updateUsuario(Integer id, UsuarioUpdateDTO usuarioDetails) {
-      Usuario usuario = usuarioRepository.findById(id).orElseThrow(() -> new RuntimeException("Erro na busca do usuário"));
-      if (usuario != null){
-        usuario = usuarioDetails.toUpdateEntity(usuario);
-        return usuarioRepository.save(usuario);
-      }
-      return null;
-    }
-
-    public void deleteUsuario(Integer id) {
-        usuarioRepository.deleteById(id);
-    }
-
-    public JwtTokenDTO login(String email, String senha) {
-        Usuario usuario = usuarioRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("Email ou senha inválidos"));
-
-        if(!usuario.getStatusUsuario().equals(StatusUsuario.ATIVO)){
-            throw new IllegalStateException("Usuario inativo");
-          }
-        return jwtTokenService.generateTokenWithExpiration(usuario.getEmail());
-    }
+    return jwtTokenService.generateTokenWithExpiration(usuario.getEmail());
+  }
 }
