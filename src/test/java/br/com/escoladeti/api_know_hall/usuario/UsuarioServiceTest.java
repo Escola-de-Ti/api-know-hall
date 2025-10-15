@@ -1,10 +1,13 @@
 package br.com.escoladeti.api_know_hall.usuario;
 
+import br.com.escoladeti.api_know_hall.config.JwtTokenService;
+import br.com.escoladeti.api_know_hall.dto.JwtTokenDTO;
 import br.com.escoladeti.api_know_hall.dto.UsuarioCreateDTO;
 import br.com.escoladeti.api_know_hall.dto.UsuarioUpdateDTO;
 import br.com.escoladeti.api_know_hall.entity.Usuario;
 import br.com.escoladeti.api_know_hall.enums.StatusUsuario;
 import br.com.escoladeti.api_know_hall.enums.TipoUsuario;
+import br.com.escoladeti.api_know_hall.exception.UsuarioInativoException;
 import br.com.escoladeti.api_know_hall.repository.UsuarioRepository;
 import br.com.escoladeti.api_know_hall.service.UsuarioService;
 import jakarta.persistence.EntityNotFoundException;
@@ -32,6 +35,9 @@ class UsuarioServiceTest {
   @Mock
   private UsuarioRepository usuarioRepository;
 
+  @Mock
+  private JwtTokenService jwtTokenService;
+
   @InjectMocks
   private UsuarioService usuarioService;
 
@@ -42,7 +48,7 @@ class UsuarioServiceTest {
   @BeforeEach
   void setUp() {
     usuario = new Usuario();
-    usuario.setId(BigInteger.valueOf(1)); // 👈 BigInteger agora
+    usuario.setId(BigInteger.valueOf(1));
     usuario.setEmail("test@test.com");
     usuario.setCpf("12345678901");
     usuario.setNome("Test User");
@@ -126,9 +132,7 @@ class UsuarioServiceTest {
   void updateUsuario_WithInvalidId_ShouldThrowException() {
     when(usuarioRepository.findById(BigInteger.valueOf(999))).thenReturn(Optional.empty());
 
-    assertThrows(RuntimeException.class, () -> {
-      usuarioService.updateUsuario(BigInteger.valueOf(999), usuarioUpdateDTO);
-    });
+    assertThrows(RuntimeException.class, () -> usuarioService.updateUsuario(BigInteger.valueOf(999), usuarioUpdateDTO));
 
     verify(usuarioRepository, times(1)).findById(BigInteger.valueOf(999));
     verify(usuarioRepository, never()).save(any(Usuario.class));
@@ -141,5 +145,37 @@ class UsuarioServiceTest {
     usuarioService.deleteUsuario(BigInteger.valueOf(1));
 
     verify(usuarioRepository, times(1)).deleteById(BigInteger.valueOf(1));
+  }
+
+  @Test
+  void login_WithValidCredentialsAndActiveUser_ShouldReturnJwtTokenDTO() {
+    usuario.setStatusUsuario(StatusUsuario.ATIVO);
+    when(usuarioRepository.findByEmail(usuario.getEmail())).thenReturn(Optional.of(usuario));
+    when(jwtTokenService.generateTokenWithExpiration(usuario.getEmail())).thenReturn(new JwtTokenDTO("token", "Bearer", 3600L));
+
+    JwtTokenDTO result = usuarioService.login(usuario.getEmail(), "senhaCorreta");
+    assertNotNull(result);
+    assertEquals("token", result.access_token());
+    assertEquals("Bearer", result.token_type());
+    assertEquals(3600L, result.expires_in());
+    verify(usuarioRepository, times(1)).findByEmail(usuario.getEmail());
+    verify(jwtTokenService, times(1)).generateTokenWithExpiration(usuario.getEmail());
+  }
+
+  @Test
+  void login_WithInvalidEmail_ShouldThrowEntityNotFoundException() {
+    when(usuarioRepository.findByEmail("invalido@test.com")).thenReturn(Optional.empty());
+    EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> usuarioService.login("invalido@test.com", "qualquerSenha"));
+    assertEquals("Email ou senha inválidos", exception.getMessage());
+    verify(usuarioRepository, times(1)).findByEmail("invalido@test.com");
+  }
+
+  @Test
+  void login_WithInactiveUser_ShouldThrowUsuarioInativoException() {
+    usuario.setStatusUsuario(StatusUsuario.INATIVO);
+    when(usuarioRepository.findByEmail(usuario.getEmail())).thenReturn(Optional.of(usuario));
+    UsuarioInativoException exception = assertThrows(UsuarioInativoException.class, () -> usuarioService.login(usuario.getEmail(), "senhaCorreta"));
+    assertEquals("Usuario inativo", exception.getMessage());
+    verify(usuarioRepository, times(1)).findByEmail(usuario.getEmail());
   }
 }
