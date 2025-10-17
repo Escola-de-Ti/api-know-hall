@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigInteger;
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -32,7 +33,7 @@ public class UsuarioController {
     return ResponseEntity.ok(usuario);
   }
 
-  @PostMapping
+  @PostMapping()
   public ResponseEntity<Usuario> createUsuario(@RequestBody UsuarioCreateDTO usuario) {
     Usuario createdUsuario = usuarioService.createUsuario(usuario);
     return ResponseEntity.status(201).body(createdUsuario);
