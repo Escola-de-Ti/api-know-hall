@@ -20,7 +20,7 @@
       <tableExists tableName="TAGS"/>
     </preConditions>
     <createTable tableName="USUARIO_TAGS">
-      <column name="usuario_id" type="INTEGER">
+      <column name="usuario_id" type="BIGINT">
         <constraints nullable="false"/>
       </column>
       <column name="tag_id" type="BIGINT">
