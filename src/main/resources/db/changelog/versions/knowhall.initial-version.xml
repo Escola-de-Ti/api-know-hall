@@ -19,7 +19,7 @@
       </not>
     </preConditions>
     <createTable tableName="USUARIO">
-      <column name="id" type="BIGINT" autoIncrement="true">
+      <column name="id" type="BIGSERIAL">
         <constraints primaryKey="true" nullable="false"/>
       </column>
       <column name="email" type="VARCHAR(255)">
@@ -55,7 +55,7 @@
       </not>
     </preConditions>
     <createTable tableName="TAGS">
-      <column name="id" type="BIGINT" autoIncrement="true">
+      <column name="id" type="BIGSERIAL">
         <constraints primaryKey="true" nullable="false"/>
       </column>
       <column name="name" type="VARCHAR(255)"/>
