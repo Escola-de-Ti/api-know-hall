@@ -47,14 +47,14 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
   }
 
-  @ExceptionHandler(Exception.class)
-  public ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
+  @ExceptionHandler(IllegalStateException.class)
+  public ResponseEntity<ErrorResponse> handleIllegalState(IllegalStateException ex) {
     ErrorResponse error = new ErrorResponse(
-      HttpStatus.INTERNAL_SERVER_ERROR.value(),
-      "Erro interno no servidor",
+      HttpStatus.BAD_REQUEST.value(),
+      ex.getMessage(),
       LocalDateTime.now()
     );
-    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
   }
 
   @ExceptionHandler(EntityNotFoundException.class)
@@ -65,5 +65,15 @@ public class GlobalExceptionHandler {
       LocalDateTime.now()
     );
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+  }
+
+  @ExceptionHandler(Exception.class)
+  public ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
+    ErrorResponse error = new ErrorResponse(
+      HttpStatus.INTERNAL_SERVER_ERROR.value(),
+      "Erro interno no servidor",
+      LocalDateTime.now()
+    );
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
   }
 }
