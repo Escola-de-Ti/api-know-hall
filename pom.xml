@@ -87,6 +87,11 @@
 			<artifactId>h2</artifactId>
 			<scope>test</scope>
 		</dependency>
+    <dependency>
+      <groupId>com.konghq</groupId>
+      <artifactId>unirest-java</artifactId>
+      <version>3.14.5</version>
+    </dependency>
 	</dependencies>
 
 	<build>
