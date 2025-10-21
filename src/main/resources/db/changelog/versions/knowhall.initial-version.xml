@@ -63,4 +63,33 @@
     <comment>Criação da tabela TAGS</comment>
   </changeSet>
 
+  <changeSet id="KH-19" author="Gabriel Marassi">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <tableExists tableName="POST"/>
+      </not>
+    </preConditions>
+    <createTable tableName="POST">
+      <column name="id" type="BIGSERIAL">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+      <column name="usuario_id" type="BIGINT">
+        <constraints nullable="false"/>
+      </column>
+      <column name="titulo" type="VARCHAR(255)"/>
+      <column name="descricao" type="TEXT"/>
+      <column name="total_up_votes" type="BIGINT" defaultValue="0"/>
+    </createTable>
+
+    <addForeignKeyConstraint
+      baseTableName="POST"
+      baseColumnNames="usuario_id"
+      constraintName="fk_post_usuario"
+      referencedTableName="USUARIO"
+      referencedColumnNames="id"
+      onDelete="CASCADE"/>
+
+    <comment>Criação da tabela POST com relacionamento obrigatório para USUARIO</comment>
+  </changeSet>
+
 </databaseChangeLog>
