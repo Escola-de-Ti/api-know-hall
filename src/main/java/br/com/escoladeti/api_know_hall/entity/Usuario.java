@@ -1,23 +1,21 @@
 package br.com.escoladeti.api_know_hall.entity;
 
 import br.com.escoladeti.api_know_hall.dto.UsuarioCreateDTO;
+import br.com.escoladeti.api_know_hall.dto.UsuarioUpdateDTO;
 import br.com.escoladeti.api_know_hall.enums.StatusUsuario;
 import br.com.escoladeti.api_know_hall.enums.TipoUsuario;
-import br.com.escoladeti.api_know_hall.dto.UsuarioUpdateDTO;
 import jakarta.persistence.*;
-import lombok.*;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "USUARIO")
 public class Usuario {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @GeneratedValue(strategy = GenerationType.AUTO)
   @Column(name = "id", nullable = false)
   private BigInteger id;
 

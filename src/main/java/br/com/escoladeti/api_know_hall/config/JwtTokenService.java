@@ -25,14 +25,16 @@ public class JwtTokenService {
       Algorithm algorithm = Algorithm.HMAC256(jwtSecret);
       Instant expiresAt = expirationDate();
       String token = JWT.create()
-              .withIssuer(ISSUER)
-              .withIssuedAt(creationDate())
-              .withExpiresAt(expiresAt)
-              .withSubject(user)
-              .sign(algorithm);
-      return new JwtTokenDTO(token,"Bearer", expiresAt.toEpochMilli());
-    } catch (JWTCreationException exception){
+        .withIssuer(ISSUER)
+        .withIssuedAt(creationDate())
+        .withExpiresAt(expiresAt)
+        .withSubject(user)
+        .sign(algorithm);
+      return new JwtTokenDTO(token, "Bearer", expiresAt.toEpochMilli());
+    } catch (JWTCreationException exception) {
       throw new JWTCreationException("Erro ao gerar token.", exception);
+    } catch (Exception e) {
+      throw new RuntimeException();
     }
   }
 
@@ -45,8 +47,10 @@ public class JwtTokenService {
         .build()
         .verify(token)
         .getSubject();
-    } catch (JWTVerificationException exception){
+    } catch (JWTVerificationException exception) {
       throw new JWTVerificationException("Token inválido ou expirado.");
+    } catch (RuntimeException e) {
+      throw new RuntimeException();
     }
   }
 

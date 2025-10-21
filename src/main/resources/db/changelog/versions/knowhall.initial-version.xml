@@ -2,14 +2,8 @@
 <databaseChangeLog
   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
-  xmlns:pro="http://www.liquibase.org/xml/ns/pro"
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
-    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
-    http://www.liquibase.org/xml/ns/dbchangelog-ext
-    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
-    http://www.liquibase.org/xml/ns/pro
-    http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
 
   <changeSet id="KH-1" author="WILLYAN TOMAZ">
@@ -19,7 +13,7 @@
       </not>
     </preConditions>
     <createTable tableName="USUARIO">
-      <column name="id" type="BIGINT" autoIncrement="true">
+      <column name="id" type="BIGSERIAL">
         <constraints primaryKey="true" nullable="false"/>
       </column>
       <column name="email" type="VARCHAR(255)">
