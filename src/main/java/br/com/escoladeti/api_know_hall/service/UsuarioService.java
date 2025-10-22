@@ -60,4 +60,8 @@ public class UsuarioService {
     }
     return jwtTokenService.generateTokenWithExpiration(usuario.getEmail());
   }
+
+  public JwtTokenDTO refreshToken(String refreshToken) {
+    return jwtTokenService.refreshTokens(refreshToken);
+  }
 }

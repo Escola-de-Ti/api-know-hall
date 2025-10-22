@@ -200,7 +200,7 @@ class UsuarioControllerTest {
 
   @Test
   void login_WithValidCredentials_ShouldReturnToken() throws Exception {
-    when(usuarioService.login("test@test.com", "senha")).thenReturn(new br.com.escoladeti.api_know_hall.dto.JwtTokenDTO("token", "Bearer", 3600L));
+    when(usuarioService.login("test@test.com", "senha")).thenReturn(new br.com.escoladeti.api_know_hall.dto.JwtTokenDTO("token", "Bearer", 3600L, "refreshToken"));
 
     UsuarioLoginDTO loginDTO = new UsuarioLoginDTO("test@test.com", "senha");
 

@@ -1,6 +1,7 @@
 package br.com.escoladeti.api_know_hall.controller;
 
 import br.com.escoladeti.api_know_hall.dto.JwtTokenDTO;
+import br.com.escoladeti.api_know_hall.dto.RefreshTokenRequest;
 import br.com.escoladeti.api_know_hall.dto.UsuarioCreateDTO;
 import br.com.escoladeti.api_know_hall.dto.UsuarioLoginDTO;
 import br.com.escoladeti.api_know_hall.dto.UsuarioUpdateDTO;
@@ -54,6 +55,13 @@ public class UsuarioController {
   @PostMapping("/login")
   public ResponseEntity<JwtTokenDTO> login(@RequestBody UsuarioLoginDTO loginDTO) {
     JwtTokenDTO token = usuarioService.login(loginDTO.email(), loginDTO.senha());
+    return ResponseEntity.ok(token);
+  }
+
+  // Nova rota para recarregar tokens a partir do refresh token
+  @PostMapping("/refresh")
+  public ResponseEntity<JwtTokenDTO> refresh(@RequestBody RefreshTokenRequest request) {
+    JwtTokenDTO token = usuarioService.refreshToken(request.refresh_token());
     return ResponseEntity.ok(token);
   }
 }

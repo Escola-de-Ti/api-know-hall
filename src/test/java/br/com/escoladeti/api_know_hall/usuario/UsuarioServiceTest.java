@@ -151,7 +151,7 @@ class UsuarioServiceTest {
   void login_WithValidCredentialsAndActiveUser_ShouldReturnJwtTokenDTO() {
     usuario.setStatusUsuario(StatusUsuario.ATIVO);
     when(usuarioRepository.findByEmail(usuario.getEmail())).thenReturn(Optional.of(usuario));
-    when(jwtTokenService.generateTokenWithExpiration(usuario.getEmail())).thenReturn(new JwtTokenDTO("token", "Bearer", 3600L));
+    when(jwtTokenService.generateTokenWithExpiration(usuario.getEmail())).thenReturn(new JwtTokenDTO("token", "Bearer", 3600L, "refreshToken"));
 
     JwtTokenDTO result = usuarioService.login(usuario.getEmail(), "senhaCorreta");
     assertNotNull(result);
