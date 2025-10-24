@@ -79,6 +79,9 @@
       <column name="titulo" type="VARCHAR(255)"/>
       <column name="descricao" type="TEXT"/>
       <column name="total_up_votes" type="BIGINT" defaultValue="0"/>
+      <column name="data_criacao" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+        <constraints nullable="false"/>
+      </column>
     </createTable>
 
     <addForeignKeyConstraint
