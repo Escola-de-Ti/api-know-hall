@@ -42,20 +42,6 @@ public class UsuarioConquistaController {
     return ResponseEntity.ok(response);
   }
 
-//  @GetMapping("/certificados")
-//  public ResponseEntity<List<UsuarioConquistaResponseDTO>> listarCertificados(
-//    @PathVariable BigInteger usuarioId) {
-//
-//    List<UsuarioConquista> certificados =
-//      conquistaService.listarCertificadosUsuario(usuarioId);
-//
-//    List<UsuarioConquistaResponseDTO> response = certificados.stream()
-//      .map(UsuarioConquistaResponseDTO::fromEntity)
-//      .collect(Collectors.toList());
-//
-//    return ResponseEntity.ok(response);
-//  }
-
   @GetMapping("/{conquistaId}/progresso")
   public ResponseEntity<ConquistaProgressoResponseDTO> obterProgresso(
     @PathVariable BigInteger usuarioId,

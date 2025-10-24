@@ -41,29 +41,12 @@ public class Conquista {
   @Column(name = "icone_url")
   private String iconeUrl;
 
-//  Relacionamento opcional com Workshop (apenas para CERTIFICADO)
-//  @ManyToOne(fetch = FetchType.LAZY)
-//  @JoinColumn(name = "workshop_id")
-//  private Workshop workshop;
-
   @OneToMany(mappedBy = "conquista", cascade = CascadeType.ALL, orphanRemoval = true)
   @OrderBy("tier ASC")
   private List<ConquistaTier> tiers = new ArrayList<>();
 
   @OneToMany(mappedBy = "conquista", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<UsuarioConquista> usuariosConquistas = new ArrayList<>();
-
-  // Validação customizada
-//  @PrePersist
-//  @PreUpdate
-//  private void validarIntegridadeConquista() {
-//    if (tipoConquista == TipoConquista.CERTIFICADO && workshop == null) {
-//      throw new IllegalStateException("Conquista do tipo CERTIFICADO deve ter um Workshop associado");
-//    }
-//    if (tipoConquista == TipoConquista.INSIGNIA && workshop != null) {
-//      throw new IllegalStateException("Conquista do tipo INSIGNIA não pode ter Workshop associado");
-//    }
-//  }
 
   public void adicionarTier(TierConquista tier, Integer quantidadeNecessaria) {
     ConquistaTier conquistaTier = new ConquistaTier();

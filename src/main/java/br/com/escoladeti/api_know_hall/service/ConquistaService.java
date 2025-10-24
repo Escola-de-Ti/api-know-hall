@@ -90,13 +90,6 @@ public class ConquistaService {
   }
 
   /**
-   * Lista apenas os certificados do usuário
-   */
-//  public List<UsuarioConquista> listarCertificadosUsuario(BigInteger usuarioId) {
-//    return usuarioConquistaRepository.findCertificadosByUsuarioId(usuarioId);
-//  }
-
-  /**
    * Obtém o progresso do usuário em uma conquista específica
    */
   public ConquistaProgressoDTO obterProgressoConquista(BigInteger usuarioId, BigInteger conquistaId) {
