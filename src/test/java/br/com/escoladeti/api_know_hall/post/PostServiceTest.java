@@ -1,7 +1,6 @@
 package br.com.escoladeti.api_know_hall.post;
 
 import br.com.escoladeti.api_know_hall.dto.post.*;
-import br.com.escoladeti.api_know_hall.dto.tags.TagResponseDTO;
 import br.com.escoladeti.api_know_hall.entity.Post;
 import br.com.escoladeti.api_know_hall.entity.Tag;
 import br.com.escoladeti.api_know_hall.entity.Usuario;
@@ -10,6 +9,8 @@ import br.com.escoladeti.api_know_hall.enums.OrdenacaoTipo;
 import br.com.escoladeti.api_know_hall.enums.StatusUsuario;
 import br.com.escoladeti.api_know_hall.enums.TagOperador;
 import br.com.escoladeti.api_know_hall.enums.TipoUsuario;
+import br.com.escoladeti.api_know_hall.projection.post.PostBuscaProjection;
+import br.com.escoladeti.api_know_hall.projection.post.PostFeedProjection;
 import br.com.escoladeti.api_know_hall.repository.PostRepository;
 import br.com.escoladeti.api_know_hall.repository.TagsRepository;
 import br.com.escoladeti.api_know_hall.repository.UsuarioRepository;
@@ -27,7 +28,6 @@ import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 

@@ -1,9 +1,9 @@
-package br.com.escoladeti.api_know_hall.dto.post;
+package br.com.escoladeti.api_know_hall.projection.post;
 
 import java.math.BigInteger;
 import java.sql.Timestamp;
 
-public interface PostBuscaProjection {
+public interface PostFeedProjection {
   BigInteger getId();
   BigInteger getUsuarioId();
   String getUsuarioNome();
@@ -11,4 +11,6 @@ public interface PostBuscaProjection {
   String getDescricao();
   Long getTotalUpVotes();
   Timestamp getDataCriacao();
+  Double getRelevanceScore();
+  Integer getTagsEmComum();
 }

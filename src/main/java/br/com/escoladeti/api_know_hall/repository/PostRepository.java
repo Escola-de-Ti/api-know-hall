@@ -1,7 +1,7 @@
 package br.com.escoladeti.api_know_hall.repository;
 
-import br.com.escoladeti.api_know_hall.dto.post.PostBuscaProjection;
-import br.com.escoladeti.api_know_hall.dto.post.PostFeedProjection;
+import br.com.escoladeti.api_know_hall.projection.post.PostBuscaProjection;
+import br.com.escoladeti.api_know_hall.projection.post.PostFeedProjection;
 import br.com.escoladeti.api_know_hall.entity.Post;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

@@ -6,6 +6,8 @@ import br.com.escoladeti.api_know_hall.entity.Post;
 import br.com.escoladeti.api_know_hall.entity.Tag;
 import br.com.escoladeti.api_know_hall.entity.Usuario;
 import br.com.escoladeti.api_know_hall.enums.OrdenacaoTipo;
+import br.com.escoladeti.api_know_hall.projection.post.PostBuscaProjection;
+import br.com.escoladeti.api_know_hall.projection.post.PostFeedProjection;
 import br.com.escoladeti.api_know_hall.repository.PostRepository;
 import br.com.escoladeti.api_know_hall.repository.TagsRepository;
 import br.com.escoladeti.api_know_hall.repository.UsuarioRepository;
