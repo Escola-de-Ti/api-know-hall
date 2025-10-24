@@ -5,8 +5,10 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigInteger;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,7 +21,7 @@ import java.util.List;
 public class Post {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.AUTO)
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "id", nullable = false)
   private BigInteger id;
 
@@ -44,4 +46,7 @@ public class Post {
   @JoinColumn(name = "usuario_id", nullable = false)
   private Usuario usuario;
 
+  @Column(name = "data_criacao", nullable = false, updatable = false)
+  @CreationTimestamp
+  private Timestamp dataCriacao;
 }
