@@ -1,0 +1,20 @@
+package br.com.escoladeti.api_know_hall.dto.post;
+
+import br.com.escoladeti.api_know_hall.dto.tags.TagResponseDTO;
+
+import java.math.BigInteger;
+import java.sql.Timestamp;
+import java.util.List;
+
+public record PostFeedDTO(
+  BigInteger id,
+  BigInteger usuarioId,
+  String nomeUsuario,
+  String titulo,
+  String descricao,
+  Long totalUpVotes,
+  List<TagResponseDTO> tags,
+  Timestamp dataCriacao,
+  Double relevanceScore,  // Score calculado
+  Integer tagsEmComum  // Número de tags em comum
+) {}
