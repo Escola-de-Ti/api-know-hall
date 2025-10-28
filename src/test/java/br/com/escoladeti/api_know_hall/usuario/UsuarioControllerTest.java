@@ -2,10 +2,13 @@ package br.com.escoladeti.api_know_hall.usuario;
 
 import br.com.escoladeti.api_know_hall.controller.UsuarioController;
 import br.com.escoladeti.api_know_hall.dto.UsuarioCreateDTO;
+import br.com.escoladeti.api_know_hall.dto.UsuarioLoginDTO;
 import br.com.escoladeti.api_know_hall.dto.UsuarioUpdateDTO;
 import br.com.escoladeti.api_know_hall.entity.Usuario;
 import br.com.escoladeti.api_know_hall.enums.StatusUsuario;
 import br.com.escoladeti.api_know_hall.enums.TipoUsuario;
+import br.com.escoladeti.api_know_hall.exception.UsuarioInativoException;
+import br.com.escoladeti.api_know_hall.exception.handler.GlobalExceptionHandler;
 import br.com.escoladeti.api_know_hall.service.UsuarioService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityNotFoundException;
@@ -15,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureWebMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -32,6 +36,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(controllers = UsuarioController.class, excludeAutoConfiguration = SecurityAutoConfiguration.class)
 @AutoConfigureWebMvc
 @ActiveProfiles("test")
+@Import(GlobalExceptionHandler.class)
 class UsuarioControllerTest {
 
   @Autowired
@@ -192,4 +197,51 @@ class UsuarioControllerTest {
 
     verify(usuarioService, times(1)).getAllUsuarios();
   }
+
+  @Test
+  void login_WithValidCredentials_ShouldReturnToken() throws Exception {
+    when(usuarioService.login("test@test.com", "senha")).thenReturn(new br.com.escoladeti.api_know_hall.dto.JwtTokenDTO("token", "Bearer", 3600L, "refreshToken"));
+
+    UsuarioLoginDTO loginDTO = new UsuarioLoginDTO("test@test.com", "senha");
+
+    mockMvc.perform(post("/usuarios/login")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(loginDTO)))
+      .andExpect(status().isOk())
+      .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+      .andExpect(jsonPath("$.access_token").value("token"))
+      .andExpect(jsonPath("$.token_type").value("Bearer"))
+      .andExpect(jsonPath("$.expires_in").value(3600));
+
+    verify(usuarioService, times(1)).login("test@test.com", "senha");
+  }
+
+  @Test
+  void login_WithInvalidCredentials_ShouldReturnNotFound() throws Exception {
+    when(usuarioService.login("naoexiste@test.com", "qualquer")).thenThrow(new EntityNotFoundException("Email ou senha inválidos"));
+
+    UsuarioLoginDTO loginDTO = new UsuarioLoginDTO("naoexiste@test.com", "qualquer");
+
+    mockMvc.perform(post("/usuarios/login")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(loginDTO)))
+      .andExpect(status().isNotFound());
+
+    verify(usuarioService, times(1)).login("naoexiste@test.com", "qualquer");
+  }
+
+  @Test
+  void login_WithInactiveUser_ShouldReturnForbidden() throws Exception {
+    when(usuarioService.login("test@test.com", "senha")).thenThrow(new UsuarioInativoException("Usuario inativo"));
+
+    UsuarioLoginDTO loginDTO = new UsuarioLoginDTO("test@test.com", "senha");
+
+    mockMvc.perform(post("/usuarios/login")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(loginDTO)))
+      .andExpect(status().isForbidden());
+
+    verify(usuarioService, times(1)).login("test@test.com", "senha");
+  }
+
 }
