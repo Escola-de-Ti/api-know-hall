@@ -88,7 +88,7 @@
       referencedTableName="TAGS"
       referencedColumnNames="id"
       onDelete="CASCADE"/>
-    <comment>Criação da tabela de relacionamento USUARIO_TAGS</comment>
+    <comment>Criação da tabela de relacionamento POST_TAGS</comment>
   </changeSet>
 
 </databaseChangeLog>
