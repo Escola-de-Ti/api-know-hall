@@ -1,6 +1,9 @@
 package br.com.escoladeti.api_know_hall.usuario;
 
 import br.com.escoladeti.api_know_hall.controller.UsuarioController;
+import br.com.escoladeti.api_know_hall.config.JwtAuthenticationFilter;
+import br.com.escoladeti.api_know_hall.config.JwtTokenService;
+import br.com.escoladeti.api_know_hall.config.SecurityConfig;
 import br.com.escoladeti.api_know_hall.dto.UsuarioCreateDTO;
 import br.com.escoladeti.api_know_hall.dto.UsuarioLoginDTO;
 import br.com.escoladeti.api_know_hall.dto.UsuarioUpdateDTO;
@@ -18,10 +21,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureWebMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+ 
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigInteger;
@@ -29,21 +34,38 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(controllers = UsuarioController.class, excludeAutoConfiguration = SecurityAutoConfiguration.class)
+@WebMvcTest(
+  controllers = UsuarioController.class,
+  excludeAutoConfiguration = {
+    SecurityAutoConfiguration.class,
+    org.springframework.boot.autoconfigure.security.servlet.SecurityFilterAutoConfiguration.class
+  },
+  excludeFilters = {
+    @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = SecurityConfig.class),
+    @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = JwtAuthenticationFilter.class)
+  }
+)
 @AutoConfigureWebMvc
-@ActiveProfiles("test")
+@org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc(addFilters = false)
 @Import(GlobalExceptionHandler.class)
 class UsuarioControllerTest {
 
   @Autowired
   private MockMvc mockMvc;
 
-  @MockitoBean
+  @MockBean
   private UsuarioService usuarioService;
+
+  @MockBean
+  private JwtAuthenticationFilter jwtAuthenticationFilter;
+
+  @MockBean
+  private JwtTokenService jwtTokenService;
 
   @Autowired
   private ObjectMapper objectMapper;
@@ -55,7 +77,7 @@ class UsuarioControllerTest {
   @BeforeEach
   void setUp() {
     usuario = new Usuario();
-    usuario.setId(BigInteger.valueOf(1)); // 👈 BigInteger agora
+    usuario.setId(BigInteger.valueOf(1));
     usuario.setEmail("test@test.com");
     usuario.setCpf("12345678901");
     usuario.setNome("Test User");
@@ -74,7 +96,7 @@ class UsuarioControllerTest {
     usuarioUpdateDTO.setEmail("updated@test.com");
     usuarioUpdateDTO.setNome("Updated User");
   }
-
+  
   @Test
   void getAllUsuarios_ShouldReturnListOfUsuarios() throws Exception {
     List<Usuario> usuarios = Arrays.asList(usuario);
