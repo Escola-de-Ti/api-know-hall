@@ -42,9 +42,8 @@ public class Usuario {
   @Column(name = "senha_hash", nullable = false)
   private String senhaHash;
 
-  @Column(name = "id_imagem_perfil")
   @OneToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-  @JoinColumn(name = "id_imagem_perfil", referencedColumnName = "id")
+  @JoinColumn(name = "id_imagem_perfil", referencedColumnName = "id", foreignKey = @ForeignKey(name = "fk_usuario_imagem"))
   private Imagem imagemPerfil;
 
   @Column(name = "status_usuario", nullable = false)
@@ -149,8 +148,18 @@ public class Usuario {
     return imagemPerfil;
   }
 
-  public void setIdImagemPerfil(Integer idImagemPerfil) {
+  public void setImagemPerfil(Imagem imagemPerfil) {
     this.imagemPerfil = imagemPerfil;
+  }
+
+  public void setIdImagemPerfil(BigInteger idImagemPerfil) {
+    if (idImagemPerfil == null) {
+      this.imagemPerfil = null;
+    } else {
+      Imagem img = new Imagem();
+      img.setId(idImagemPerfil);
+      this.imagemPerfil = img;
+    }
   }
 
   public StatusUsuario getStatusUsuario() {

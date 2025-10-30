@@ -2,8 +2,6 @@
 package br.com.escoladeti.api_know_hall.service;
 
 import br.com.escoladeti.api_know_hall.entity.Imagem;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -18,8 +16,6 @@ import java.time.Duration;
 
 @Service
 public class ImagemService {
-
-  private static final Logger log = LoggerFactory.getLogger(ImagemService.class);
 
   private final String supabaseUrl;
 

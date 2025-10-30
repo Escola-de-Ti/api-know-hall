@@ -16,8 +16,7 @@ public class ImagemController {
   }
 
   @PostMapping("/upload")
-  public ResponseEntity<Imagem> upload(@RequestBody byte[] imagem,
-                                       @RequestParam(value = "imageName", required = false) String imageName) {
+  public ResponseEntity<Imagem> upload(@RequestBody byte[] imagem, @RequestParam(value = "imageName", required = false) String imageName) {
     Imagem url = imagemService.uploadImage(imagem, imageName);
     return ResponseEntity.ok(url);
   }

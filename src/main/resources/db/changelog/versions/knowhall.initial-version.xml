@@ -37,7 +37,7 @@
       <column name="senha_hash" type="VARCHAR(255)">
         <constraints nullable="false"/>
       </column>
-      <column name="id_imagem_perfil" type="INTEGER"/>
+      <column name="id_imagem_perfil" type="BIGINT"/>
       <column name="status_usuario" type="VARCHAR(50)">
         <constraints nullable="false"/>
       </column>
