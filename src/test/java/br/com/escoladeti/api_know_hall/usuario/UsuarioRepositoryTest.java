@@ -91,4 +91,22 @@ class UsuarioRepositoryTest {
     Usuario deletedUsuario = entityManager.find(Usuario.class, id);
     assertNull(deletedUsuario);
   }
+
+  @Test
+  void findByEmail_WithExistingEmail_ShouldReturnUsuario() {
+    Usuario savedUsuario = entityManager.persistAndFlush(usuario);
+
+    Optional<Usuario> found = usuarioRepository.findByEmail(savedUsuario.getEmail());
+
+    assertTrue(found.isPresent());
+    assertEquals(savedUsuario.getEmail(), found.get().getEmail());
+  }
+
+  @Test
+  void findByEmail_WithNonExistingEmail_ShouldReturnEmpty() {
+    Optional<Usuario> found = usuarioRepository.findByEmail("naoexiste@test.com");
+
+    assertFalse(found.isPresent());
+  }
+
 }
