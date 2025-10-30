@@ -43,7 +43,9 @@ public class Usuario {
   private String senhaHash;
 
   @Column(name = "id_imagem_perfil")
-  private Integer idImagemPerfil;
+  @OneToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+  @JoinColumn(name = "id_imagem_perfil", referencedColumnName = "id")
+  private Imagem imagemPerfil;
 
   @Column(name = "status_usuario", nullable = false)
   @Enumerated(EnumType.STRING)
@@ -64,7 +66,7 @@ public class Usuario {
   public Usuario() {
   }
 
-  public Usuario(BigInteger id, String email, String cpf, String telefone, String telefone2, String nome, String biografia, String senhaHash, Integer idImagemPerfil, StatusUsuario statusUsuario, TipoUsuario tipoUsuario, List<Tag> tags) {
+  public Usuario(BigInteger id, String email, String cpf, String telefone, String telefone2, String nome, String biografia, String senhaHash, Imagem imagemPerfil, StatusUsuario statusUsuario, TipoUsuario tipoUsuario, List<Tag> tags) {
     this.id = id;
     this.email = email;
     this.cpf = cpf;
@@ -73,7 +75,7 @@ public class Usuario {
     this.nome = nome;
     this.biografia = biografia;
     this.senhaHash = senhaHash;
-    this.idImagemPerfil = idImagemPerfil;
+    this.imagemPerfil = imagemPerfil;
     this.statusUsuario = statusUsuario;
     this.tipoUsuario = tipoUsuario;
     this.tags = tags;
@@ -143,12 +145,12 @@ public class Usuario {
     this.senhaHash = senhaHash;
   }
 
-  public Integer getIdImagemPerfil() {
-    return idImagemPerfil;
+  public Imagem getImagemPerfil() {
+    return imagemPerfil;
   }
 
   public void setIdImagemPerfil(Integer idImagemPerfil) {
-    this.idImagemPerfil = idImagemPerfil;
+    this.imagemPerfil = imagemPerfil;
   }
 
   public StatusUsuario getStatusUsuario() {
@@ -184,7 +186,7 @@ public class Usuario {
     this.nome = dto.getNome();
     this.biografia = dto.getBiografia();
     this.senhaHash = dto.getSenha();
-    this.idImagemPerfil = dto.getIdImagemPerfil();
+    // this.imagemPerfil = dto.getImagemPerfil(); tem que mudar aq
     this.statusUsuario = StatusUsuario.CONFIRMACAO_PENDENTE;
     this.tipoUsuario = dto.getTipoUsuario();
     this.tags = dto.getTags();
@@ -198,7 +200,7 @@ public class Usuario {
     if (dto.getNome() != null) this.nome = dto.getNome();
     if (dto.getBiografia() != null) this.biografia = dto.getBiografia();
     if (dto.getSenha() != null) this.senhaHash = dto.getSenha();
-    if (dto.getIdImagemPerfil() != null) this.idImagemPerfil = dto.getIdImagemPerfil();
+    //if (dto.getImagemPerfil() != null) this.ImagemPerfil = dto.getImagemPerfil(); tem que mudar aq
     if (dto.getStatusUsuario() != null) this.statusUsuario = dto.getStatusUsuario();
     if (dto.getTipoUsuario() != null) this.tipoUsuario = dto.getTipoUsuario();
     if (dto.getTags() != null) {

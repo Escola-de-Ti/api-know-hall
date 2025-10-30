@@ -8,6 +8,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,7 +38,7 @@ public class UsuarioCreateDTO {
   @Size(min = 6, message = "Senha deve ter pelo menos 6 caracteres")
   private String senha;
 
-  private Integer idImagemPerfil;
+  private String imageBase64;
 
   @NotNull(message = "Tipo de usuário é obrigatório")
   private TipoUsuario tipoUsuario;
@@ -47,7 +48,7 @@ public class UsuarioCreateDTO {
   public UsuarioCreateDTO() {
   }
 
-  public UsuarioCreateDTO(String email, String cpf, String telefone, String telefone2, String nome, String biografia, String senha, Integer idImagemPerfil, TipoUsuario tipoUsuario, List<Tag> tags) {
+  public UsuarioCreateDTO(String email, String cpf, String telefone, String telefone2, String nome, String biografia, String senha, String imageBase64, TipoUsuario tipoUsuario, List<Tag> tags) {
     this.email = email;
     this.cpf = cpf;
     this.telefone = telefone;
@@ -55,7 +56,7 @@ public class UsuarioCreateDTO {
     this.nome = nome;
     this.biografia = biografia;
     this.senha = senha;
-    this.idImagemPerfil = idImagemPerfil;
+    this.imageBase64 = imageBase64;
     this.tipoUsuario = tipoUsuario;
     this.tags = tags;
   }
@@ -116,12 +117,12 @@ public class UsuarioCreateDTO {
     this.senha = senha;
   }
 
-  public Integer getIdImagemPerfil() {
-    return idImagemPerfil;
+  public String getimageBase64() {
+    return imageBase64;
   }
 
-  public void setIdImagemPerfil(Integer idImagemPerfil) {
-    this.idImagemPerfil = idImagemPerfil;
+  public void setimageBase64(Integer idImagemPerfil) {
+    this.imageBase64 = imageBase64;
   }
 
   public TipoUsuario getTipoUsuario() {

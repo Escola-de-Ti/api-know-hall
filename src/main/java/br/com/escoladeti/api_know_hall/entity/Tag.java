@@ -9,7 +9,6 @@ import java.math.BigInteger;
 
 @Entity
 @Table(name = "TAGS")
-
 public class Tag {
 
   @Id
