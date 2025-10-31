@@ -3,7 +3,9 @@ package br.com.escoladeti.api_know_hall.service;
 
 import br.com.escoladeti.api_know_hall.dto.ImageResponseDTO;
 import br.com.escoladeti.api_know_hall.entity.Imagem;
+import br.com.escoladeti.api_know_hall.repository.ImagemRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -28,6 +30,12 @@ public class ImagemService {
 
   private final ObjectMapper objectMapper = new ObjectMapper();
 
+  @Autowired
+  private ImagemRepository imagemRepository;
+
+  @Autowired
+  private UsuarioService usuarioService;
+
   public ImagemService(
     @Value("${supabase.url:${SUPABASE_URL:}}") String supabaseUrl,
     @Value("${supabase.token:${SUPABASE_TOKEN:}}") String token
@@ -45,9 +53,9 @@ public class ImagemService {
 
   }
 
-  public Imagem uploadImage(byte[] imageBytes, String imageName) {
+  public Imagem uploadImage(byte[] imageBytes, String imageName, String type) {
     try {
-      URI uri = URI.create(supabaseUrl + "/assets/" + imageName);
+      URI uri = URI.create(supabaseUrl + "/assets/" + type + "/" + imageName);
 
       HttpRequest request = HttpRequest.newBuilder()
         .uri(uri)
@@ -66,9 +74,15 @@ public class ImagemService {
 
       Imagem imagem = new Imagem();
       imagem.setNome(imageName);
-      imagem.setUrl(supabaseUrl + "/assets/" + imageName);
+      imagem.setUrl(String.valueOf(uri));
       imagem.setPath(imageResponse.key());
       imagem.setId_imagem(imageResponse.id());
+
+      imagemRepository.save(imagem);
+
+      if (type.equals("perfil")) {
+        usuarioService.atualizarImagemPerfil(imageName, imagem);
+      }
       return imagem;
 
     } catch (IOException | InterruptedException e) {
