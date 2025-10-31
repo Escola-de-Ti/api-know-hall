@@ -217,4 +217,13 @@ public interface PostRepository extends JpaRepository<Post, BigInteger> {
     @Param("pageSize") Integer pageSize,
     @Param("termo") String termo
   );
+
+  @Query(value = """
+        SELECT pt.post_id, t.id as tag_id, t.name as tag_name
+        FROM post_tags pt
+        JOIN tags t ON pt.tag_id = t.id
+        WHERE pt.post_id IN :postIds
+        ORDER BY pt.post_id, t.name
+        """, nativeQuery = true)
+  List<Object[]> findTagsByPostIds(@Param("postIds") List<BigInteger> postIds);
 }
