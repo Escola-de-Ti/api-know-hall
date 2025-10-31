@@ -60,7 +60,7 @@
       <tableExists tableName="TAGS"/>
     </preConditions>
     <createTable tableName="POST_TAGS">
-      <column name="post_id" type="INTEGER">
+      <column name="post_id" type="BIGINT">
         <constraints nullable="false"/>
       </column>
       <column name="tag_id" type="BIGINT">
@@ -88,7 +88,7 @@
       referencedTableName="TAGS"
       referencedColumnNames="id"
       onDelete="CASCADE"/>
-    <comment>Criação da tabela de relacionamento USUARIO_TAGS</comment>
+    <comment>Criação da tabela de relacionamento POST_TAGS</comment>
   </changeSet>
 
 </databaseChangeLog>
