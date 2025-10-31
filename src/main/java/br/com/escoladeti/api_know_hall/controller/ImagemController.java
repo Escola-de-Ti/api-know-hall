@@ -5,6 +5,8 @@ import br.com.escoladeti.api_know_hall.service.ImagemService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
+
 @RestController
 @RequestMapping("/storage")
 public class ImagemController {
@@ -16,8 +18,9 @@ public class ImagemController {
   }
 
   @PostMapping("/upload")
-  public ResponseEntity<Imagem> upload(@RequestBody byte[] imagem, @RequestParam(value = "imageName", required = false) String imageName) {
-    Imagem url = imagemService.uploadImage(imagem, imageName);
+  public ResponseEntity<Imagem> upload(@RequestBody byte[] imagem, Principal principal) {
+
+    Imagem url = imagemService.uploadImage(imagem, principal.getName());
     return ResponseEntity.ok(url);
   }
 }

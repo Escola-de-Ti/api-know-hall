@@ -1,7 +1,9 @@
 // java
 package br.com.escoladeti.api_know_hall.service;
 
+import br.com.escoladeti.api_know_hall.dto.ImageResponseDTO;
 import br.com.escoladeti.api_know_hall.entity.Imagem;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +15,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.Date;
 
 @Service
 public class ImagemService {
@@ -23,6 +26,7 @@ public class ImagemService {
 
   private final HttpClient httpClient;
 
+  private final ObjectMapper objectMapper = new ObjectMapper();
 
   public ImagemService(
     @Value("${supabase.url:${SUPABASE_URL:}}") String supabaseUrl,
@@ -43,10 +47,7 @@ public class ImagemService {
 
   public Imagem uploadImage(byte[] imageBytes, String imageName) {
     try {
-      String encodedName = URLEncoder.encode(imageName, StandardCharsets.UTF_8);
-
-
-      URI uri = URI.create(supabaseUrl + "/assets/" + encodedName);
+      URI uri = URI.create(supabaseUrl + "/assets/" + imageName);
 
       HttpRequest request = HttpRequest.newBuilder()
         .uri(uri)
@@ -57,17 +58,17 @@ public class ImagemService {
         .build();
 
       HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-
+      ImageResponseDTO imageResponse = objectMapper.readValue(response.body(), ImageResponseDTO.class);
 
       if (response.statusCode() < 200 || response.statusCode() >= 300) {
         throw new IllegalStateException("Falha ao enviar imagem para Supabase. Status: " + response.statusCode() + " Body: " + response.body());
       }
 
-      
       Imagem imagem = new Imagem();
       imagem.setNome(imageName);
-      imagem.setUrl(supabaseUrl + "/assets/" + encodedName);
-      imagem.setPath("/assets/" + encodedName);
+      imagem.setUrl(supabaseUrl + "/assets/" + imageName);
+      imagem.setPath(imageResponse.key());
+      imagem.setId_imagem(imageResponse.id());
       return imagem;
 
     } catch (IOException | InterruptedException e) {
