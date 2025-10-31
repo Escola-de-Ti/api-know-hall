@@ -31,11 +31,11 @@ public class WorkshopCreateDTO {
   private String linkMeet;
 
   @NotNull(message = "Data de início é obrigatória")
-  @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
+  @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "UTC")
   private Timestamp dataInicio;
 
   @NotNull(message = "Data de término é obrigatória")
-  @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
+  @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "UTC")
   private Timestamp dataTermino;
 
   @Valid
