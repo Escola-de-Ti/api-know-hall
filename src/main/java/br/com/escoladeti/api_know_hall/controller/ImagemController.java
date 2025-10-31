@@ -5,6 +5,7 @@ import br.com.escoladeti.api_know_hall.service.ImagemService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigInteger;
 import java.security.Principal;
 
 @RestController
@@ -22,5 +23,12 @@ public class ImagemController {
 
     Imagem url = imagemService.uploadImage(imagem, principal.getName(), type);
     return ResponseEntity.ok(url);
+  }
+
+  @DeleteMapping("/delete/{id}")
+  public ResponseEntity<Void> delete(@PathVariable BigInteger id) {
+
+    imagemService.deleteImage(id);
+    return ResponseEntity.noContent().build();
   }
 }

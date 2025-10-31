@@ -20,7 +20,7 @@ public class Imagem {
   private String url;
 
   @Column(name = "id_imagem")
-  private String id_imagem;
+  private String idImagem;
 
   @Column(name = "path", nullable = false)
   private String path;
@@ -28,11 +28,11 @@ public class Imagem {
   public Imagem() {
   }
 
-  public Imagem(BigInteger id, String nome, String url, String id_imagem, String path) {
+  public Imagem(BigInteger id, String nome, String url, String idImagem, String path) {
     this.id = id;
     this.nome = nome;
     this.url = url;
-    this.id_imagem = id_imagem;
+    this.idImagem = idImagem;
     this.path = path;
   }
 
@@ -60,12 +60,12 @@ public class Imagem {
     this.url = url;
   }
 
-  public String getId_imagem() {
-    return id_imagem;
+  public String getIdImagem() {
+    return idImagem;
   }
 
-  public void setId_imagem(String id_imagem) {
-    this.id_imagem = id_imagem;
+  public void setIdImagem(String idImagem) {
+    this.idImagem = idImagem;
   }
 
   public String getPath() {
