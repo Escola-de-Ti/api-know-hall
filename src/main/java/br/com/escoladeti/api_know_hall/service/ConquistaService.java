@@ -76,10 +76,6 @@ public class ConquistaService {
     uc.setDataObtencao(LocalDateTime.now());
 
     usuarioConquistaRepository.save(uc);
-
-    // Aqui você pode adicionar lógica para notificar o usuário, enviar email, etc.
-    System.out.println("🏆 " + usuario.getNome() + " conquistou: " +
-      tier.getConquista().getNome() + " - " + tier.getTier().name());
   }
 
   /**
