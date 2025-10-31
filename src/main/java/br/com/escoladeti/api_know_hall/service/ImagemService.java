@@ -88,7 +88,7 @@ public class ImagemService {
 
     } catch (IOException | InterruptedException e) {
       Thread.currentThread().interrupt();
-      throw new RuntimeException("Erro ao enviar imagem para Supabase", e);
+      throw new IllegalStateException("Erro ao enviar imagem para Supabase", e);
     }
   }
 
