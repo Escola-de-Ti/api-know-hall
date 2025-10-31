@@ -1,6 +1,9 @@
 package br.com.escoladeti.api_know_hall.tags;
 
 import br.com.escoladeti.api_know_hall.controller.TagsController;
+import br.com.escoladeti.api_know_hall.config.JwtAuthenticationFilter;
+import br.com.escoladeti.api_know_hall.config.JwtTokenService;
+import br.com.escoladeti.api_know_hall.config.SecurityConfig;
 import br.com.escoladeti.api_know_hall.dto.tags.TagCreateDTO;
 import br.com.escoladeti.api_know_hall.entity.Tag;
 
@@ -11,7 +14,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureWebMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
@@ -28,7 +35,19 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(controllers = TagsController.class, excludeAutoConfiguration = SecurityAutoConfiguration.class)
+@WebMvcTest(
+  controllers = TagsController.class,
+  excludeAutoConfiguration = {
+    SecurityAutoConfiguration.class,
+    org.springframework.boot.autoconfigure.security.servlet.SecurityFilterAutoConfiguration.class
+  },
+  excludeFilters = {
+    @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = SecurityConfig.class),
+    @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = JwtAuthenticationFilter.class)
+  }
+)
+@AutoConfigureWebMvc
+@org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc(addFilters = false)
 @Import(GlobalExceptionHandler.class)  // ✅ IMPORTANTE
 @ActiveProfiles("test")
 class TagsControllerTest {
@@ -41,6 +60,12 @@ class TagsControllerTest {
 
   @MockitoBean
   private TagsService tagsService;
+
+  @MockBean
+  private JwtAuthenticationFilter jwtAuthenticationFilter;
+
+  @MockBean
+  private JwtTokenService jwtTokenService;
 
   @Test
   void deveCriarTagComSucesso() throws Exception {

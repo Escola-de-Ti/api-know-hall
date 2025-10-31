@@ -1,13 +1,14 @@
 package br.com.escoladeti.api_know_hall.dto.tags;
 
 import br.com.escoladeti.api_know_hall.entity.Tag;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigInteger;
 
+@Setter
+@Getter
 @Builder
 public class TagResponseDTO {
 
@@ -20,22 +21,6 @@ public class TagResponseDTO {
   }
 
   public TagResponseDTO() {
-  }
-
-  public BigInteger getId() {
-    return id;
-  }
-
-  public void setId(BigInteger id) {
-    this.id = id;
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
   }
 
   public static TagResponseDTO fromEntity(Tag tag) {

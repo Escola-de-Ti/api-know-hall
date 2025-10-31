@@ -1,16 +1,18 @@
 package br.com.escoladeti.api_know_hall.entity;
 
 import br.com.escoladeti.api_know_hall.dto.UsuarioCreateDTO;
+import br.com.escoladeti.api_know_hall.dto.UsuarioUpdateDTO;
 import br.com.escoladeti.api_know_hall.entity.conquista.ConquistaTier;
 import br.com.escoladeti.api_know_hall.entity.conquista.UsuarioConquista;
 import br.com.escoladeti.api_know_hall.enums.StatusUsuario;
 import br.com.escoladeti.api_know_hall.enums.TierConquista;
 import br.com.escoladeti.api_know_hall.enums.TipoUsuario;
-import br.com.escoladeti.api_know_hall.dto.UsuarioUpdateDTO;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -25,7 +27,7 @@ import java.util.Optional;
 public class Usuario {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.AUTO)
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "id", nullable = false)
   private BigInteger id;
 
