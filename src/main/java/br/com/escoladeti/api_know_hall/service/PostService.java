@@ -8,6 +8,7 @@ import br.com.escoladeti.api_know_hall.entity.Usuario;
 import br.com.escoladeti.api_know_hall.enums.OrdenacaoTipo;
 import br.com.escoladeti.api_know_hall.projection.post.PostBuscaProjection;
 import br.com.escoladeti.api_know_hall.projection.post.PostFeedProjection;
+import br.com.escoladeti.api_know_hall.projection.tag.PostTagProjection;
 import br.com.escoladeti.api_know_hall.repository.PostRepository;
 import br.com.escoladeti.api_know_hall.repository.TagsRepository;
 import br.com.escoladeti.api_know_hall.repository.UsuarioRepository;
@@ -180,13 +181,16 @@ public class PostService {
       .map(PostFeedProjection::getId)
       .collect(Collectors.toList());
 
-    List<Object[]> tagsData = postRepository.findTagsByPostIds(postIds);
+    List<PostTagProjection> tagsData = postRepository.findTagsByPostIds(postIds);
 
     return tagsData.stream()
       .collect(Collectors.groupingBy(
-        row -> (BigInteger) row[0], // post_id
+        PostTagProjection::getPostId,
         Collectors.mapping(
-          row -> new TagResponseDTO((BigInteger) row[1], (String) row[2]),
+          projection -> new TagResponseDTO(
+            projection.getTagId(),
+            projection.getTagName()
+          ),
           Collectors.toList()
         )
       ));
