@@ -51,7 +51,7 @@
     <comment>Criação da tabela de relacionamento USUARIO_TAGS</comment>
   </changeSet>
 
-  <changeSet id="KH-4" author="Willyan Tomaz">
+  <changeSet id="KH-25" author="Willyan Tomaz">
     <preConditions onFail="MARK_RAN">
       <not>
         <tableExists tableName="IMAGEM"/>
@@ -75,7 +75,7 @@
     <comment>Criação da tabela IMAGEM</comment>
   </changeSet>
 
-  <changeSet id="KH-6" author="Willyan Tomaz">
+  <changeSet id="KH-26" author="Willyan Tomaz">
     <preConditions onFail="MARK_RAN">
       <and>
         <tableExists tableName="USUARIO"/>

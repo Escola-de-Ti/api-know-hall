@@ -26,7 +26,7 @@ services:
       SPRING_DATASOURCE_PASSWORD: senhaLocal
       BOOLEAN_SQL: "true"
       JWT_SECRET: Q^F9m4n+BMzPQBh!C5Bk
-      SUPABASE_TOKEN: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5nY3BuZWxlYXlmdmdiaWtkamNmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg4MDAzNTAsImV4cCI6MjA3NDM3NjM1MH0._N1Z7zq5rq5zuzNG_O-C3xnr2azv4Fus9zWCCkFR5J0
+      SUPABASE_TOKEN: "${SUPABASE_TOKEN}"
     ports:
       - "8080:8080"
     depends_on:

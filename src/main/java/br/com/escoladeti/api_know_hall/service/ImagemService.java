@@ -111,6 +111,8 @@ public class ImagemService {
         throw new IllegalStateException("Falha ao deletar imagem do Supabase. Status: " + response.statusCode() + " Body: " + response.body());
       }
 
+      imagemRepository.deleteById(imagem.getId());
+
     } catch (IOException | InterruptedException e) {
       Thread.currentThread().interrupt();
       throw new RuntimeException("Erro ao deletar imagem do Supabase", e);
