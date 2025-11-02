@@ -57,6 +57,309 @@
     <comment>Criação da tabela TAGS</comment>
   </changeSet>
 
+  <changeSet id="KH-4" author="GABRIEL MARASSI">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <tableExists tableName="CONQUISTA"/>
+      </not>
+    </preConditions>
+    <createTable tableName="CONQUISTA">
+      <column name="id" type="BIGSERIAL">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+      <column name="tipo_conquista" type="VARCHAR(20)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="campo_validacao" type="VARCHAR(100)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="nome" type="VARCHAR(255)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="descricao" type="TEXT">
+        <constraints nullable="true"/>
+      </column>
+      <column name="icone_url" type="VARCHAR(500)">
+        <constraints nullable="true"/>
+      </column>
+    </createTable>
+    <comment>Criação da tabela CONQUISTA</comment>
+    <rollback>
+      <dropTable tableName="CONQUISTA"/>
+    </rollback>
+  </changeSet>
+
+  <changeSet id="KH-5" author="GABRIEL MARASSI">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <tableExists tableName="CONQUISTA_TIER"/>
+      </not>
+    </preConditions>
+    <createTable tableName="CONQUISTA_TIER">
+      <column name="id" type="BIGSERIAL">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+      <column name="conquista_id" type="BIGINT">
+        <constraints nullable="false"/>
+      </column>
+      <column name="tier" type="VARCHAR(20)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="quantidade_necessaria" type="INT">
+        <constraints nullable="false"/>
+      </column>
+      <column name="descricao_tier" type="VARCHAR(500)">
+        <constraints nullable="true"/>
+      </column>
+    </createTable>
+    <comment>Criação da tabela CONQUISTA_TIER</comment>
+    <rollback>
+      <dropTable tableName="CONQUISTA_TIER"/>
+    </rollback>
+  </changeSet>
+
+  <changeSet id="KH-6" author="GABRIEL MARASSI">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <foreignKeyConstraintExists foreignKeyName="fk_conquista_tier_conquista"/>
+      </not>
+    </preConditions>
+    <addForeignKeyConstraint
+      baseTableName="CONQUISTA_TIER"
+      baseColumnNames="conquista_id"
+      constraintName="fk_conquista_tier_conquista"
+      referencedTableName="CONQUISTA"
+      referencedColumnNames="id"
+      onDelete="CASCADE"/>
+    <comment>Adicionar FK entre CONQUISTA_TIER e CONQUISTA</comment>
+    <rollback>
+      <dropForeignKeyConstraint
+        baseTableName="CONQUISTA_TIER"
+        constraintName="fk_conquista_tier_conquista"/>
+    </rollback>
+  </changeSet>
+
+  <changeSet id="KH-7" author="GABRIEL MARASSI">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <uniqueConstraintExists tableName="CONQUISTA_TIER" constraintName="uk_conquista_tier"/>
+      </not>
+    </preConditions>
+    <addUniqueConstraint
+      tableName="CONQUISTA_TIER"
+      columnNames="conquista_id, tier"
+      constraintName="uk_conquista_tier"/>
+    <comment>Adicionar constraint única (conquista_id, tier) em CONQUISTA_TIER</comment>
+    <rollback>
+      <dropUniqueConstraint
+        tableName="CONQUISTA_TIER"
+        constraintName="uk_conquista_tier"/>
+    </rollback>
+  </changeSet>
+
+  <changeSet id="KH-8" author="GABRIEL MARASSI">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <tableExists tableName="USUARIO_CONQUISTA"/>
+      </not>
+    </preConditions>
+    <createTable tableName="USUARIO_CONQUISTA">
+      <column name="id" type="BIGSERIAL">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+      <column name="usuario_id" type="BIGINT">
+        <constraints nullable="false"/>
+      </column>
+      <column name="conquista_id" type="BIGINT">
+        <constraints nullable="false"/>
+      </column>
+      <column name="conquista_tier_id" type="BIGINT">
+        <constraints nullable="false"/>
+      </column>
+      <column name="data_obtencao" type="TIMESTAMP">
+        <constraints nullable="false"/>
+      </column>
+      <column name="progresso_atual" type="INT">
+        <constraints nullable="true"/>
+      </column>
+    </createTable>
+    <comment>Criação da tabela USUARIO_CONQUISTA</comment>
+    <rollback>
+      <dropTable tableName="USUARIO_CONQUISTA"/>
+    </rollback>
+  </changeSet>
+
+  <changeSet id="KH-9" author="GABRIEL MARASSI">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <foreignKeyConstraintExists foreignKeyName="fk_usuario_conquista_usuario"/>
+      </not>
+    </preConditions>
+    <addForeignKeyConstraint
+      baseTableName="USUARIO_CONQUISTA"
+      baseColumnNames="usuario_id"
+      constraintName="fk_usuario_conquista_usuario"
+      referencedTableName="USUARIO"
+      referencedColumnNames="id"
+      onDelete="CASCADE"/>
+    <comment>Adicionar FK entre USUARIO_CONQUISTA e USUARIO</comment>
+    <rollback>
+      <dropForeignKeyConstraint
+        baseTableName="USUARIO_CONQUISTA"
+        constraintName="fk_usuario_conquista_usuario"/>
+    </rollback>
+  </changeSet>
+
+  <changeSet id="KH-10" author="GABRIEL MARASSI">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <foreignKeyConstraintExists foreignKeyName="fk_usuario_conquista_conquista"/>
+      </not>
+    </preConditions>
+    <addForeignKeyConstraint
+      baseTableName="USUARIO_CONQUISTA"
+      baseColumnNames="conquista_id"
+      constraintName="fk_usuario_conquista_conquista"
+      referencedTableName="CONQUISTA"
+      referencedColumnNames="id"
+      onDelete="CASCADE"/>
+    <comment>Adicionar FK entre USUARIO_CONQUISTA e CONQUISTA</comment>
+    <rollback>
+      <dropForeignKeyConstraint
+        baseTableName="USUARIO_CONQUISTA"
+        constraintName="fk_usuario_conquista_conquista"/>
+    </rollback>
+  </changeSet>
+
+  <changeSet id="KH-11" author="GABRIEL MARASSI">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <foreignKeyConstraintExists foreignKeyName="fk_usuario_conquista_tier"/>
+      </not>
+    </preConditions>
+    <addForeignKeyConstraint
+      baseTableName="USUARIO_CONQUISTA"
+      baseColumnNames="conquista_tier_id"
+      constraintName="fk_usuario_conquista_tier"
+      referencedTableName="CONQUISTA_TIER"
+      referencedColumnNames="id"
+      onDelete="CASCADE"/>
+    <comment>Adicionar FK entre USUARIO_CONQUISTA e CONQUISTA_TIER</comment>
+    <rollback>
+      <dropForeignKeyConstraint
+        baseTableName="USUARIO_CONQUISTA"
+        constraintName="fk_usuario_conquista_tier"/>
+    </rollback>
+  </changeSet>
+
+  <changeSet id="KH-12" author="GABRIEL MARASSI">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <uniqueConstraintExists tableName="USUARIO_CONQUISTA" constraintName="uk_usuario_conquista_tier"/>
+      </not>
+    </preConditions>
+    <addUniqueConstraint
+      tableName="USUARIO_CONQUISTA"
+      columnNames="usuario_id, conquista_tier_id"
+      constraintName="uk_usuario_conquista_tier"/>
+    <comment>Adicionar constraint única (usuario_id, conquista_tier_id) em USUARIO_CONQUISTA</comment>
+    <rollback>
+      <dropUniqueConstraint
+        tableName="USUARIO_CONQUISTA"
+        constraintName="uk_usuario_conquista_tier"/>
+    </rollback>
+  </changeSet>
+
+  <changeSet id="KH-13" author="GABRIEL MARASSI">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <indexExists tableName="CONQUISTA" indexName="idx_conquista_tipo"/>
+      </not>
+    </preConditions>
+    <createIndex tableName="CONQUISTA" indexName="idx_conquista_tipo">
+      <column name="tipo_conquista"/>
+    </createIndex>
+    <comment>Criar índice para buscar conquistas por tipo</comment>
+    <rollback>
+      <dropIndex tableName="CONQUISTA" indexName="idx_conquista_tipo"/>
+    </rollback>
+  </changeSet>
+
+  <changeSet id="KH-14" author="GABRIEL MARASSI">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <indexExists tableName="CONQUISTA" indexName="idx_conquista_campo_validacao"/>
+      </not>
+    </preConditions>
+    <createIndex tableName="CONQUISTA" indexName="idx_conquista_campo_validacao">
+      <column name="campo_validacao"/>
+    </createIndex>
+    <comment>Criar índice para buscar conquistas por campo de validação</comment>
+    <rollback>
+      <dropIndex tableName="CONQUISTA" indexName="idx_conquista_campo_validacao"/>
+    </rollback>
+  </changeSet>
+
+  <changeSet id="KH-15" author="GABRIEL MARASSI">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <indexExists tableName="CONQUISTA_TIER" indexName="idx_conquista_tier_conquista"/>
+      </not>
+    </preConditions>
+    <createIndex tableName="CONQUISTA_TIER" indexName="idx_conquista_tier_conquista">
+      <column name="conquista_id"/>
+    </createIndex>
+    <comment>Criar índice para buscar tiers por conquista</comment>
+    <rollback>
+      <dropIndex tableName="CONQUISTA_TIER" indexName="idx_conquista_tier_conquista"/>
+    </rollback>
+  </changeSet>
+
+  <changeSet id="KH-16" author="GABRIEL MARASSI">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <indexExists tableName="USUARIO_CONQUISTA" indexName="idx_usuario_conquista_usuario"/>
+      </not>
+    </preConditions>
+    <createIndex tableName="USUARIO_CONQUISTA" indexName="idx_usuario_conquista_usuario">
+      <column name="usuario_id"/>
+    </createIndex>
+    <comment>Criar índice para buscar conquistas por usuário</comment>
+    <rollback>
+      <dropIndex tableName="USUARIO_CONQUISTA" indexName="idx_usuario_conquista_usuario"/>
+    </rollback>
+  </changeSet>
+
+  <changeSet id="KH-17" author="GABRIEL MARASSI">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <indexExists tableName="USUARIO_CONQUISTA" indexName="idx_usuario_conquista_conquista"/>
+      </not>
+    </preConditions>
+    <createIndex tableName="USUARIO_CONQUISTA" indexName="idx_usuario_conquista_conquista">
+      <column name="conquista_id"/>
+    </createIndex>
+    <comment>Criar índice para buscar usuários por conquista</comment>
+    <rollback>
+      <dropIndex tableName="USUARIO_CONQUISTA" indexName="idx_usuario_conquista_conquista"/>
+    </rollback>
+  </changeSet>
+
+  <changeSet id="KH-18" author="GABRIEL MARASSI">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <indexExists tableName="USUARIO_CONQUISTA" indexName="idx_usuario_conquista_data"/>
+      </not>
+    </preConditions>
+    <createIndex tableName="USUARIO_CONQUISTA" indexName="idx_usuario_conquista_data">
+      <column name="data_obtencao"/>
+    </createIndex>
+    <comment>Criar índice para buscar por data de obtenção</comment>
+    <rollback>
+      <dropIndex tableName="USUARIO_CONQUISTA" indexName="idx_usuario_conquista_data"/>
+    </rollback>
+  </changeSet>
+
   <changeSet id="KH-19" author="Gabriel Marassi">
     <preConditions onFail="MARK_RAN">
       <not>
