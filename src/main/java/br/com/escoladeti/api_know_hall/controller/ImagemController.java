@@ -9,7 +9,7 @@ import java.math.BigInteger;
 import java.security.Principal;
 
 @RestController
-@RequestMapping("/storage")
+@RequestMapping("/api/imagem")
 public class ImagemController {
 
   private final ImagemService imagemService;

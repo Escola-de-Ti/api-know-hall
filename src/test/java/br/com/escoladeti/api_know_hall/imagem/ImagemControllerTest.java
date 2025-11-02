@@ -44,7 +44,7 @@ public class ImagemControllerTest {
     Imagem imagem = new Imagem(BigInteger.ONE, principalName, "url", "idImagem", "path");
     when(imagemService.uploadImage(eq(imageBytes), eq(principalName), eq(type))).thenReturn(imagem);
 
-    mockMvc.perform(post("/storage/upload")
+    mockMvc.perform(post("/api/imagem/upload")
         .content(imageBytes)
         .contentType(MediaType.APPLICATION_OCTET_STREAM)
         .param("type", type)
@@ -63,7 +63,7 @@ public class ImagemControllerTest {
     String principalName = "user123";
     when(imagemService.uploadImage(any(), any(), any())).thenThrow(new RuntimeException("erro"));
 
-    mockMvc.perform(post("/storage/upload")
+    mockMvc.perform(post("/api/imagem/upload")
         .content(imageBytes)
         .contentType(MediaType.APPLICATION_OCTET_STREAM)
         .param("type", type)
@@ -76,7 +76,7 @@ public class ImagemControllerTest {
     BigInteger id = BigInteger.ONE;
     doNothing().when(imagemService).deleteImage(id);
 
-    mockMvc.perform(delete("/storage/delete/{id}", id))
+    mockMvc.perform(delete("/api/imagem/delete/{id}", id))
       .andExpect(status().isNoContent());
   }
 
@@ -85,7 +85,7 @@ public class ImagemControllerTest {
     BigInteger id = BigInteger.ONE;
     doThrow(new RuntimeException("erro")).when(imagemService).deleteImage(id);
 
-    mockMvc.perform(delete("/storage/delete/{id}", id))
+    mockMvc.perform(delete("/api/imagem/delete/{id}", id))
       .andExpect(status().isInternalServerError());
   }
 }
