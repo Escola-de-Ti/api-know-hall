@@ -26,7 +26,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
- 
+
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigInteger;
@@ -96,13 +96,13 @@ class UsuarioControllerTest {
     usuarioUpdateDTO.setEmail("updated@test.com");
     usuarioUpdateDTO.setNome("Updated User");
   }
-  
+
   @Test
   void getAllUsuarios_ShouldReturnListOfUsuarios() throws Exception {
     List<Usuario> usuarios = Arrays.asList(usuario);
     when(usuarioService.getAllUsuarios()).thenReturn(usuarios);
 
-    mockMvc.perform(get("/usuarios"))
+    mockMvc.perform(get("/api/usuarios"))
       .andExpect(status().isOk())
       .andExpect(content().contentType(MediaType.APPLICATION_JSON))
       .andExpect(jsonPath("$[0].email").value("test@test.com"))
@@ -115,7 +115,7 @@ class UsuarioControllerTest {
   void getUsuarioById_WithValidId_ShouldReturnUsuario() throws Exception {
     when(usuarioService.getUsuarioById(BigInteger.valueOf(1))).thenReturn(usuario);
 
-    mockMvc.perform(get("/usuarios/1"))
+    mockMvc.perform(get("/api/usuarios/1"))
       .andExpect(status().isOk())
       .andExpect(content().contentType(MediaType.APPLICATION_JSON))
       .andExpect(jsonPath("$.email").value("test@test.com"))
@@ -129,7 +129,7 @@ class UsuarioControllerTest {
     when(usuarioService.getUsuarioById(BigInteger.valueOf(999)))
       .thenThrow(new EntityNotFoundException("Usuario não encontrado"));
 
-    mockMvc.perform(get("/usuarios/999"))
+    mockMvc.perform(get("/api/usuarios/999"))
       .andExpect(status().isNotFound());
 
     verify(usuarioService, times(1)).getUsuarioById(BigInteger.valueOf(999));
@@ -139,7 +139,7 @@ class UsuarioControllerTest {
   void createUsuario_WithValidData_ShouldReturnCreatedUsuario() throws Exception {
     when(usuarioService.createUsuario(any(UsuarioCreateDTO.class))).thenReturn(usuario);
 
-    mockMvc.perform(post("/usuarios")
+    mockMvc.perform(post("/api/usuarios")
         .contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(usuarioCreateDTO)))
       .andExpect(status().isCreated())
@@ -154,7 +154,7 @@ class UsuarioControllerTest {
   void updateUsuario_WithValidData_ShouldReturnUpdatedUsuario() throws Exception {
     when(usuarioService.updateUsuario(eq(BigInteger.valueOf(1)), any(UsuarioUpdateDTO.class))).thenReturn(usuario);
 
-    mockMvc.perform(put("/usuarios/1")
+    mockMvc.perform(put("/api/usuarios/1")
         .contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(usuarioUpdateDTO)))
       .andExpect(status().isOk())
@@ -169,7 +169,7 @@ class UsuarioControllerTest {
     when(usuarioService.updateUsuario(eq(BigInteger.valueOf(999)), any(UsuarioUpdateDTO.class)))
       .thenThrow(new jakarta.persistence.EntityNotFoundException());
 
-    mockMvc.perform(put("/usuarios/999")
+    mockMvc.perform(put("/api/usuarios/999")
         .contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(usuarioUpdateDTO)))
       .andExpect(status().isNotFound());
@@ -182,7 +182,7 @@ class UsuarioControllerTest {
     when(usuarioService.updateUsuario(eq(BigInteger.valueOf(1)), any(UsuarioUpdateDTO.class)))
       .thenThrow(new RuntimeException("Database error"));
 
-    mockMvc.perform(put("/usuarios/1")
+    mockMvc.perform(put("/api/usuarios/1")
         .contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(usuarioUpdateDTO)))
       .andExpect(status().isInternalServerError());
@@ -194,7 +194,7 @@ class UsuarioControllerTest {
   void deleteUsuario_ShouldReturnNoContent() throws Exception {
     doNothing().when(usuarioService).deleteUsuario(BigInteger.valueOf(1));
 
-    mockMvc.perform(delete("/usuarios/1"))
+    mockMvc.perform(delete("/api/usuarios/1"))
       .andExpect(status().isNoContent());
 
     verify(usuarioService, times(1)).deleteUsuario(BigInteger.valueOf(1));
@@ -204,7 +204,7 @@ class UsuarioControllerTest {
   void deleteUsuario_WhenServiceThrowsException_ShouldReturnInternalServerError() throws Exception {
     doThrow(new RuntimeException("Database error")).when(usuarioService).deleteUsuario(BigInteger.valueOf(1));
 
-    mockMvc.perform(delete("/usuarios/1"))
+    mockMvc.perform(delete("/api/usuarios/1"))
       .andExpect(status().isInternalServerError());
 
     verify(usuarioService, times(1)).deleteUsuario(BigInteger.valueOf(1));
@@ -214,7 +214,7 @@ class UsuarioControllerTest {
   void getAllUsuarios_WhenServiceThrowsException_ShouldReturnInternalServerError() throws Exception {
     when(usuarioService.getAllUsuarios()).thenThrow(new RuntimeException("Database error"));
 
-    mockMvc.perform(get("/usuarios"))
+    mockMvc.perform(get("/api/usuarios"))
       .andExpect(status().isInternalServerError());
 
     verify(usuarioService, times(1)).getAllUsuarios();
@@ -226,7 +226,7 @@ class UsuarioControllerTest {
 
     UsuarioLoginDTO loginDTO = new UsuarioLoginDTO("test@test.com", "senha");
 
-    mockMvc.perform(post("/usuarios/login")
+    mockMvc.perform(post("/api/usuarios/login")
         .contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(loginDTO)))
       .andExpect(status().isOk())
@@ -244,7 +244,7 @@ class UsuarioControllerTest {
 
     UsuarioLoginDTO loginDTO = new UsuarioLoginDTO("naoexiste@test.com", "qualquer");
 
-    mockMvc.perform(post("/usuarios/login")
+    mockMvc.perform(post("/api/usuarios/login")
         .contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(loginDTO)))
       .andExpect(status().isNotFound());
@@ -258,7 +258,7 @@ class UsuarioControllerTest {
 
     UsuarioLoginDTO loginDTO = new UsuarioLoginDTO("test@test.com", "senha");
 
-    mockMvc.perform(post("/usuarios/login")
+    mockMvc.perform(post("/api/usuarios/login")
         .contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(loginDTO)))
       .andExpect(status().isForbidden());
