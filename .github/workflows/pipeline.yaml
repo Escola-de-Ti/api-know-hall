@@ -27,7 +27,7 @@ jobs:
       - name: Build and test with Maven (Dev)
         env:
           SPRING_PROFILES_ACTIVE: test
-        run: mvn -B clean verify -e --fail-at-end --no-transfer-progress
+        run: mvn -B clean verify -e -X --fail-at-end
 
   build-and-test-prod:
     if: github.ref == 'refs/heads/master'
