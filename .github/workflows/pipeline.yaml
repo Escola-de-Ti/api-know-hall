@@ -27,7 +27,19 @@ jobs:
       - name: Build and test with Maven (Dev)
         env:
           SPRING_PROFILES_ACTIVE: test
+          DATABASE_URL: jdbc:h2:mem:testdb  # ADICIONE
+          JWT_SECRET: teste-secret-123456
         run: mvn -B clean verify -e -X --fail-at-end
+      - name: Upload test reports on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports-dev
+          path: |
+            **/target/surefire-reports/
+            **/target/*.dump
+            **/target/*.dumpstream
+          retention-days: 5
 
   build-and-test-prod:
     if: github.ref == 'refs/heads/master'
