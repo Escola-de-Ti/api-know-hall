@@ -4,6 +4,7 @@ import br.com.escoladeti.api_know_hall.config.JwtTokenService;
 import br.com.escoladeti.api_know_hall.dto.JwtTokenDTO;
 import br.com.escoladeti.api_know_hall.dto.UsuarioCreateDTO;
 import br.com.escoladeti.api_know_hall.dto.UsuarioUpdateDTO;
+import br.com.escoladeti.api_know_hall.entity.Imagem;
 import br.com.escoladeti.api_know_hall.entity.Usuario;
 import br.com.escoladeti.api_know_hall.enums.StatusUsuario;
 import br.com.escoladeti.api_know_hall.exception.UsuarioInativoException;
@@ -63,5 +64,12 @@ public class UsuarioService {
 
   public JwtTokenDTO refreshToken(String refreshToken) {
     return jwtTokenService.refreshTokens(refreshToken);
+  }
+
+  public void atualizarImagemPerfil(String email, Imagem imagem) {
+    Usuario usuario = usuarioRepository.findByEmail(email)
+      .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+    usuario.setImagemPerfil(imagem);
+    usuarioRepository.save(usuario);
   }
 }

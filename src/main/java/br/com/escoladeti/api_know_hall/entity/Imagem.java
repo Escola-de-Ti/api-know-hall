@@ -8,18 +8,27 @@ import lombok.NoArgsConstructor;
 import java.math.BigInteger;
 
 @Entity
-@Table(name = "TAGS")
+@Table(name = "IMAGEM")
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class Tag {
+public class Imagem {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "id", nullable = false)
   private BigInteger id;
 
-  @Column(name = "name")
-  private String name;
+  @Column(name = "nome", nullable = false)
+  private String nome;
+
+  @Column(name = "url", nullable = false)
+  private String url;
+
+  @Column(name = "id_imagem")
+  private String idImagem;
+
+  @Column(name = "path", nullable = false)
+  private String path;
 
 }
