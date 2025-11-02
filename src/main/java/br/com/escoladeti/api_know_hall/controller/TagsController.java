@@ -31,8 +31,10 @@ public class TagsController {
   }
 
   @GetMapping("/popular")
-  public ResponseEntity<List<TagResponseDTO>> getMostPopularTags() {
-    List<Tag> tags = tagsService.findMostPopular(10);
+  public ResponseEntity<List<TagResponseDTO>> getMostPopularTags(
+    @RequestParam(defaultValue = "10") Integer quantidade) {
+
+    List<Tag> tags = tagsService.findMostPopular(quantidade);
     List<TagResponseDTO> response = tags.stream()
       .map(TagResponseDTO::fromEntity)
       .collect(Collectors.toList());
