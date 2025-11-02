@@ -37,16 +37,6 @@ public interface UsuarioConquistaRepository extends JpaRepository<UsuarioConquis
         )
   List<UsuarioConquista> findByUsuarioIdWithDetails(@Param("usuarioId") BigInteger usuarioId);
 
-//  @Query(nativeQuery = true,
-//    value = "SELECT uc.* " +
-//            "FROM USUARIO_CONQUISTA uc " +
-//            "INNER JOIN CONQUISTA c ON uc.conquista_id = c.id " +
-//            "INNER JOIN WORKSHOP w ON c.workshop_id = w.id " +
-//            "WHERE uc.usuario_id = :usuarioId " +
-//            " AND c.tipo_conquista = 'CERTIFICADO'"
-//        )
-//  List<UsuarioConquista> findCertificadosByUsuarioId(@Param("usuarioId") BigInteger usuarioId);
-
   @Query(value = "SELECT uc.* " +
     "FROM USUARIO_CONQUISTA uc " +
     "INNER JOIN CONQUISTA_TIER ct ON uc.conquista_tier_id = ct.id " +

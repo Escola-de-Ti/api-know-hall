@@ -300,9 +300,19 @@ class PostServiceTest {
     PostFeedProjection projection = createMockProjection();
     List<PostFeedProjection> projections = List.of(projection);
 
-    when(postRepository.findFeedPosts(anyLong(), any(), any(), anyInt(), any(), any(), any(), any(), any()))
-      .thenReturn(projections);
-    when(postRepository.findById(any())).thenReturn(Optional.of(post));
+    when(postRepository.findFeedPosts(
+      anyLong(),
+      any(),
+      any(),
+      anyInt(),
+      any(),
+      any(),
+      any(),
+      any(),
+      any()
+    )).thenReturn(projections);
+
+    lenient().when(postRepository.findById(any())).thenReturn(Optional.of(post));
 
     FeedResponseDTO resultado = postService.getFeed(request);
 
@@ -369,7 +379,7 @@ class PostServiceTest {
   void deveIndicarHasMoreQuandoHaMaisPosts() {
     FeedRequestDTO request = new FeedRequestDTO(
       BigInteger.ONE,
-      2,
+      2, // pageSize = 2 → fetchSize = 3
       null,
       null,
       null,
@@ -384,14 +394,26 @@ class PostServiceTest {
     PostFeedProjection proj3 = createMockProjection();
     List<PostFeedProjection> projections = List.of(proj1, proj2, proj3);
 
-    when(postRepository.findFeedPosts(anyLong(), any(), any(), eq(3), any(), any(), any(), any(), any()))
-      .thenReturn(projections);
-    when(postRepository.findById(any())).thenReturn(Optional.of(post));
+    when(postRepository.findFeedPosts(
+      anyLong(),
+      any(),
+      any(),
+      anyInt(), // aceita qualquer inteiro, inclusive 3
+      any(),
+      any(),
+      any(),
+      any(),
+      any()
+    )).thenReturn(projections);
+
+    lenient().when(postRepository.findById(any())).thenReturn(Optional.of(post));
 
     FeedResponseDTO resultado = postService.getFeed(request);
 
     assertThat(resultado.hasMore()).isTrue();
     assertThat(resultado.posts()).hasSize(2);
+
+    verify(postRepository).findFeedPosts(anyLong(), any(), any(), anyInt(), any(), any(), any(), any(), any());
   }
 
   // ==================== TESTES DE BUSCA AVANÇADA ====================

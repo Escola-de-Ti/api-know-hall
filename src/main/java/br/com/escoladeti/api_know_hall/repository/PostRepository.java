@@ -3,6 +3,7 @@ package br.com.escoladeti.api_know_hall.repository;
 import br.com.escoladeti.api_know_hall.projection.post.PostBuscaProjection;
 import br.com.escoladeti.api_know_hall.projection.post.PostFeedProjection;
 import br.com.escoladeti.api_know_hall.entity.Post;
+import br.com.escoladeti.api_know_hall.projection.tag.PostTagProjection;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -217,4 +218,16 @@ public interface PostRepository extends JpaRepository<Post, BigInteger> {
     @Param("pageSize") Integer pageSize,
     @Param("termo") String termo
   );
+
+  @Query(value = """
+        SELECT
+            pt.post_id as postId,
+            t.id as tagId,
+            t.name as tagName
+        FROM post_tags pt
+        JOIN tags t ON pt.tag_id = t.id
+        WHERE pt.post_id IN :postIds
+        ORDER BY pt.post_id, t.name
+        """, nativeQuery = true)
+  List<PostTagProjection> findTagsByPostIds(@Param("postIds") List<BigInteger> postIds);
 }

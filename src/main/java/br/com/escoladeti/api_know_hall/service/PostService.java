@@ -8,6 +8,7 @@ import br.com.escoladeti.api_know_hall.entity.Usuario;
 import br.com.escoladeti.api_know_hall.enums.OrdenacaoTipo;
 import br.com.escoladeti.api_know_hall.projection.post.PostBuscaProjection;
 import br.com.escoladeti.api_know_hall.projection.post.PostFeedProjection;
+import br.com.escoladeti.api_know_hall.projection.tag.PostTagProjection;
 import br.com.escoladeti.api_know_hall.repository.PostRepository;
 import br.com.escoladeti.api_know_hall.repository.TagsRepository;
 import br.com.escoladeti.api_know_hall.repository.UsuarioRepository;
@@ -19,7 +20,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigInteger;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -132,6 +135,7 @@ public class PostService {
     String dataInicio = request.dataInicio() != null ? request.dataInicio().toString() : null;
     String dataFim = request.dataFim() != null ? request.dataFim().toString() : null;
 
+    // 1. Buscar posts (query principal)
     List<PostFeedProjection> results = postRepository.findFeedPosts(
       usuarioIdLong,
       request.lastScore(),
@@ -150,8 +154,10 @@ public class PostService {
       results = results.subList(0, request.pageSize());
     }
 
+    Map<BigInteger, List<TagResponseDTO>> tagsByPostId = fetchTagsForPosts(results);
+
     List<PostFeedDTO> posts = results.stream()
-      .map(this::mapToPostFeedDTO)
+      .map(projection -> mapToPostFeedDTO(projection, tagsByPostId))
       .collect(Collectors.toList());
 
     BigInteger lastPostId = null;
@@ -166,6 +172,53 @@ public class PostService {
     return new FeedResponseDTO(posts, hasMore, lastPostId, lastScore);
   }
 
+  private Map<BigInteger, List<TagResponseDTO>> fetchTagsForPosts(List<PostFeedProjection> projections) {
+    if (projections.isEmpty()) {
+      return new HashMap<>();
+    }
+
+    List<BigInteger> postIds = projections.stream()
+      .map(PostFeedProjection::getId)
+      .collect(Collectors.toList());
+
+    List<PostTagProjection> tagsData = postRepository.findTagsByPostIds(postIds);
+
+    return tagsData.stream()
+      .collect(Collectors.groupingBy(
+        PostTagProjection::getPostId,
+        Collectors.mapping(
+          projection -> new TagResponseDTO(
+            projection.getTagId(),
+            projection.getTagName()
+          ),
+          Collectors.toList()
+        )
+      ));
+  }
+
+  private PostFeedDTO mapToPostFeedDTO(
+    PostFeedProjection projection,
+    Map<BigInteger, List<TagResponseDTO>> tagsByPostId) {
+
+    List<TagResponseDTO> tags = tagsByPostId.getOrDefault(
+      projection.getId(),
+      new ArrayList<>()
+    );
+
+    return new PostFeedDTO(
+      projection.getId(),
+      projection.getUsuarioId(),
+      projection.getUsuarioNome(),
+      projection.getTitulo(),
+      projection.getDescricao(),
+      projection.getTotalUpVotes(),
+      tags,
+      projection.getDataCriacao(),
+      projection.getRelevanceScore(),
+      projection.getTagsEmComum()
+    );
+  }
+
   @Transactional(readOnly = true)
   public PostBuscaResponseDTO buscarPosts(PostBuscaRequestDTO request) {
     Integer fetchSize = request.pageSize() + 1;
@@ -177,7 +230,6 @@ public class PostService {
     String dataInicio = request.dataInicio() != null ? request.dataInicio().toString() : null;
     String dataFim = request.dataFim() != null ? request.dataFim().toString() : null;
 
-    // ✅ NOVO: Normalizar termo de busca
     String termo = request.termo() != null && !request.termo().isBlank()
       ? request.termo().trim()
       : null;
@@ -231,27 +283,6 @@ public class PostService {
     return tagIds.stream()
       .map(String::valueOf)
       .collect(Collectors.joining(","));
-  }
-
-  private PostFeedDTO mapToPostFeedDTO(PostFeedProjection projection) {
-    List<TagResponseDTO> tags = postRepository.findById(projection.getId())
-      .map(post -> post.getTags().stream()
-        .map(tag -> new TagResponseDTO(tag.getId(), tag.getName()))
-        .collect(Collectors.toList()))
-      .orElse(new ArrayList<>());
-
-    return new PostFeedDTO(
-      projection.getId(),
-      projection.getUsuarioId(),
-      projection.getUsuarioNome(),
-      projection.getTitulo(),
-      projection.getDescricao(),
-      projection.getTotalUpVotes(),
-      tags,
-      projection.getDataCriacao(),
-      projection.getRelevanceScore(),
-      projection.getTagsEmComum()
-    );
   }
 
   private PostBuscaItemDTO mapToPostBuscaItemDTO(PostBuscaProjection projection) {

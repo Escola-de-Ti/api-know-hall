@@ -9,7 +9,7 @@ services:
       POSTGRES_PASSWORD: senhaLocal
       POSTGRES_DB: devdb
     ports:
-      - "5432:5432"  # ✅ CORREÇÃO AQUI!
+      - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
 
@@ -24,6 +24,8 @@ services:
       SPRING_DATASOURCE_USERNAME: userLocal
       SPRING_DATASOURCE_PASSWORD: senhaLocal
       BOOLEAN_SQL: "true"
+      JWT_SECRET: Q^F9m4n+BMzPQBh!C5Bk
+      SUPABASE_TOKEN: "${SUPABASE_TOKEN}"
     ports:
       - "8080:8080"
     depends_on:

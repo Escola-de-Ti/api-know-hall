@@ -1,5 +1,6 @@
 package br.com.escoladeti.api_know_hall.conquista;
 
+import br.com.escoladeti.api_know_hall.config.JwtAuthenticationFilter;
 import br.com.escoladeti.api_know_hall.controller.UsuarioConquistaController;
 import br.com.escoladeti.api_know_hall.dto.conquista.ConquistaProgressoDTO;
 import br.com.escoladeti.api_know_hall.dto.conquista.VerificarProgressoDTO;
@@ -15,8 +16,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureWebMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -31,8 +33,16 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(controllers = UsuarioConquistaController.class, excludeAutoConfiguration = SecurityAutoConfiguration.class)
-@AutoConfigureWebMvc
+@WebMvcTest(
+  controllers = UsuarioConquistaController.class,
+  excludeAutoConfiguration = {
+    SecurityAutoConfiguration.class
+  },
+  excludeFilters = @ComponentScan.Filter(
+    type = FilterType.ASSIGNABLE_TYPE,
+    classes = JwtAuthenticationFilter.class
+  )
+)
 @ActiveProfiles("test")
 class UsuarioConquistaControllerTest {
 

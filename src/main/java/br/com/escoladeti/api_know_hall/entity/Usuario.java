@@ -1,17 +1,22 @@
 package br.com.escoladeti.api_know_hall.entity;
 
 import br.com.escoladeti.api_know_hall.dto.UsuarioCreateDTO;
+import br.com.escoladeti.api_know_hall.dto.UsuarioUpdateDTO;
 import br.com.escoladeti.api_know_hall.entity.conquista.ConquistaTier;
 import br.com.escoladeti.api_know_hall.entity.conquista.UsuarioConquista;
 import br.com.escoladeti.api_know_hall.entity.workshop.Workshop;
 import br.com.escoladeti.api_know_hall.enums.StatusUsuario;
 import br.com.escoladeti.api_know_hall.enums.TierConquista;
 import br.com.escoladeti.api_know_hall.enums.TipoUsuario;
-import br.com.escoladeti.api_know_hall.dto.UsuarioUpdateDTO;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -21,6 +26,8 @@ import java.util.Optional;
 
 @Entity
 @Table(name = "USUARIO")
+@AllArgsConstructor
+@NoArgsConstructor
 @Getter
 @Setter
 public class Usuario {
@@ -51,8 +58,9 @@ public class Usuario {
   @Column(name = "senha_hash", nullable = false)
   private String senhaHash;
 
-  @Column(name = "id_imagem_perfil")
-  private Integer idImagemPerfil;
+  @OneToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+  @JoinColumn(name = "id_imagem_perfil", referencedColumnName = "id", foreignKey = @ForeignKey(name = "fk_usuario_imagem"))
+  private Imagem imagemPerfil;
 
   @Column(name = "status_usuario", nullable = false)
   @Enumerated(EnumType.STRING)
@@ -69,6 +77,16 @@ public class Usuario {
     inverseJoinColumns = @JoinColumn(name = "tag_id")
   )
   private List<Tag> tags = new ArrayList<>();
+
+  public void setIdImagemPerfil(BigInteger idImagemPerfil) {
+    if (idImagemPerfil == null) {
+      this.imagemPerfil = null;
+    } else {
+      Imagem img = new Imagem();
+      img.setId(idImagemPerfil);
+      this.imagemPerfil = img;
+    }
+  }
 
   @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<UsuarioConquista> conquistas = new ArrayList<>();
@@ -101,120 +119,6 @@ public class Usuario {
       .max(Comparator.comparingInt(TierConquista::getNivel));
   }
 
-  public Usuario() {
-  }
-
-  public Usuario(BigInteger id, String email, String cpf, String telefone, String telefone2, String nome, String biografia, String senhaHash, Integer idImagemPerfil, StatusUsuario statusUsuario, TipoUsuario tipoUsuario, List<Tag> tags) {
-    this.id = id;
-    this.email = email;
-    this.cpf = cpf;
-    this.telefone = telefone;
-    this.telefone2 = telefone2;
-    this.nome = nome;
-    this.biografia = biografia;
-    this.senhaHash = senhaHash;
-    this.idImagemPerfil = idImagemPerfil;
-    this.statusUsuario = statusUsuario;
-    this.tipoUsuario = tipoUsuario;
-    this.tags = tags;
-  }
-
-  public BigInteger getId() {
-    return id;
-  }
-
-  public void setId(BigInteger id) {
-    this.id = id;
-  }
-
-  public String getEmail() {
-    return email;
-  }
-
-  public void setEmail(String email) {
-    this.email = email;
-  }
-
-  public String getCpf() {
-    return cpf;
-  }
-
-  public void setCpf(String cpf) {
-    this.cpf = cpf;
-  }
-
-  public String getTelefone() {
-    return telefone;
-  }
-
-  public void setTelefone(String telefone) {
-    this.telefone = telefone;
-  }
-
-  public String getTelefone2() {
-    return telefone2;
-  }
-
-  public void setTelefone2(String telefone2) {
-    this.telefone2 = telefone2;
-  }
-
-  public String getNome() {
-    return nome;
-  }
-
-  public void setNome(String nome) {
-    this.nome = nome;
-  }
-
-  public String getBiografia() {
-    return biografia;
-  }
-
-  public void setBiografia(String biografia) {
-    this.biografia = biografia;
-  }
-
-  public String getSenhaHash() {
-    return senhaHash;
-  }
-
-  public void setSenhaHash(String senhaHash) {
-    this.senhaHash = senhaHash;
-  }
-
-  public Integer getIdImagemPerfil() {
-    return idImagemPerfil;
-  }
-
-  public void setIdImagemPerfil(Integer idImagemPerfil) {
-    this.idImagemPerfil = idImagemPerfil;
-  }
-
-  public StatusUsuario getStatusUsuario() {
-    return statusUsuario;
-  }
-
-  public void setStatusUsuario(StatusUsuario statusUsuario) {
-    this.statusUsuario = statusUsuario;
-  }
-
-  public TipoUsuario getTipoUsuario() {
-    return tipoUsuario;
-  }
-
-  public void setTipoUsuario(TipoUsuario tipoUsuario) {
-    this.tipoUsuario = tipoUsuario;
-  }
-
-  public List<Tag> getTags() {
-    return tags;
-  }
-
-  public void setTags(List<Tag> tags) {
-    this.tags = tags;
-  }
-
   public Usuario(UsuarioCreateDTO dto) {
     this.id = null;
     this.email = dto.getEmail();
@@ -224,8 +128,7 @@ public class Usuario {
     this.nome = dto.getNome();
     this.biografia = dto.getBiografia();
     this.senhaHash = dto.getSenha();
-    this.idImagemPerfil = dto.getIdImagemPerfil();
-    this.statusUsuario = StatusUsuario.CONFIRMACAO_PENDENTE;
+    this.statusUsuario = StatusUsuario.ATIVO; // Depois que for implementado o fluxo de confirmação de email, mudar isso
     this.tipoUsuario = dto.getTipoUsuario();
     this.tags = dto.getTags();
   }
@@ -238,7 +141,6 @@ public class Usuario {
     if (dto.getNome() != null) this.nome = dto.getNome();
     if (dto.getBiografia() != null) this.biografia = dto.getBiografia();
     if (dto.getSenha() != null) this.senhaHash = dto.getSenha();
-    if (dto.getIdImagemPerfil() != null) this.idImagemPerfil = dto.getIdImagemPerfil();
     if (dto.getStatusUsuario() != null) this.statusUsuario = dto.getStatusUsuario();
     if (dto.getTipoUsuario() != null) this.tipoUsuario = dto.getTipoUsuario();
     if (dto.getTags() != null) {

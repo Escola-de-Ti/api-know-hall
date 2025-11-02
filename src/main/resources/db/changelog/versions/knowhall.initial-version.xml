@@ -2,14 +2,8 @@
 <databaseChangeLog
   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
-  xmlns:pro="http://www.liquibase.org/xml/ns/pro"
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
-    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
-    http://www.liquibase.org/xml/ns/dbchangelog-ext
-    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
-    http://www.liquibase.org/xml/ns/pro
-    http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
 
   <changeSet id="KH-1" author="WILLYAN TOMAZ">
@@ -37,7 +31,7 @@
       <column name="senha_hash" type="VARCHAR(255)">
         <constraints nullable="false"/>
       </column>
-      <column name="id_imagem_perfil" type="INTEGER"/>
+      <column name="id_imagem_perfil" type="BIGINT"/>
       <column name="status_usuario" type="VARCHAR(50)">
         <constraints nullable="false"/>
       </column>
