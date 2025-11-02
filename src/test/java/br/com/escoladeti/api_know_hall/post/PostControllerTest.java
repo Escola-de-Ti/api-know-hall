@@ -1,6 +1,9 @@
 package br.com.escoladeti.api_know_hall.post;
 
+import br.com.escoladeti.api_know_hall.config.JwtAuthenticationFilter;
+import br.com.escoladeti.api_know_hall.config.SecurityConfig;
 import br.com.escoladeti.api_know_hall.controller.PostController;
+import br.com.escoladeti.api_know_hall.controller.TagsController;
 import br.com.escoladeti.api_know_hall.dto.post.*;
 import br.com.escoladeti.api_know_hall.dto.tags.TagResponseDTO;
 import br.com.escoladeti.api_know_hall.enums.OrdenacaoDirecao;
@@ -13,7 +16,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;  // ✅ IMPORT EXPLÍCITO
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -31,7 +37,18 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(PostController.class)
+@WebMvcTest(
+  controllers = PostController.class,
+  excludeAutoConfiguration = {
+    SecurityAutoConfiguration.class,
+    org.springframework.boot.autoconfigure.security.servlet.SecurityFilterAutoConfiguration.class
+  },
+  excludeFilters = {
+    @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = SecurityConfig.class),
+    @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = JwtAuthenticationFilter.class)
+  }
+)
+@org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc(addFilters = false)
 @DisplayName("Testes do PostController")
 class PostControllerTest {
 
@@ -97,12 +114,12 @@ class PostControllerTest {
   @DisplayName("POST /api/posts - Deve retornar 400 com usuarioId nulo")
   void deveRetornar400ComUsuarioIdNulo() throws Exception {
     String jsonInvalido = """
-            {
-                "usuarioId": null,
-                "titulo": "Título",
-                "descricao": "Descrição"
-            }
-            """;
+      {
+          "usuarioId": null,
+          "titulo": "Título",
+          "descricao": "Descrição"
+      }
+      """;
 
     mockMvc.perform(post("/api/posts")
         .with(csrf())
@@ -119,12 +136,12 @@ class PostControllerTest {
   @DisplayName("POST /api/posts - Deve retornar 400 com título vazio")
   void deveRetornar400ComTituloVazio() throws Exception {
     String jsonInvalido = """
-            {
-                "usuarioId": 1,
-                "titulo": "",
-                "descricao": "Descrição"
-            }
-            """;
+      {
+          "usuarioId": 1,
+          "titulo": "",
+          "descricao": "Descrição"
+      }
+      """;
 
     mockMvc.perform(post("/api/posts")
         .with(csrf())
