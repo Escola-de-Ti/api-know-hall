@@ -90,5 +90,51 @@
       onDelete="CASCADE"/>
     <comment>Criação da tabela de relacionamento POST_TAGS</comment>
   </changeSet>
+  
+    <changeSet id="KH-25" author="Willyan Tomaz">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <tableExists tableName="IMAGEM"/>
+      </not>
+    </preConditions>
+    <createTable tableName="IMAGEM">
+      <column name="id" type="BIGINT" autoIncrement="true">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+      <column name="nome" type="VARCHAR(255)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="url" type="VARCHAR(255)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="id_imagem" type="VARCHAR(255)"/>
+      <column name="path" type="VARCHAR(255)">
+        <constraints nullable="false"/>
+      </column>
+    </createTable>
+    <comment>Criação da tabela IMAGEM</comment>
+  </changeSet>
+
+  <changeSet id="KH-26" author="Willyan Tomaz">
+    <preConditions onFail="MARK_RAN">
+      <and>
+        <tableExists tableName="USUARIO"/>
+        <tableExists tableName="IMAGEM"/>
+        <not>
+          <foreignKeyConstraintExists foreignKeyName="fk_usuario_imagem"/>
+        </not>
+      </and>
+    </preConditions>
+    <addForeignKeyConstraint
+      baseTableName="USUARIO"
+      baseColumnNames="id_imagem_perfil"
+      constraintName="fk_usuario_imagem"
+      referencedTableName="IMAGEM"
+      referencedColumnNames="id"
+      onDelete="SET NULL"/>
+    <createIndex tableName="USUARIO" indexName="idx_usuario_id_imagem_perfil">
+      <column name="id_imagem_perfil"/>
+    </createIndex>
+  </changeSet>
 
 </databaseChangeLog>
