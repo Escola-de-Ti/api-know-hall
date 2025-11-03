@@ -485,10 +485,10 @@
         constraintName="fk_workshop_instrutor"/>
       <dropIndex indexName="idx_workshop_instrutor" tableName="workshop"/>
       <dropIndex indexName="idx_workshop_status" tableName="workshop"/>
+      <dropIndex indexName="idx_workshop_data_inicio" tableName="workshop"/>
       <dropColumn tableName="workshop" columnName="data_criacao"/>
       <dropColumn tableName="workshop" columnName="data_inicio"/>
       <dropColumn tableName="workshop" columnName="data_termino"/>
-      <dropIndex indexName="idx_workshop_data_inicio" tableName="workshop"/>
       <sql>ALTER TABLE workshop DROP CONSTRAINT IF EXISTS chk_workshop_status;</sql>
       <sql>ALTER TABLE workshop DROP CONSTRAINT IF EXISTS chk_workshop_datas;</sql>
     </rollback>
