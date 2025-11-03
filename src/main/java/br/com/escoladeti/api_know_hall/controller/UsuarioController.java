@@ -57,7 +57,6 @@ public class UsuarioController {
     return ResponseEntity.ok(token);
   }
 
-  // Nova rota para recarregar tokens a partir do refresh token
   @PostMapping("/refresh")
   public ResponseEntity<JwtTokenDTO> refresh(@RequestBody RefreshTokenRequest request) {
     JwtTokenDTO token = usuarioService.refreshToken(request.refresh_token());
