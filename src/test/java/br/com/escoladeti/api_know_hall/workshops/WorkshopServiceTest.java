@@ -456,7 +456,7 @@ class WorkshopServiceTest {
       when(workshopRepository.save(any(Workshop.class))).thenReturn(workshop);
 
       // Act
-      Workshop resultado = workshopService.atualizarWorkshop(BigInteger.ONE, updateDTO);
+      workshopService.atualizarWorkshop(BigInteger.ONE, updateDTO);
 
       // Assert
       verify(descricaoWorkshopRepository).save(any(DescricaoWorkshop.class));

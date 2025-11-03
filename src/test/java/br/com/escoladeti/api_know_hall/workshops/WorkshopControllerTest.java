@@ -58,7 +58,6 @@ class WorkshopControllerTest {
     workshopRepository.deleteAll();
     usuarioRepository.deleteAll();
 
-    // Criar instrutor
     instrutor = new Usuario();
     instrutor.setNome("João");
     instrutor.setEmail("joao.instrutor@email.com");
@@ -68,7 +67,6 @@ class WorkshopControllerTest {
     instrutor.setStatusUsuario(StatusUsuario.ATIVO);
     instrutor = usuarioRepository.save(instrutor);
 
-    // Criar usuário comum
     usuarioComum = new Usuario();
     usuarioComum.setNome("Maria");
     usuarioComum.setEmail("maria.comum@email.com");
@@ -86,7 +84,6 @@ class WorkshopControllerTest {
     @Test
     @DisplayName("Deve criar workshop com sucesso e status ABERTO")
     void deveCriarWorkshopComSucesso() throws Exception {
-      // Arrange
       Timestamp dataInicio = Timestamp.from(Instant.now().plus(7, ChronoUnit.DAYS));
       Timestamp dataTermino = Timestamp.from(Instant.now().plus(7, ChronoUnit.DAYS).plus(4, ChronoUnit.HOURS));
 
@@ -101,9 +98,7 @@ class WorkshopControllerTest {
       createDTO.setDataInicio(dataInicio);
       createDTO.setDataTermino(dataTermino);
       createDTO.setDescricao(descricaoDTO);
-      // ✅ NÃO definir status - será determinado automaticamente
 
-      // Act & Assert
       mockMvc.perform(post("/api/workshops")
           .contentType(MediaType.APPLICATION_JSON)
           .content(objectMapper.writeValueAsString(createDTO)))
@@ -123,7 +118,6 @@ class WorkshopControllerTest {
     @Test
     @DisplayName("Deve criar workshop com status EM_ANDAMENTO quando data é hoje")
     void deveCriarWorkshopEmAndamento() throws Exception {
-      // Arrange
       Timestamp hoje = Timestamp.from(Instant.now());
       Timestamp fim = Timestamp.from(Instant.now().plus(4, ChronoUnit.HOURS));
 
@@ -133,9 +127,7 @@ class WorkshopControllerTest {
       createDTO.setLinkMeet("https://meet.google.com/now");
       createDTO.setDataInicio(hoje);
       createDTO.setDataTermino(fim);
-      // ✅ NÃO definir status - será EM_ANDAMENTO automaticamente
 
-      // Act & Assert
       mockMvc.perform(post("/api/workshops")
           .contentType(MediaType.APPLICATION_JSON)
           .content(objectMapper.writeValueAsString(createDTO)))
@@ -147,7 +139,6 @@ class WorkshopControllerTest {
     @Test
     @DisplayName("Deve criar workshop com status EM_ANDAMENTO quando data no passado")
     void deveCriarWorkshopComDataPassada() throws Exception {
-      // Arrange
       Timestamp passado = Timestamp.from(Instant.now().minus(1, ChronoUnit.HOURS));
       Timestamp fim = Timestamp.from(Instant.now().plus(3, ChronoUnit.HOURS));
 
@@ -158,7 +149,6 @@ class WorkshopControllerTest {
       createDTO.setDataInicio(passado);
       createDTO.setDataTermino(fim);
 
-      // Act & Assert
       mockMvc.perform(post("/api/workshops")
           .contentType(MediaType.APPLICATION_JSON)
           .content(objectMapper.writeValueAsString(createDTO)))
@@ -169,7 +159,6 @@ class WorkshopControllerTest {
     @Test
     @DisplayName("Deve criar workshop sem descrição")
     void deveCriarWorkshopSemDescricao() throws Exception {
-      // Arrange
       Timestamp dataInicio = Timestamp.from(Instant.now().plus(7, ChronoUnit.DAYS));
       Timestamp dataTermino = Timestamp.from(Instant.now().plus(7, ChronoUnit.DAYS).plus(4, ChronoUnit.HOURS));
 
@@ -179,9 +168,7 @@ class WorkshopControllerTest {
       createDTO.setLinkMeet("https://meet.google.com/no-desc");
       createDTO.setDataInicio(dataInicio);
       createDTO.setDataTermino(dataTermino);
-      // ✅ Sem descrição
 
-      // Act & Assert
       mockMvc.perform(post("/api/workshops")
           .contentType(MediaType.APPLICATION_JSON)
           .content(objectMapper.writeValueAsString(createDTO)))
@@ -193,7 +180,6 @@ class WorkshopControllerTest {
     @Test
     @DisplayName("Deve retornar 400 quando usuário não é instrutor")
     void deveRetornar400QuandoUsuarioNaoEhInstrutor() throws Exception {
-      // Arrange
       Timestamp dataInicio = Timestamp.from(Instant.now().plus(7, ChronoUnit.DAYS));
       Timestamp dataTermino = Timestamp.from(Instant.now().plus(7, ChronoUnit.DAYS).plus(4, ChronoUnit.HOURS));
 
@@ -204,7 +190,6 @@ class WorkshopControllerTest {
       createDTO.setDataInicio(dataInicio);
       createDTO.setDataTermino(dataTermino);
 
-      // Act & Assert
       mockMvc.perform(post("/api/workshops")
           .contentType(MediaType.APPLICATION_JSON)
           .content(objectMapper.writeValueAsString(createDTO)))
@@ -214,7 +199,6 @@ class WorkshopControllerTest {
     @Test
     @DisplayName("Deve retornar 400 quando data término antes de data início")
     void deveRetornar400QuandoDataInvalida() throws Exception {
-      // Arrange
       Timestamp dataInicio = Timestamp.from(Instant.now().plus(7, ChronoUnit.DAYS));
       Timestamp dataTermino = Timestamp.from(Instant.now().plus(6, ChronoUnit.DAYS)); // antes
 
@@ -224,7 +208,6 @@ class WorkshopControllerTest {
       createDTO.setDataInicio(dataInicio);
       createDTO.setDataTermino(dataTermino);
 
-      // Act & Assert
       mockMvc.perform(post("/api/workshops")
           .contentType(MediaType.APPLICATION_JSON)
           .content(objectMapper.writeValueAsString(createDTO)))
@@ -234,17 +217,15 @@ class WorkshopControllerTest {
     @Test
     @DisplayName("Deve retornar 400 quando título está vazio")
     void deveRetornar400QuandoTituloVazio() throws Exception {
-      // Arrange
       Timestamp dataInicio = Timestamp.from(Instant.now().plus(7, ChronoUnit.DAYS));
       Timestamp dataTermino = Timestamp.from(Instant.now().plus(7, ChronoUnit.DAYS).plus(4, ChronoUnit.HOURS));
 
       WorkshopCreateDTO createDTO = new WorkshopCreateDTO();
       createDTO.setInstrutorId(instrutor.getId());
-      createDTO.setTitulo(""); // vazio
+      createDTO.setTitulo("");
       createDTO.setDataInicio(dataInicio);
       createDTO.setDataTermino(dataTermino);
 
-      // Act & Assert
       mockMvc.perform(post("/api/workshops")
           .contentType(MediaType.APPLICATION_JSON)
           .content(objectMapper.writeValueAsString(createDTO)))
@@ -254,16 +235,13 @@ class WorkshopControllerTest {
     @Test
     @DisplayName("Deve retornar 400 quando data de início não fornecida")
     void deveRetornar400QuandoDataInicioNaoFornecida() throws Exception {
-      // Arrange
       Timestamp dataTermino = Timestamp.from(Instant.now().plus(7, ChronoUnit.DAYS).plus(4, ChronoUnit.HOURS));
 
       WorkshopCreateDTO createDTO = new WorkshopCreateDTO();
       createDTO.setInstrutorId(instrutor.getId());
       createDTO.setTitulo("Workshop Sem Data Início");
       createDTO.setDataTermino(dataTermino);
-      // ✅ Sem data de início
 
-      // Act & Assert
       mockMvc.perform(post("/api/workshops")
           .contentType(MediaType.APPLICATION_JSON)
           .content(objectMapper.writeValueAsString(createDTO)))
@@ -273,16 +251,13 @@ class WorkshopControllerTest {
     @Test
     @DisplayName("Deve retornar 400 quando data de término não fornecida")
     void deveRetornar400QuandoDataTerminoNaoFornecida() throws Exception {
-      // Arrange
       Timestamp dataInicio = Timestamp.from(Instant.now().plus(7, ChronoUnit.DAYS));
 
       WorkshopCreateDTO createDTO = new WorkshopCreateDTO();
       createDTO.setInstrutorId(instrutor.getId());
       createDTO.setTitulo("Workshop Sem Data Término");
       createDTO.setDataInicio(dataInicio);
-      // ✅ Sem data de término
 
-      // Act & Assert
       mockMvc.perform(post("/api/workshops")
           .contentType(MediaType.APPLICATION_JSON)
           .content(objectMapper.writeValueAsString(createDTO)))
@@ -292,7 +267,6 @@ class WorkshopControllerTest {
     @Test
     @DisplayName("Deve retornar 404 quando instrutor não existe")
     void deveRetornar404QuandoInstrutorNaoExiste() throws Exception {
-      // Arrange
       Timestamp dataInicio = Timestamp.from(Instant.now().plus(7, ChronoUnit.DAYS));
       Timestamp dataTermino = Timestamp.from(Instant.now().plus(7, ChronoUnit.DAYS).plus(4, ChronoUnit.HOURS));
 
@@ -302,7 +276,6 @@ class WorkshopControllerTest {
       createDTO.setDataInicio(dataInicio);
       createDTO.setDataTermino(dataTermino);
 
-      // Act & Assert
       mockMvc.perform(post("/api/workshops")
           .contentType(MediaType.APPLICATION_JSON)
           .content(objectMapper.writeValueAsString(createDTO)))
@@ -398,7 +371,6 @@ class WorkshopControllerTest {
     @Test
     @DisplayName("Deve buscar workshop por ID com sucesso")
     void deveBuscarWorkshopPorId() throws Exception {
-      // Arrange
       Workshop workshop = new Workshop();
       workshop.setTitulo("Workshop Teste");
       workshop.setStatus(StatusWorkshop.ABERTO);
@@ -407,7 +379,6 @@ class WorkshopControllerTest {
       workshop.setDataTermino(Timestamp.from(Instant.now().plus(7, ChronoUnit.DAYS).plus(4, ChronoUnit.HOURS)));
       workshop = workshopRepository.save(workshop);
 
-      // Act & Assert
       mockMvc.perform(get("/api/workshops/{id}", workshop.getId()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(workshop.getId().intValue()))
@@ -443,11 +414,9 @@ class WorkshopControllerTest {
     @Test
     @DisplayName("Deve atualizar título com sucesso")
     void deveAtualizarTitulo() throws Exception {
-      // Arrange
       WorkshopUpdateDTO updateDTO = new WorkshopUpdateDTO();
       updateDTO.setTitulo("Workshop Atualizado");
 
-      // Act & Assert
       mockMvc.perform(patch("/api/workshops/{id}", workshop.getId())
           .contentType(MediaType.APPLICATION_JSON)
           .content(objectMapper.writeValueAsString(updateDTO)))
@@ -458,11 +427,9 @@ class WorkshopControllerTest {
     @Test
     @DisplayName("Deve atualizar link do Meet com sucesso")
     void deveAtualizarLinkMeet() throws Exception {
-      // Arrange
       WorkshopUpdateDTO updateDTO = new WorkshopUpdateDTO();
       updateDTO.setLinkMeet("https://meet.google.com/atualizado");
 
-      // Act & Assert
       mockMvc.perform(patch("/api/workshops/{id}", workshop.getId())
           .contentType(MediaType.APPLICATION_JSON)
           .content(objectMapper.writeValueAsString(updateDTO)))
@@ -473,11 +440,9 @@ class WorkshopControllerTest {
     @Test
     @DisplayName("Deve mudar status para EM_ANDAMENTO quando data adiantada")
     void deveMudarStatusQuandoDataAdiantada() throws Exception {
-      // Arrange
       WorkshopUpdateDTO updateDTO = new WorkshopUpdateDTO();
       updateDTO.setDataInicio(Timestamp.from(Instant.now()));
 
-      // Act & Assert
       mockMvc.perform(patch("/api/workshops/{id}", workshop.getId())
           .contentType(MediaType.APPLICATION_JSON)
           .content(objectMapper.writeValueAsString(updateDTO)))
@@ -488,7 +453,6 @@ class WorkshopControllerTest {
     @Test
     @DisplayName("Deve concluir workshop quando status EM_ANDAMENTO")
     void deveConcluirWorkshop() throws Exception {
-      // Arrange
       workshop.setStatus(StatusWorkshop.EM_ANDAMENTO);
       workshop.setDataInicio(Timestamp.from(Instant.now()));
       workshopRepository.save(workshop);
@@ -496,7 +460,6 @@ class WorkshopControllerTest {
       WorkshopUpdateDTO updateDTO = new WorkshopUpdateDTO();
       updateDTO.setStatus(StatusWorkshop.CONCLUIDO);
 
-      // Act & Assert
       mockMvc.perform(patch("/api/workshops/{id}", workshop.getId())
           .contentType(MediaType.APPLICATION_JSON)
           .content(objectMapper.writeValueAsString(updateDTO)))
@@ -507,11 +470,9 @@ class WorkshopControllerTest {
     @Test
     @DisplayName("Deve retornar 400 ao tentar iniciar workshop antes da data")
     void deveRetornar400AoIniciarAntesData() throws Exception {
-      // Arrange
       WorkshopUpdateDTO updateDTO = new WorkshopUpdateDTO();
       updateDTO.setStatus(StatusWorkshop.EM_ANDAMENTO);
 
-      // Act & Assert
       mockMvc.perform(patch("/api/workshops/{id}", workshop.getId())
           .contentType(MediaType.APPLICATION_JSON)
           .content(objectMapper.writeValueAsString(updateDTO)))
@@ -521,11 +482,9 @@ class WorkshopControllerTest {
     @Test
     @DisplayName("Deve retornar 400 ao tentar concluir workshop ABERTO")
     void deveRetornar400AoConcluirWorkshopAberto() throws Exception {
-      // Arrange
       WorkshopUpdateDTO updateDTO = new WorkshopUpdateDTO();
       updateDTO.setStatus(StatusWorkshop.CONCLUIDO);
 
-      // Act & Assert
       mockMvc.perform(patch("/api/workshops/{id}", workshop.getId())
           .contentType(MediaType.APPLICATION_JSON)
           .content(objectMapper.writeValueAsString(updateDTO)))
@@ -535,7 +494,6 @@ class WorkshopControllerTest {
     @Test
     @DisplayName("Deve atualizar descrição existente")
     void deveAtualizarDescricao() throws Exception {
-      // Arrange
       DescricaoWorkshopDTO descricaoDTO = new DescricaoWorkshopDTO();
       descricaoDTO.setTema("Novo Tema");
       descricaoDTO.setDescricao("Nova Descrição");
@@ -543,7 +501,6 @@ class WorkshopControllerTest {
       WorkshopUpdateDTO updateDTO = new WorkshopUpdateDTO();
       updateDTO.setDescricao(descricaoDTO);
 
-      // Act & Assert
       mockMvc.perform(patch("/api/workshops/{id}", workshop.getId())
           .contentType(MediaType.APPLICATION_JSON)
           .content(objectMapper.writeValueAsString(updateDTO)))
@@ -560,7 +517,6 @@ class WorkshopControllerTest {
     @Test
     @DisplayName("Deve deletar workshop com sucesso")
     void deveDeletarWorkshopComSucesso() throws Exception {
-      // Arrange
       Workshop workshop = new Workshop();
       workshop.setTitulo("Workshop Para Deletar");
       workshop.setStatus(StatusWorkshop.ABERTO);
@@ -569,11 +525,9 @@ class WorkshopControllerTest {
       workshop.setDataTermino(Timestamp.from(Instant.now().plus(7, ChronoUnit.DAYS).plus(4, ChronoUnit.HOURS)));
       workshop = workshopRepository.save(workshop);
 
-      // Act & Assert
       mockMvc.perform(delete("/api/workshops/{id}", workshop.getId()))
         .andExpect(status().isNoContent());
 
-      // Verificar que foi deletado
       mockMvc.perform(get("/api/workshops/{id}", workshop.getId()))
         .andExpect(status().isNotFound());
     }
@@ -593,7 +547,6 @@ class WorkshopControllerTest {
     @Test
     @DisplayName("Deve contar workshops do instrutor corretamente")
     void deveContarWorkshopsDoInstrutor() throws Exception {
-      // Arrange - criar 3 workshops
       for (int i = 0; i < 3; i++) {
         Workshop w = new Workshop();
         w.setTitulo("Workshop " + i);
@@ -604,7 +557,6 @@ class WorkshopControllerTest {
         workshopRepository.save(w);
       }
 
-      // Act & Assert
       mockMvc.perform(get("/api/workshops/instrutor/{id}/count", instrutor.getId()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").value(3));

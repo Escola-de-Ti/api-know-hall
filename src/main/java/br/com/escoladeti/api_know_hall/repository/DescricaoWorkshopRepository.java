@@ -17,7 +17,7 @@ public interface DescricaoWorkshopRepository extends JpaRepository<DescricaoWork
         FROM descricao_workshop dw
         WHERE dw.id_workshop = :workshopId
         """, nativeQuery = true)
-  Optional<DescricaoWorkshop> findByWorkshopId(@Param("workshopId") Long workshopId);
+  Optional<DescricaoWorkshop> findByWorkshopId(@Param("workshopId") BigInteger workshopId);
 
   @Query(value = """
         SELECT EXISTS(
@@ -26,5 +26,5 @@ public interface DescricaoWorkshopRepository extends JpaRepository<DescricaoWork
             WHERE dw.id_workshop = :workshopId
         )
         """, nativeQuery = true)
-  Boolean existsByWorkshopId(@Param("workshopId") Long workshopId);
+  Boolean existsByWorkshopId(@Param("workshopId") BigInteger workshopId);
 }
