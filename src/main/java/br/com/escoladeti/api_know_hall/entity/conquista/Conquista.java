@@ -47,12 +47,4 @@ public class Conquista {
 
   @OneToMany(mappedBy = "conquista", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<UsuarioConquista> usuariosConquistas = new ArrayList<>();
-
-  public void adicionarTier(TierConquista tier, Integer quantidadeNecessaria) {
-    ConquistaTier conquistaTier = new ConquistaTier();
-    conquistaTier.setConquista(this);
-    conquistaTier.setTier(tier);
-    conquistaTier.setQuantidadeNecessaria(quantidadeNecessaria);
-    this.tiers.add(conquistaTier);
-  }
 }
