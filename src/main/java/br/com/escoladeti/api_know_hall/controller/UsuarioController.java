@@ -9,9 +9,11 @@ import br.com.escoladeti.api_know_hall.entity.Usuario;
 import br.com.escoladeti.api_know_hall.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigInteger;
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -27,9 +29,9 @@ public class UsuarioController {
     return ResponseEntity.ok(usuarios);
   }
 
-  @GetMapping("/{id}")
-  public ResponseEntity<Usuario> getUsuarioById(@PathVariable BigInteger id) {
-    Usuario usuario = usuarioService.getUsuarioById(id);
+  @GetMapping("/user")
+  public ResponseEntity<Usuario> getUsuarioById(Principal principal) {
+    Usuario usuario = usuarioService.getUsuarioByEmail(principal.getName());
     return ResponseEntity.ok(usuario);
   }
 
@@ -39,9 +41,9 @@ public class UsuarioController {
     return ResponseEntity.status(201).body(createdUsuario);
   }
 
-  @PutMapping("/{id}")
-  public ResponseEntity<Usuario> updateUsuario(@PathVariable BigInteger id, @RequestBody UsuarioUpdateDTO usuarioDetails) {
-    Usuario updatedUsuario = usuarioService.updateUsuario(id, usuarioDetails);
+  @PutMapping("/user")
+  public ResponseEntity<Usuario> updateUsuario(Principal principal, @RequestBody UsuarioUpdateDTO usuarioDetails) {
+    Usuario updatedUsuario = usuarioService.updateUsuario(principal.getName(), usuarioDetails);
     return ResponseEntity.ok(updatedUsuario);
   }
 

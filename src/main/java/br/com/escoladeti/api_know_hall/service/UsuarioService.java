@@ -33,17 +33,18 @@ public class UsuarioService {
     return usuarioRepository.findAll();
   }
 
-  public Usuario getUsuarioById(BigInteger id) {
-    return usuarioRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Usuario não encontrado"));
+  public Usuario getUsuarioByEmail(String email) {
+    return usuarioRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("Usuario não encontrado"));
   }
+
 
   public Usuario createUsuario(UsuarioCreateDTO usuario) {
     Usuario newUsuario = new Usuario(usuario);
     return usuarioRepository.save(newUsuario);
   }
 
-  public Usuario updateUsuario(BigInteger id, UsuarioUpdateDTO usuarioDetails) {
-    Usuario usuario = usuarioRepository.findById(id)
+  public Usuario updateUsuario(String email, UsuarioUpdateDTO usuarioDetails) {
+    Usuario usuario = usuarioRepository.findByEmail(email)
       .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
     usuario.applyUpdate(usuarioDetails);
     return usuarioRepository.save(usuario);

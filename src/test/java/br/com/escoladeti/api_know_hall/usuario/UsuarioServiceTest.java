@@ -83,26 +83,26 @@ class UsuarioServiceTest {
 
   @Test
   void getUsuarioById_WithValidId_ShouldReturnUsuario() {
-    when(usuarioRepository.findById(BigInteger.valueOf(1))).thenReturn(Optional.of(usuario));
+    when(usuarioRepository.findByEmail("test@test.com")).thenReturn(Optional.of(usuario));
 
-    Usuario result = usuarioService.getUsuarioById(BigInteger.valueOf(1));
+    Usuario result = usuarioService.getUsuarioByEmail("test@test.com");
 
     assertNotNull(result);
     assertEquals(usuario.getEmail(), result.getEmail());
-    verify(usuarioRepository, times(1)).findById(BigInteger.valueOf(1));
+    verify(usuarioRepository, times(1)).findByEmail("test@test.com");
   }
 
   @Test
   void getUsuarioById_WithInvalidId_ShouldThrowEntityNotFoundException() {
-    when(usuarioRepository.findById(BigInteger.valueOf(999))).thenReturn(Optional.empty());
+    when(usuarioRepository.findByEmail("test@test.com")).thenReturn(Optional.empty());
 
     EntityNotFoundException exception = assertThrows(
       EntityNotFoundException.class,
-      () -> usuarioService.getUsuarioById(BigInteger.valueOf(999))
+      () -> usuarioService.getUsuarioByEmail("test@test.com")
     );
 
     assertEquals("Usuario não encontrado", exception.getMessage());
-    verify(usuarioRepository, times(1)).findById(BigInteger.valueOf(999));
+    verify(usuarioRepository, times(1)).findByEmail("test@test.com");
   }
 
   @Test
@@ -118,23 +118,23 @@ class UsuarioServiceTest {
 
   @Test
   void updateUsuario_WithValidData_ShouldReturnUpdatedUsuario() {
-    when(usuarioRepository.findById(BigInteger.valueOf(1))).thenReturn(Optional.of(usuario));
+    when(usuarioRepository.findByEmail("test@test.com")).thenReturn(Optional.of(usuario));
     when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuario);
 
-    Usuario result = usuarioService.updateUsuario(BigInteger.valueOf(1), usuarioUpdateDTO);
+    Usuario result = usuarioService.updateUsuario("test@test.com", usuarioUpdateDTO);
 
     assertNotNull(result);
-    verify(usuarioRepository, times(1)).findById(BigInteger.valueOf(1));
+    verify(usuarioRepository, times(1)).findByEmail("test@test.com");
     verify(usuarioRepository, times(1)).save(any(Usuario.class));
   }
 
   @Test
   void updateUsuario_WithInvalidId_ShouldThrowException() {
-    when(usuarioRepository.findById(BigInteger.valueOf(999))).thenReturn(Optional.empty());
+    when(usuarioRepository.findByEmail("test@test.com")).thenReturn(Optional.empty());
 
-    assertThrows(RuntimeException.class, () -> usuarioService.updateUsuario(BigInteger.valueOf(999), usuarioUpdateDTO));
+    assertThrows(RuntimeException.class, () -> usuarioService.updateUsuario("test@test.com", usuarioUpdateDTO));
 
-    verify(usuarioRepository, times(1)).findById(BigInteger.valueOf(999));
+    verify(usuarioRepository, times(1)).findByEmail("test@test.com");
     verify(usuarioRepository, never()).save(any(Usuario.class));
   }
 

@@ -113,7 +113,7 @@ class UsuarioControllerTest {
 
   @Test
   void getUsuarioById_WithValidId_ShouldReturnUsuario() throws Exception {
-    when(usuarioService.getUsuarioById(BigInteger.valueOf(1))).thenReturn(usuario);
+    when(usuarioService.getUsuarioByEmail("email")).thenReturn(usuario);
 
     mockMvc.perform(get("/api/usuarios/1"))
       .andExpect(status().isOk())
@@ -121,18 +121,18 @@ class UsuarioControllerTest {
       .andExpect(jsonPath("$.email").value("test@test.com"))
       .andExpect(jsonPath("$.nome").value("Test User"));
 
-    verify(usuarioService, times(1)).getUsuarioById(BigInteger.valueOf(1));
+    verify(usuarioService, times(1)).getUsuarioByEmail("email");
   }
 
   @Test
   void getUsuarioById_WithInvalidId_ShouldReturnNotFound() throws Exception {
-    when(usuarioService.getUsuarioById(BigInteger.valueOf(999)))
+    when(usuarioService.getUsuarioByEmail("email"))
       .thenThrow(new EntityNotFoundException("Usuario não encontrado"));
 
     mockMvc.perform(get("/api/usuarios/999"))
       .andExpect(status().isNotFound());
 
-    verify(usuarioService, times(1)).getUsuarioById(BigInteger.valueOf(999));
+    verify(usuarioService, times(1)).getUsuarioByEmail("email");
   }
 
   @Test
@@ -152,7 +152,7 @@ class UsuarioControllerTest {
 
   @Test
   void updateUsuario_WithValidData_ShouldReturnUpdatedUsuario() throws Exception {
-    when(usuarioService.updateUsuario(eq(BigInteger.valueOf(1)), any(UsuarioUpdateDTO.class))).thenReturn(usuario);
+    when(usuarioService.updateUsuario(eq("email"), any(UsuarioUpdateDTO.class))).thenReturn(usuario);
 
     mockMvc.perform(put("/api/usuarios/1")
         .contentType(MediaType.APPLICATION_JSON)
@@ -161,12 +161,12 @@ class UsuarioControllerTest {
       .andExpect(content().contentType(MediaType.APPLICATION_JSON))
       .andExpect(jsonPath("$.email").value("test@test.com"));
 
-    verify(usuarioService, times(1)).updateUsuario(eq(BigInteger.valueOf(1)), any(UsuarioUpdateDTO.class));
+    verify(usuarioService, times(1)).updateUsuario(eq("email"), any(UsuarioUpdateDTO.class));
   }
 
   @Test
   void updateUsuario_WithInvalidId_ShouldReturnNotFound() throws Exception {
-    when(usuarioService.updateUsuario(eq(BigInteger.valueOf(999)), any(UsuarioUpdateDTO.class)))
+    when(usuarioService.updateUsuario(eq("email"), any(UsuarioUpdateDTO.class)))
       .thenThrow(new jakarta.persistence.EntityNotFoundException());
 
     mockMvc.perform(put("/api/usuarios/999")
@@ -174,12 +174,12 @@ class UsuarioControllerTest {
         .content(objectMapper.writeValueAsString(usuarioUpdateDTO)))
       .andExpect(status().isNotFound());
 
-    verify(usuarioService, times(1)).updateUsuario(eq(BigInteger.valueOf(999)), any(UsuarioUpdateDTO.class));
+    verify(usuarioService, times(1)).updateUsuario(eq("email"), any(UsuarioUpdateDTO.class));
   }
 
   @Test
   void updateUsuario_WhenServiceThrowsException_ShouldReturnInternalServerError() throws Exception {
-    when(usuarioService.updateUsuario(eq(BigInteger.valueOf(1)), any(UsuarioUpdateDTO.class)))
+    when(usuarioService.updateUsuario(eq("email"), any(UsuarioUpdateDTO.class)))
       .thenThrow(new RuntimeException("Database error"));
 
     mockMvc.perform(put("/api/usuarios/1")
@@ -187,7 +187,7 @@ class UsuarioControllerTest {
         .content(objectMapper.writeValueAsString(usuarioUpdateDTO)))
       .andExpect(status().isInternalServerError());
 
-    verify(usuarioService, times(1)).updateUsuario(eq(BigInteger.valueOf(1)), any(UsuarioUpdateDTO.class));
+    verify(usuarioService, times(1)).updateUsuario(eq("email"), any(UsuarioUpdateDTO.class));
   }
 
   @Test
