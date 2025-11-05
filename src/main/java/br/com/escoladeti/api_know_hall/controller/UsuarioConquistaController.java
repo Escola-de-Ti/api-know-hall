@@ -11,13 +11,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigInteger;
+import java.security.Principal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/usuarios/{usuarioId}/conquistas")
+@RequestMapping("/api/usuarios/conquistas")
 @RequiredArgsConstructor
 public class UsuarioConquistaController {
 
@@ -25,14 +26,14 @@ public class UsuarioConquistaController {
 
   @GetMapping
   public ResponseEntity<List<UsuarioConquistaResponseDTO>> listarConquistasUsuario(
-    @PathVariable BigInteger usuarioId,
+    Principal principal,
     @RequestParam(required = false) TipoConquista tipo) {
 
     List<UsuarioConquista> conquistas;
     if (tipo != null) {
-      conquistas = conquistaService.listarConquistasUsuarioPorTipo(usuarioId, tipo);
+      conquistas = conquistaService.listarConquistasUsuarioPorTipo(principal.getName(), tipo);
     } else {
-      conquistas = conquistaService.listarConquistasUsuario(usuarioId);
+      conquistas = conquistaService.listarConquistasUsuario(principal.getName());
     }
 
     List<UsuarioConquistaResponseDTO> response = conquistas.stream()
@@ -44,11 +45,11 @@ public class UsuarioConquistaController {
 
   @GetMapping("/{conquistaId}/progresso")
   public ResponseEntity<ConquistaProgressoResponseDTO> obterProgresso(
-    @PathVariable BigInteger usuarioId,
+    Principal principal,
     @PathVariable BigInteger conquistaId) {
 
     ConquistaProgressoDTO progresso =
-      conquistaService.obterProgressoConquista(usuarioId, conquistaId);
+      conquistaService.obterProgressoConquista(principal.getName(), conquistaId);
 
     ConquistaProgressoResponseDTO response =
       ConquistaProgressoResponseDTO.fromDTO(progresso);
@@ -58,18 +59,18 @@ public class UsuarioConquistaController {
 
   @PostMapping("/verificar")
   public ResponseEntity<Map<String, Object>> verificarEConcederConquistas(
-    @PathVariable BigInteger usuarioId,
+    Principal principal,
     @Valid @RequestBody VerificarProgressoDTO dto) {
 
     conquistaService.verificarEConcederConquistas(
-      usuarioId,
+      principal.getName(),
       dto.getCampoValidacao(),
       dto.getProgressoAtual()
     );
 
     Map<String, Object> response = new HashMap<>();
     response.put("mensagem", "Progresso verificado com sucesso");
-    response.put("usuarioId", usuarioId);
+    response.put("usuarioEmail", principal.getName());
     response.put("campoValidacao", dto.getCampoValidacao());
     response.put("progressoAtual", dto.getProgressoAtual());
 
@@ -78,10 +79,10 @@ public class UsuarioConquistaController {
 
   @GetMapping("/estatisticas")
   public ResponseEntity<Map<String, Object>> obterEstatisticas(
-    @PathVariable BigInteger usuarioId) {
+    Principal principal) {
 
     List<UsuarioConquista> todasConquistas =
-      conquistaService.listarConquistasUsuario(usuarioId);
+      conquistaService.listarConquistasUsuario(principal.getName());
 
     long totalConquistas = todasConquistas.size();
     long totalInsignias = todasConquistas.stream()

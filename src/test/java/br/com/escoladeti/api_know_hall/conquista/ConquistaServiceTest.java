@@ -1,4 +1,5 @@
 package br.com.escoladeti.api_know_hall.conquista;
+
 import br.com.escoladeti.api_know_hall.dto.conquista.ConquistaProgressoDTO;
 import br.com.escoladeti.api_know_hall.entity.Usuario;
 import br.com.escoladeti.api_know_hall.entity.conquista.*;
@@ -164,53 +165,52 @@ class ConquistaServiceTest {
 
   @Test
   void verificarEConcederConquistas_ShouldGrantBronzeTier() {
-    when(usuarioRepository.findById(BigInteger.valueOf(1))).thenReturn(Optional.of(usuario));
+    when(usuarioRepository.findByEmail("test@test.com")).thenReturn(Optional.of(usuario));
     when(conquistaRepository.findByCampoValidacao("participacoes"))
       .thenReturn(Arrays.asList(conquista));
     when(usuarioConquistaRepository.existsByUsuarioIdAndConquistaTierId(any(), any()))
       .thenReturn(false);
     when(usuarioConquistaRepository.save(any())).thenReturn(new UsuarioConquista());
 
-    conquistaService.verificarEConcederConquistas(BigInteger.valueOf(1), "participacoes", 15);
+    conquistaService.verificarEConcederConquistas("test@test.com", "participacoes", 15);
 
     verify(usuarioConquistaRepository, times(1)).save(any(UsuarioConquista.class));
   }
 
   @Test
   void verificarEConcederConquistas_ShouldGrantMultipleTiers() {
-    when(usuarioRepository.findById(BigInteger.valueOf(1))).thenReturn(Optional.of(usuario));
+    when(usuarioRepository.findByEmail("test@test.com")).thenReturn(Optional.of(usuario));
     when(conquistaRepository.findByCampoValidacao("participacoes"))
       .thenReturn(Arrays.asList(conquista));
     when(usuarioConquistaRepository.existsByUsuarioIdAndConquistaTierId(any(), any()))
       .thenReturn(false);
     when(usuarioConquistaRepository.save(any())).thenReturn(new UsuarioConquista());
 
-    conquistaService.verificarEConcederConquistas(BigInteger.valueOf(1), "participacoes", 30);
+    conquistaService.verificarEConcederConquistas("test@test.com", "participacoes", 30);
 
-    // Deve conceder Bronze (10) e Prata (25)
     verify(usuarioConquistaRepository, times(2)).save(any(UsuarioConquista.class));
   }
 
   @Test
   void verificarEConcederConquistas_WhenAlreadyHasTier_ShouldNotGrantAgain() {
-    when(usuarioRepository.findById(BigInteger.valueOf(1))).thenReturn(Optional.of(usuario));
+    when(usuarioRepository.findByEmail("test@test.com")).thenReturn(Optional.of(usuario));
     when(conquistaRepository.findByCampoValidacao("participacoes"))
       .thenReturn(Arrays.asList(conquista));
     when(usuarioConquistaRepository.existsByUsuarioIdAndConquistaTierId(any(), any()))
       .thenReturn(true);
 
-    conquistaService.verificarEConcederConquistas(BigInteger.valueOf(1), "participacoes", 15);
+    conquistaService.verificarEConcederConquistas("test@test.com", "participacoes", 15);
 
     verify(usuarioConquistaRepository, never()).save(any(UsuarioConquista.class));
   }
 
   @Test
   void verificarEConcederConquistas_WithInvalidUser_ShouldThrowException() {
-    when(usuarioRepository.findById(BigInteger.valueOf(999))).thenReturn(Optional.empty());
+    when(usuarioRepository.findByEmail("test@test.com")).thenReturn(Optional.empty());
 
     EntityNotFoundException exception = assertThrows(
       EntityNotFoundException.class,
-      () -> conquistaService.verificarEConcederConquistas(BigInteger.valueOf(999), "participacoes", 15)
+      () -> conquistaService.verificarEConcederConquistas("test@test.com", "participacoes", 15)
     );
 
     assertTrue(exception.getMessage().contains("Usuário não encontrado"));
@@ -268,10 +268,11 @@ class ConquistaServiceTest {
     uc.setConquista(conquista);
     uc.setConquistaTier(tierBronze);
 
+    when(usuarioRepository.findByEmail("test@test.com")).thenReturn(Optional.of(usuario));
     when(usuarioConquistaRepository.findByUsuarioIdWithDetails(BigInteger.valueOf(1)))
       .thenReturn(Arrays.asList(uc));
 
-    List<UsuarioConquista> result = conquistaService.listarConquistasUsuario(BigInteger.valueOf(1));
+    List<UsuarioConquista> result = conquistaService.listarConquistasUsuario("test@test.com");
 
     assertNotNull(result);
     assertEquals(1, result.size());
@@ -285,11 +286,12 @@ class ConquistaServiceTest {
     uc.setConquista(conquista);
     uc.setConquistaTier(tierBronze);
 
+    when(usuarioRepository.findByEmail("test@test.com")).thenReturn(Optional.of(usuario));
     when(usuarioConquistaRepository.findByUsuarioIdAndTipo(BigInteger.valueOf(1), "INSIGNIA"))
       .thenReturn(Arrays.asList(uc));
 
     List<UsuarioConquista> result = conquistaService.listarConquistasUsuarioPorTipo(
-      BigInteger.valueOf(1),
+      "test@test.com",
       TipoConquista.INSIGNIA
     );
 
@@ -301,13 +303,14 @@ class ConquistaServiceTest {
 
   @Test
   void obterProgressoConquista_WithNoTiersConquered_ShouldReturnCorrectProgress() {
+    when(usuarioRepository.findByEmail("test@test.com")).thenReturn(Optional.of(usuario));
     when(conquistaRepository.findByIdWithTiers(BigInteger.valueOf(1)))
       .thenReturn(Optional.of(conquista));
     when(usuarioConquistaRepository.findByUsuarioIdAndConquistaId(any(), any()))
       .thenReturn(new ArrayList<>());
 
     ConquistaProgressoDTO result = conquistaService.obterProgressoConquista(
-      BigInteger.valueOf(1),
+      "test@test.com",
       BigInteger.valueOf(1)
     );
 
@@ -323,13 +326,14 @@ class ConquistaServiceTest {
     UsuarioConquista uc = new UsuarioConquista();
     uc.setConquistaTier(tierBronze);
 
+    when(usuarioRepository.findByEmail("test@test.com")).thenReturn(Optional.of(usuario));
     when(conquistaRepository.findByIdWithTiers(BigInteger.valueOf(1)))
       .thenReturn(Optional.of(conquista));
     when(usuarioConquistaRepository.findByUsuarioIdAndConquistaId(any(), any()))
       .thenReturn(Arrays.asList(uc));
 
     ConquistaProgressoDTO result = conquistaService.obterProgressoConquista(
-      BigInteger.valueOf(1),
+      "test@test.com",
       BigInteger.valueOf(1)
     );
 
@@ -349,13 +353,14 @@ class ConquistaServiceTest {
     UsuarioConquista uc3 = new UsuarioConquista();
     uc3.setConquistaTier(tierOuro);
 
+    when(usuarioRepository.findByEmail("test@test.com")).thenReturn(Optional.of(usuario));
     when(conquistaRepository.findByIdWithTiers(BigInteger.valueOf(1)))
       .thenReturn(Optional.of(conquista));
     when(usuarioConquistaRepository.findByUsuarioIdAndConquistaId(any(), any()))
       .thenReturn(Arrays.asList(uc1, uc2, uc3));
 
     ConquistaProgressoDTO result = conquistaService.obterProgressoConquista(
-      BigInteger.valueOf(1),
+      "test@test.com",
       BigInteger.valueOf(1)
     );
 
@@ -367,12 +372,13 @@ class ConquistaServiceTest {
 
   @Test
   void obterProgressoConquista_WithInvalidConquista_ShouldThrowException() {
+    when(usuarioRepository.findByEmail("test@test.com")).thenReturn(Optional.of(usuario));
     when(conquistaRepository.findByIdWithTiers(BigInteger.valueOf(999)))
       .thenReturn(Optional.empty());
 
     EntityNotFoundException exception = assertThrows(
       EntityNotFoundException.class,
-      () -> conquistaService.obterProgressoConquista(BigInteger.valueOf(1), BigInteger.valueOf(999))
+      () -> conquistaService.obterProgressoConquista("test@test.com", BigInteger.valueOf(999))
     );
 
     assertTrue(exception.getMessage().contains("Conquista não encontrada"));
