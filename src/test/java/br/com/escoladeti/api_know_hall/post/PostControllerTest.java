@@ -15,7 +15,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatchers;  // ✅ IMPORT EXPLÍCITO
+import org.mockito.ArgumentMatchers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -32,7 +32,7 @@ import java.time.Instant;
 import java.util.List;
 
 import static org.hamcrest.Matchers.*;
-import static org.mockito.Mockito.*;  // ✅ SEM any(), eq(), etc
+import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -88,13 +88,10 @@ class PostControllerTest {
     );
   }
 
-  // ==================== TESTES DE CRIAÇÃO ====================
-
   @Test
   @WithMockUser
   @DisplayName("POST /api/posts - Deve criar post com sucesso")
   void deveCriarPostComSucesso() throws Exception {
-    // ✅ USE ArgumentMatchers.any()
     when(postService.criarPost(ArgumentMatchers.any(PostCreateDTO.class))).thenReturn(postResponseDTO);
 
     mockMvc.perform(post("/api/posts")
@@ -154,8 +151,6 @@ class PostControllerTest {
     verify(postService, never()).criarPost(ArgumentMatchers.any());
   }
 
-  // ==================== TESTES DE BUSCA ====================
-
   @Test
   @WithMockUser
   @DisplayName("GET /api/posts/{id} - Deve buscar post por ID")
@@ -201,8 +196,6 @@ class PostControllerTest {
     verify(postService).listarPorUsuario(BigInteger.ONE);
   }
 
-  // ==================== TESTES DE ATUALIZAÇÃO ====================
-
   @Test
   @WithMockUser
   @DisplayName("PATCH /api/posts/{id} - Deve atualizar post")
@@ -213,7 +206,6 @@ class PostControllerTest {
       "Novo Título", "Descrição", 10L, List.of(), Timestamp.from(Instant.now())
     );
 
-    // ✅ USE ArgumentMatchers.eq() e .any()
     when(postService.atualizarPost(ArgumentMatchers.eq(BigInteger.ONE), ArgumentMatchers.any(PostUpdateDTO.class)))
       .thenReturn(atualizado);
 
@@ -228,8 +220,6 @@ class PostControllerTest {
     verify(postService).atualizarPost(ArgumentMatchers.eq(BigInteger.ONE), ArgumentMatchers.any(PostUpdateDTO.class));
   }
 
-  // ==================== TESTES DE DELEÇÃO ====================
-
   @Test
   @WithMockUser
   @DisplayName("DELETE /api/posts/{id} - Deve deletar post")
@@ -243,8 +233,6 @@ class PostControllerTest {
 
     verify(postService).deletarPost(BigInteger.ONE);
   }
-
-  // ==================== TESTES DE FEED ====================
 
   @Test
   @WithMockUser
@@ -291,8 +279,6 @@ class PostControllerTest {
         req.tagOperador() == TagOperador.AND
     ));
   }
-
-  // ==================== TESTES DE BUSCA AVANÇADA ====================
 
   @Test
   @WithMockUser
@@ -460,7 +446,7 @@ class PostControllerTest {
       List.of(),
       Timestamp.from(Instant.now()),
       comentarios,
-      true  // hasMoreComentarios = true
+      true
     );
 
     when(postService.buscarDetalhesDoPost(eq(BigInteger.ONE), eq(2)))
@@ -489,7 +475,7 @@ class PostControllerTest {
       5L,
       List.of(),
       Timestamp.from(Instant.now()),
-      List.of(),  // sem comentários
+      List.of(),
       false
     );
 

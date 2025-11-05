@@ -26,7 +26,6 @@ class ComentarioTest {
 
   @BeforeEach
   void setUp() {
-    // Setup Usuario
     usuario = new Usuario();
     usuario.setId(BigInteger.ONE);
     usuario.setNome("João Silva");
@@ -36,7 +35,6 @@ class ComentarioTest {
     usuario.setStatusUsuario(StatusUsuario.ATIVO);
     usuario.setTipoUsuario(TipoUsuario.ALUNO);
 
-    // Setup Post
     post = new Post();
     post.setId(BigInteger.ONE);
     post.setTitulo("Post de Teste");
@@ -46,7 +44,6 @@ class ComentarioTest {
     post.setComentarios(new ArrayList<>());
     post.setDataCriacao(Timestamp.from(Instant.now()));
 
-    // Setup Comentario Pai
     comentarioPai = new Comentario();
     comentarioPai.setId(BigInteger.ONE);
     comentarioPai.setTexto("Comentário pai");
@@ -56,7 +53,6 @@ class ComentarioTest {
     comentarioPai.setTotalSuperVotes(2L);
     comentarioPai.setDataCriacao(Timestamp.from(Instant.now()));
 
-    // Setup Comentario
     comentario = new Comentario();
     comentario.setId(BigInteger.TWO);
     comentario.setTexto("Comentário de teste");

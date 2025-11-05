@@ -85,7 +85,6 @@ class ComentarioControllerTest {
 
     comentarioUpdate = new ComentarioUpdateDTO("Texto atualizado");
 
-    // Mock do Principal
     mockPrincipal = () -> "joao@email.com";
   }
 
