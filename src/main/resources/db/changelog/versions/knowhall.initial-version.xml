@@ -392,4 +392,58 @@
     <comment>Criação da tabela POST com relacionamento obrigatório para USUARIO</comment>
   </changeSet>
 
+  <changeSet id="KH-27" author="GABRIEL MARASSI">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <tableExists tableName="COMENTARIO"/>
+      </not>
+    </preConditions>
+    <createTable tableName="COMENTARIO">
+      <column name="id" type="BIGSERIAL">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+      <column name="post_id" type="BIGINT">
+        <constraints nullable="false"/>
+      </column>
+      <column name="usuario_id" type="BIGINT">
+        <constraints nullable="false"/>
+      </column>
+      <column name="comentario_pai_id" type="BIGINT">
+        <constraints nullable="true"/>
+      </column>
+      <column name="texto" type="TEXT"/>
+      <column name="total_up_votes" type="BIGINT" defaultValue="0"/>
+      <column name="total_super_votes" type="BIGINT" defaultValue="0"/>
+      <column name="data_criacao" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+        <constraints nullable="false"/>
+      </column>
+    </createTable>
+
+    <addForeignKeyConstraint
+      baseTableName="COMENTARIO"
+      baseColumnNames="post_id"
+      constraintName="fk_comentario_post"
+      referencedTableName="POST"
+      referencedColumnNames="id"
+      onDelete="CASCADE"/>
+
+    <addForeignKeyConstraint
+      baseTableName="COMENTARIO"
+      baseColumnNames="usuario_id"
+      constraintName="fk_comentario_usuario"
+      referencedTableName="USUARIO"
+      referencedColumnNames="id"
+      onDelete="CASCADE"/>
+
+    <addForeignKeyConstraint
+      baseTableName="COMENTARIO"
+      baseColumnNames="comentario_pai_id"
+      constraintName="fk_comentario_comentario_pai"
+      referencedTableName="COMENTARIO"
+      referencedColumnNames="id"
+      onDelete="CASCADE"/>
+
+    <comment>Criação da tabela COMENTARIO com relacionamento obrigatório para POST e USUARIO, e auto-relacionamento opcional para comentário pai (respostas)</comment>
+  </changeSet>
+
 </databaseChangeLog>
