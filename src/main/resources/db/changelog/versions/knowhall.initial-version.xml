@@ -392,6 +392,168 @@
     <comment>Criação da tabela POST com relacionamento obrigatório para USUARIO</comment>
   </changeSet>
 
+  <changeSet id="KH-21" author="GABRIEL MARASSI">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <tableExists tableName="workshop"/>
+      </not>
+    </preConditions>
+
+    <createTable tableName="workshop">
+      <column name="id" type="BIGINT" autoIncrement="true">
+        <constraints primaryKey="true" primaryKeyName="pk_workshop"/>
+      </column>
+
+
+
+      <column name="titulo" type="VARCHAR(255)">
+        <constraints nullable="false"/>
+      </column>
+
+      <column name="link_meet" type="VARCHAR(500)">
+        <constraints nullable="true"/>
+      </column>
+
+      <column name="status" type="VARCHAR(50)">
+        <constraints nullable="false"/>
+      </column>
+
+      <column name="id_instrutor" type="BIGINT">
+        <constraints nullable="false"/>
+      </column>
+
+      <column name="data_criacao" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+        <constraints nullable="false"/>
+      </column>
+
+      <column name="data_inicio" type="TIMESTAMP">
+        <constraints nullable="false"/>
+      </column>
+
+      <column name="data_termino" type="TIMESTAMP">
+        <constraints nullable="false"/>
+      </column>
+    </createTable>
+
+    <rollback>
+      <dropTable tableName="workshop"/>
+    </rollback>
+  </changeSet>
+
+  <changeSet id="KH-22" author="GABRIEL MARASSI">
+    <preConditions onFail="MARK_RAN">
+      <tableExists tableName="workshop"/>
+      <not>
+        <foreignKeyConstraintExists foreignKeyName="fk_workshop_instrutor"/>
+      </not>
+    </preConditions>
+
+    <addForeignKeyConstraint
+      baseTableName="workshop"
+      baseColumnNames="id_instrutor"
+      constraintName="fk_workshop_instrutor"
+      referencedTableName="usuario"
+      referencedColumnNames="id"
+      onDelete="CASCADE"
+      onUpdate="CASCADE"/>
+
+    <createIndex indexName="idx_workshop_instrutor" tableName="workshop">
+      <column name="id_instrutor"/>
+    </createIndex>
+
+    <createIndex indexName="idx_workshop_status" tableName="workshop">
+      <column name="status"/>
+    </createIndex>
+
+    <createIndex indexName="idx_workshop_data_inicio" tableName="workshop">
+      <column name="data_inicio"/>
+    </createIndex>
+
+    <sql>
+      ALTER TABLE workshop
+        ADD CONSTRAINT chk_workshop_status
+          CHECK (status IN ('ABERTO', 'EM_ANDAMENTO', 'CONCLUIDO'));
+
+      ALTER TABLE workshop
+        ADD CONSTRAINT chk_workshop_datas
+          CHECK (data_termino > data_inicio);
+    </sql>
+
+    <rollback>
+      <dropForeignKeyConstraint
+        baseTableName="workshop"
+        constraintName="fk_workshop_instrutor"/>
+      <dropIndex indexName="idx_workshop_instrutor" tableName="workshop"/>
+      <dropIndex indexName="idx_workshop_status" tableName="workshop"/>
+      <dropIndex indexName="idx_workshop_data_inicio" tableName="workshop"/>
+      <dropColumn tableName="workshop" columnName="data_criacao"/>
+      <dropColumn tableName="workshop" columnName="data_inicio"/>
+      <dropColumn tableName="workshop" columnName="data_termino"/>
+      <sql>ALTER TABLE workshop DROP CONSTRAINT IF EXISTS chk_workshop_status;</sql>
+      <sql>ALTER TABLE workshop DROP CONSTRAINT IF EXISTS chk_workshop_datas;</sql>
+    </rollback>
+  </changeSet>
+
+  <changeSet id="KH-23" author="GABRIEL MARASSI">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <tableExists tableName="descricao_workshop"/>
+      </not>
+    </preConditions>
+
+    <createTable tableName="descricao_workshop">
+      <column name="id" type="BIGINT" autoIncrement="true">
+        <constraints primaryKey="true" primaryKeyName="pk_descricao_workshop"/>
+      </column>
+
+      <column name="id_workshop" type="BIGINT">
+        <constraints nullable="false" unique="true" uniqueConstraintName="uk_descricao_workshop_workshop"/>
+      </column>
+
+      <column name="tema" type="VARCHAR(255)">
+        <constraints nullable="false"/>
+      </column>
+
+      <column name="descricao" type="TEXT">
+        <constraints nullable="true"/>
+      </column>
+    </createTable>
+
+    <rollback>
+      <dropTable tableName="descricao_workshop"/>
+    </rollback>
+  </changeSet>
+
+  <changeSet id="KH-24" author="GABRIEL MARASSI">
+    <preConditions onFail="MARK_RAN">
+      <tableExists tableName="descricao_workshop"/>
+      <tableExists tableName="workshop"/>
+      <not>
+        <foreignKeyConstraintExists foreignKeyName="fk_descricao_workshop_workshop"/>
+      </not>
+    </preConditions>
+
+    <addForeignKeyConstraint
+      baseTableName="descricao_workshop"
+      baseColumnNames="id_workshop"
+      constraintName="fk_descricao_workshop_workshop"
+      referencedTableName="workshop"
+      referencedColumnNames="id"
+      onDelete="CASCADE"
+      onUpdate="CASCADE"/>
+
+    <createIndex indexName="idx_descricao_workshop_workshop" tableName="descricao_workshop">
+      <column name="id_workshop"/>
+    </createIndex>
+
+    <rollback>
+      <dropForeignKeyConstraint
+        baseTableName="descricao_workshop"
+        constraintName="fk_descricao_workshop_workshop"/>
+      <dropIndex indexName="idx_descricao_workshop_workshop" tableName="descricao_workshop"/>
+    </rollback>
+  </changeSet>
+
   <changeSet id="KH-27" author="GABRIEL MARASSI">
     <preConditions onFail="MARK_RAN">
       <not>

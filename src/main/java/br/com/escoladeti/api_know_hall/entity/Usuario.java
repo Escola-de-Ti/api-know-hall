@@ -4,6 +4,7 @@ import br.com.escoladeti.api_know_hall.dto.UsuarioCreateDTO;
 import br.com.escoladeti.api_know_hall.dto.UsuarioUpdateDTO;
 import br.com.escoladeti.api_know_hall.entity.conquista.ConquistaTier;
 import br.com.escoladeti.api_know_hall.entity.conquista.UsuarioConquista;
+import br.com.escoladeti.api_know_hall.entity.workshop.Workshop;
 import br.com.escoladeti.api_know_hall.enums.StatusUsuario;
 import br.com.escoladeti.api_know_hall.enums.TierConquista;
 import br.com.escoladeti.api_know_hall.enums.TipoUsuario;
@@ -89,6 +90,9 @@ public class Usuario {
 
   @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<UsuarioConquista> conquistas = new ArrayList<>();
+
+  @OneToMany(mappedBy = "instrutor", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+  private List<Workshop> workshops = new ArrayList<>();
 
   public void adicionarConquista(ConquistaTier conquistaTier, Integer progressoAtual) {
     UsuarioConquista uc = new UsuarioConquista();
