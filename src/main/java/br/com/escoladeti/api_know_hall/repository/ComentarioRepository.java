@@ -13,64 +13,70 @@ import java.util.List;
 @Repository
 public interface ComentarioRepository extends JpaRepository<Comentario, BigInteger> {
 
-  @Query("""
+  @Query(value = """
     SELECT c.id as id,
-           c.post.id as postId,
-           c.usuario.id as usuarioId,
-           c.usuario.nome as usuarioNome,
+           c.post_id as postId,
+           c.usuario_id as usuarioId,
+           u.nome as usuarioNome,
            c.texto as texto,
-           c.totalUpVotes as totalUpVotes,
-           c.totalSuperVotes as totalSuperVotes,
-           c.comentarioPai.id as comentarioPaiId,
-           c.dataCriacao as dataCriacao
-    FROM Comentario c
-    WHERE c.post.id = :postId
-      AND c.comentarioPai IS NULL
+           c.total_up_votes as totalUpVotes,
+           c.total_super_votes as totalSuperVotes,
+           c.comentario_pai_id as comentarioPaiId,
+           c.data_criacao as dataCriacao
+    FROM comentario c
+    INNER JOIN usuario u ON c.usuario_id = u.id
+    WHERE c.post_id = :postId
+      AND c.comentario_pai_id IS NULL
       AND (:lastComentarioId IS NULL OR c.id < :lastComentarioId)
-    ORDER BY c.dataCriacao DESC, c.id DESC
-    """)
+    ORDER BY c.data_criacao DESC, c.id DESC
+    LIMIT :pageSize
+    """, nativeQuery = true)
   List<ComentarioProjection> findComentariosByPostId(
     @Param("postId") BigInteger postId,
     @Param("lastComentarioId") BigInteger lastComentarioId,
     @Param("pageSize") Integer pageSize
   );
 
-  @Query("""
+  @Query(value = """
     SELECT c.id as id,
-           c.post.id as postId,
-           c.usuario.id as usuarioId,
-           c.usuario.nome as usuarioNome,
+           c.post_id as postId,
+           c.usuario_id as usuarioId,
+           u.nome as usuarioNome,
            c.texto as texto,
-           c.totalUpVotes as totalUpVotes,
-           c.totalSuperVotes as totalSuperVotes,
-           c.comentarioPai.id as comentarioPaiId,
-           c.dataCriacao as dataCriacao
-    FROM Comentario c
-    WHERE c.comentarioPai.id = :comentarioPaiId
+           c.total_up_votes as totalUpVotes,
+           c.total_super_votes as totalSuperVotes,
+           c.comentario_pai_id as comentarioPaiId,
+           c.data_criacao as dataCriacao
+    FROM comentario c
+    INNER JOIN usuario u ON c.usuario_id = u.id
+    WHERE c.comentario_pai_id = :comentarioPaiId
       AND (:lastComentarioId IS NULL OR c.id < :lastComentarioId)
-    ORDER BY c.dataCriacao ASC, c.id ASC
-    """)
+    ORDER BY c.data_criacao ASC, c.id ASC
+    LIMIT :pageSize
+    """, nativeQuery = true)
   List<ComentarioProjection> findRespostasByComentarioPaiId(
     @Param("comentarioPaiId") BigInteger comentarioPaiId,
     @Param("lastComentarioId") BigInteger lastComentarioId,
     @Param("pageSize") Integer pageSize
   );
 
-  @Query("""
+  @Query(value = """
     SELECT c.id as id,
-           c.post.id as postId,
-           c.usuario.id as usuarioId,
-           c.usuario.nome as usuarioNome,
+           c.post_id as postId,
+           c.usuario_id as usuarioId,
+           u.nome as usuarioNome,
            c.texto as texto,
-           c.totalUpVotes as totalUpVotes,
-           c.totalSuperVotes as totalSuperVotes,
-           c.comentarioPai.id as comentarioPaiId,
-           c.dataCriacao as dataCriacao
-    FROM Comentario c
-    WHERE c.usuario.id = :usuarioId
+           c.total_up_votes as totalUpVotes,
+           c.total_super_votes as totalSuperVotes,
+           c.comentario_pai_id as comentarioPaiId,
+           c.data_criacao as dataCriacao
+    FROM comentario c
+    INNER JOIN usuario u ON c.usuario_id = u.id
+    WHERE c.usuario_id = :usuarioId
       AND (:lastComentarioId IS NULL OR c.id < :lastComentarioId)
-    ORDER BY c.dataCriacao DESC, c.id DESC
-    """)
+    ORDER BY c.data_criacao DESC, c.id DESC
+    LIMIT :pageSize
+    """, nativeQuery = true)
   List<ComentarioProjection> findComentariosByUsuarioId(
     @Param("usuarioId") BigInteger usuarioId,
     @Param("lastComentarioId") BigInteger lastComentarioId,
