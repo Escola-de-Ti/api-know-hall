@@ -1,14 +1,17 @@
 package br.com.escoladeti.api_know_hall.service;
 
+import br.com.escoladeti.api_know_hall.dto.comentario.ComentarioResponseDTO;
 import br.com.escoladeti.api_know_hall.dto.post.*;
 import br.com.escoladeti.api_know_hall.dto.tags.TagResponseDTO;
 import br.com.escoladeti.api_know_hall.entity.Post;
 import br.com.escoladeti.api_know_hall.entity.Tag;
 import br.com.escoladeti.api_know_hall.entity.Usuario;
 import br.com.escoladeti.api_know_hall.enums.OrdenacaoTipo;
+import br.com.escoladeti.api_know_hall.projection.comentario.ComentarioProjection;
 import br.com.escoladeti.api_know_hall.projection.post.PostBuscaProjection;
 import br.com.escoladeti.api_know_hall.projection.post.PostFeedProjection;
 import br.com.escoladeti.api_know_hall.projection.tag.PostTagProjection;
+import br.com.escoladeti.api_know_hall.repository.ComentarioRepository;
 import br.com.escoladeti.api_know_hall.repository.PostRepository;
 import br.com.escoladeti.api_know_hall.repository.TagsRepository;
 import br.com.escoladeti.api_know_hall.repository.UsuarioRepository;
@@ -32,6 +35,7 @@ public class PostService {
   private final PostRepository postRepository;
   private final UsuarioRepository usuarioRepository;
   private final TagsRepository tagsRepository;
+  private final ComentarioRepository comentarioRepository;
 
   @Transactional
   public PostResponseDTO criarPost(PostCreateDTO dto) {
@@ -300,6 +304,60 @@ public class PostService {
       projection.getDescricao(),
       projection.getTotalUpVotes(),
       tags,
+      projection.getDataCriacao()
+    );
+  }
+
+  @Transactional(readOnly = true)
+  public PostDetalhesDTO buscarDetalhesDoPost(BigInteger postId, Integer pageSize) {
+    Post post = postRepository.findById(postId)
+      .orElseThrow(() -> new EntityNotFoundException("Post não encontrado"));
+
+    List<TagResponseDTO> tagDTOs = post.getTags().stream()
+      .map(tag -> new TagResponseDTO(tag.getId(), tag.getName()))
+      .collect(Collectors.toList());
+
+    Integer fetchSize = pageSize + 1;
+    List<ComentarioProjection> comentariosResults = comentarioRepository.findComentariosByPostId(
+      postId,
+      null,
+      fetchSize
+    );
+
+    boolean hasMoreComentarios = comentariosResults.size() > pageSize;
+
+    if (hasMoreComentarios) {
+      comentariosResults = comentariosResults.subList(0, pageSize);
+    }
+
+    List<ComentarioResponseDTO> comentarios = comentariosResults.stream()
+      .map(this::mapComentarioProjectionToDTO)
+      .collect(Collectors.toList());
+
+    return new PostDetalhesDTO(
+      post.getId(),
+      post.getUsuario().getId(),
+      post.getUsuario().getNome(),
+      post.getTitulo(),
+      post.getDescricao(),
+      post.getTotalUpVotes(),
+      tagDTOs,
+      post.getDataCriacao(),
+      comentarios,
+      hasMoreComentarios
+    );
+  }
+
+  private ComentarioResponseDTO mapComentarioProjectionToDTO(ComentarioProjection projection) {
+    return new ComentarioResponseDTO(
+      projection.getId(),
+      projection.getPostId(),
+      projection.getUsuarioId(),
+      projection.getUsuarioNome(),
+      projection.getTexto(),
+      projection.getTotalUpVotes(),
+      projection.getTotalSuperVotes(),
+      projection.getComentarioPaiId(),
       projection.getDataCriacao()
     );
   }
