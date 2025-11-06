@@ -41,7 +41,7 @@ public interface VotoRepository extends JpaRepository<Voto, BigInteger> {
 
   @Query(value = """
     SELECT v.* FROM votos v
-    INNER JOIN comentarios c ON v.comentario_id = c.id
+    INNER JOIN comentario c ON v.comentario_id = c.id
     WHERE c.post_id = :postId
     AND v.usuario_id = :usuarioId
     AND v.tipo = :tipo

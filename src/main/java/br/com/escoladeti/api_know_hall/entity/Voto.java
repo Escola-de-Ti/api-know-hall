@@ -11,7 +11,7 @@ import java.math.BigInteger;
 import java.sql.Timestamp;
 
 @Entity
-@Table(name = "votos")
+@Table(name = "VOTOS")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
