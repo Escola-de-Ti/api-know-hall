@@ -608,4 +608,58 @@
     <comment>Criação da tabela COMENTARIO com relacionamento obrigatório para POST e USUARIO, e auto-relacionamento opcional para comentário pai (respostas)</comment>
   </changeSet>
 
+  <changeSet id="KH-28" author="GABRIEL MARASSI">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <tableExists tableName="VOTOS"/>
+      </not>
+    </preConditions>
+    <createTable tableName="VOTOS">
+      <column name="id" type="BIGSERIAL">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+      <column name="usuario_id" type="BIGINT">
+        <constraints nullable="false"/>
+      </column>
+      <column name="post_id" type="BIGINT">
+        <constraints nullable="true"/>
+      </column>
+      <column name="comentario_id" type="BIGINT">
+        <constraints nullable="true"/>
+      </column>
+      <column name="tipo" type="VARCHAR(20)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="data_criacao" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+        <constraints nullable="false"/>
+      </column>
+    </createTable>
+
+    <addForeignKeyConstraint
+      baseTableName="VOTOS"
+      baseColumnNames="usuario_id"
+      constraintName="fk_voto_usuario"
+      referencedTableName="USUARIO"
+      referencedColumnNames="id"
+      onDelete="CASCADE"/>
+
+    <addForeignKeyConstraint
+      baseTableName="VOTOS"
+      baseColumnNames="post_id"
+      constraintName="fk_voto_post"
+      referencedTableName="POST"
+      referencedColumnNames="id"
+      onDelete="CASCADE"/>
+
+    <addForeignKeyConstraint
+      baseTableName="VOTOS"
+      baseColumnNames="comentario_id"
+      constraintName="fk_voto_comentario"
+      referencedTableName="COMENTARIO"
+      referencedColumnNames="id"
+      onDelete="CASCADE"/>
+
+    <comment>Criação da tabela VOTOS com relacionamento obrigatório para USUARIO e opcional para POST ou COMENTARIO. Um voto deve estar associado a UM Post OU a UM Comentário, nunca ambos ou nenhum (validação na camada de aplicação).</comment>
+  </changeSet>
+
 </databaseChangeLog>
