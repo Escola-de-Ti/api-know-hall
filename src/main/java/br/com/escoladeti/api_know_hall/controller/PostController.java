@@ -43,9 +43,9 @@ public class PostController {
     return ResponseEntity.ok(posts);
   }
 
-  @GetMapping("/usuario/meus-posts")
-  public ResponseEntity<List<PostResponseDTO>> listarPorUsuario(Principal principal) {
-    List<PostResponseDTO> posts = postService.listarPorUsuario(principal.getName());
+  @GetMapping("/usuario/{usuarioId}")
+  public ResponseEntity<List<PostResponseDTO>> listarPorUsuario(@PathVariable BigInteger usuarioId) {
+    List<PostResponseDTO> posts = postService.listarPorUsuario(usuarioId);
     return ResponseEntity.ok(posts);
   }
 

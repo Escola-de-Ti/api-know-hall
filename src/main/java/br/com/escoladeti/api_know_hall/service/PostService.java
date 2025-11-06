@@ -70,9 +70,8 @@ public class PostService {
   }
 
   @Transactional(readOnly = true)
-  public List<PostResponseDTO> listarPorUsuario(String email) {
-    Usuario usuario = findUserByPrincipal(email);
-    return postRepository.findByUsuarioId(usuario.getId()).stream()
+  public List<PostResponseDTO> listarPorUsuario(BigInteger usuarioId) {
+    return postRepository.findByUsuarioId(usuarioId).stream()
       .map(this::mapToResponseDTO)
       .collect(Collectors.toList());
   }

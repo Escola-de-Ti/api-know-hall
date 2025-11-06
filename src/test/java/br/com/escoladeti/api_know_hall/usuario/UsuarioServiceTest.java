@@ -83,26 +83,26 @@ class UsuarioServiceTest {
 
   @Test
   void getUsuarioById_WithValidId_ShouldReturnUsuario() {
-    when(usuarioRepository.findByEmail("test@test.com")).thenReturn(Optional.of(usuario));
+    when(usuarioRepository.findById(BigInteger.valueOf(1))).thenReturn(Optional.of(usuario));
 
-    Usuario result = usuarioService.getUsuarioByEmail("test@test.com");
+    Usuario result = usuarioService.getUsuarioById(BigInteger.valueOf(1));
 
     assertNotNull(result);
     assertEquals(usuario.getEmail(), result.getEmail());
-    verify(usuarioRepository, times(1)).findByEmail("test@test.com");
+    verify(usuarioRepository, times(1)).findById(BigInteger.valueOf(1));
   }
 
   @Test
   void getUsuarioById_WithInvalidId_ShouldThrowEntityNotFoundException() {
-    when(usuarioRepository.findByEmail("test@test.com")).thenReturn(Optional.empty());
+    when(usuarioRepository.findById(BigInteger.valueOf(999))).thenReturn(Optional.empty());
 
     EntityNotFoundException exception = assertThrows(
       EntityNotFoundException.class,
-      () -> usuarioService.getUsuarioByEmail("test@test.com")
+      () -> usuarioService.getUsuarioById(BigInteger.valueOf(999))
     );
 
     assertEquals("Usuario não encontrado", exception.getMessage());
-    verify(usuarioRepository, times(1)).findByEmail("test@test.com");
+    verify(usuarioRepository, times(1)).findById(BigInteger.valueOf(999));
   }
 
   @Test

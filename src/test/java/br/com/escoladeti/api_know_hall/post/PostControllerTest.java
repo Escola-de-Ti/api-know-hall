@@ -191,18 +191,17 @@ class PostControllerTest {
 
   @Test
   @WithMockUser
-  @DisplayName("GET /api/posts/usuario/meus-posts - Deve listar posts por usuário")
+  @DisplayName("GET /api/posts/usuario/{usuarioId} - Deve listar posts por usuário")
   void deveListarPostsPorUsuario() throws Exception {
-    when(postService.listarPorUsuario(ArgumentMatchers.anyString())).thenReturn(List.of(postResponseDTO));
+    when(postService.listarPorUsuario(BigInteger.ONE)).thenReturn(List.of(postResponseDTO));
 
-    mockMvc.perform(get("/api/posts/usuario/meus-posts")
-        .principal(mockPrincipal))
+    mockMvc.perform(get("/api/posts/usuario/1"))
       .andDo(print())
       .andExpect(status().isOk())
       .andExpect(jsonPath("$", hasSize(1)))
       .andExpect(jsonPath("$[0].usuarioId").value(1));
 
-    verify(postService).listarPorUsuario(ArgumentMatchers.anyString());
+    verify(postService).listarPorUsuario(BigInteger.ONE);
   }
 
   // ==================== TESTES DE ATUALIZAÇÃO ====================

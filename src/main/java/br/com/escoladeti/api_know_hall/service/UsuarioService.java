@@ -33,8 +33,8 @@ public class UsuarioService {
     return usuarioRepository.findAll();
   }
 
-  public Usuario getUsuarioByEmail(String email) {
-    return usuarioRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("Usuario não encontrado"));
+  public Usuario getUsuarioById(BigInteger id) {
+    return usuarioRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Usuario não encontrado"));
   }
 
 

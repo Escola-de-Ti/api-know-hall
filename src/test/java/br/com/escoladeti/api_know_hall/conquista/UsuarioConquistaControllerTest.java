@@ -98,32 +98,30 @@ class UsuarioConquistaControllerTest {
   @Test
   void listarConquistasUsuario_ShouldReturnUserConquistas() throws Exception {
     List<UsuarioConquista> conquistas = Arrays.asList(usuarioConquista);
-    when(conquistaService.listarConquistasUsuario("test@test.com"))
+    when(conquistaService.listarConquistasUsuario(BigInteger.valueOf(1)))
       .thenReturn(conquistas);
 
-    mockMvc.perform(get("/api/usuarios/conquistas")
-        .principal(() -> "test@test.com"))
+    mockMvc.perform(get("/api/usuarios/1/conquistas"))
       .andExpect(status().isOk())
       .andExpect(content().contentType(MediaType.APPLICATION_JSON))
       .andExpect(jsonPath("$[0].conquista.nome").value("Participante Ativo"));
 
-    verify(conquistaService, times(1)).listarConquistasUsuario("test@test.com");
+    verify(conquistaService, times(1)).listarConquistasUsuario(BigInteger.valueOf(1));
   }
 
   @Test
   void listarConquistasUsuario_WithTipoFilter_ShouldReturnFilteredConquistas() throws Exception {
     List<UsuarioConquista> conquistas = Arrays.asList(usuarioConquista);
-    when(conquistaService.listarConquistasUsuarioPorTipo("test@test.com", TipoConquista.INSIGNIA))
+    when(conquistaService.listarConquistasUsuarioPorTipo(BigInteger.valueOf(1), TipoConquista.INSIGNIA))
       .thenReturn(conquistas);
 
-    mockMvc.perform(get("/api/usuarios/conquistas")
-        .param("tipo", "INSIGNIA")
-        .principal(() -> "test@test.com"))
+    mockMvc.perform(get("/api/usuarios/1/conquistas")
+        .param("tipo", "INSIGNIA"))
       .andExpect(status().isOk())
       .andExpect(jsonPath("$[0].conquista.tipoConquista").value("INSIGNIA"));
 
     verify(conquistaService, times(1))
-      .listarConquistasUsuarioPorTipo("test@test.com", TipoConquista.INSIGNIA);
+      .listarConquistasUsuarioPorTipo(BigInteger.valueOf(1), TipoConquista.INSIGNIA);
   }
 
   @Test
@@ -135,17 +133,16 @@ class UsuarioConquistaControllerTest {
       Arrays.asList(usuarioConquista)
     );
 
-    when(conquistaService.obterProgressoConquista("test@test.com", BigInteger.valueOf(1)))
+    when(conquistaService.obterProgressoConquista(BigInteger.valueOf(1), BigInteger.valueOf(1)))
       .thenReturn(progresso);
 
-    mockMvc.perform(get("/api/usuarios/conquistas/1/progresso")
-        .principal(() -> "test@test.com"))
+    mockMvc.perform(get("/api/usuarios/1/conquistas/1/progresso"))
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.conquista.nome").value("Participante Ativo"))
       .andExpect(jsonPath("$.maiorTierConquistado").value("BRONZE"));
 
     verify(conquistaService, times(1))
-      .obterProgressoConquista("test@test.com", BigInteger.valueOf(1));
+      .obterProgressoConquista(BigInteger.valueOf(1), BigInteger.valueOf(1));
   }
 
   @Test
@@ -153,26 +150,24 @@ class UsuarioConquistaControllerTest {
     doNothing().when(conquistaService)
       .verificarEConcederConquistas(any(), any(), any());
 
-    mockMvc.perform(post("/api/usuarios/conquistas/verificar")
-        .principal(() -> "test@test.com")
+    mockMvc.perform(post("/api/usuarios/1/conquistas/verificar")
         .contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(verificarProgressoDTO)))
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.mensagem").value("Progresso verificado com sucesso"))
-      .andExpect(jsonPath("$.usuarioEmail").value("test@test.com"))
+      .andExpect(jsonPath("$.usuarioId").value(1))
       .andExpect(jsonPath("$.campoValidacao").value("participacoes"))
       .andExpect(jsonPath("$.progressoAtual").value(15));
 
     verify(conquistaService, times(1))
-      .verificarEConcederConquistas("test@test.com", "participacoes", 15);
+      .verificarEConcederConquistas(BigInteger.valueOf(1), "participacoes", 15);
   }
 
   @Test
   void verificarEConcederConquistas_WithInvalidData_ShouldReturnBadRequest() throws Exception {
     verificarProgressoDTO.setCampoValidacao(""); // Campo vazio
 
-    mockMvc.perform(post("/api/usuarios/conquistas/verificar")
-        .principal(() -> "test@test.com")
+    mockMvc.perform(post("/api/usuarios/1/conquistas/verificar")
         .contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(verificarProgressoDTO)))
       .andExpect(status().isBadRequest());
@@ -184,8 +179,7 @@ class UsuarioConquistaControllerTest {
   void verificarEConcederConquistas_WithNegativeProgress_ShouldReturnBadRequest() throws Exception {
     verificarProgressoDTO.setProgressoAtual(-5);
 
-    mockMvc.perform(post("/api/usuarios/conquistas/verificar")
-        .principal(() -> "test@test.com")
+    mockMvc.perform(post("/api/usuarios/1/conquistas/verificar")
         .contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(verificarProgressoDTO)))
       .andExpect(status().isBadRequest());
@@ -242,11 +236,10 @@ class UsuarioConquistaControllerTest {
     ucCert.setDataObtencao(LocalDateTime.now());
 
     List<UsuarioConquista> conquistas = Arrays.asList(insignia, ucCert);
-    when(conquistaService.listarConquistasUsuario("test@test.com"))
+    when(conquistaService.listarConquistasUsuario(BigInteger.valueOf(1)))
       .thenReturn(conquistas);
 
-    mockMvc.perform(get("/api/usuarios/conquistas/estatisticas")
-        .principal(() -> "test@test.com"))
+    mockMvc.perform(get("/api/usuarios/1/conquistas/estatisticas"))
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.totalConquistas").value(2))
       .andExpect(jsonPath("$.totalInsignias").value(1))
@@ -254,33 +247,31 @@ class UsuarioConquistaControllerTest {
       .andExpect(jsonPath("$.conquistasPorTier.BRONZE").value(1))
       .andExpect(jsonPath("$.conquistasPorTier.OURO").value(1));
 
-    verify(conquistaService, times(1)).listarConquistasUsuario("test@test.com");
+    verify(conquistaService, times(1)).listarConquistasUsuario(BigInteger.valueOf(1));
   }
 
   @Test
   void obterEstatisticas_WithNoConquistas_ShouldReturnEmptyStatistics() throws Exception {
-    when(conquistaService.listarConquistasUsuario("test@test.com"))
+    when(conquistaService.listarConquistasUsuario(BigInteger.valueOf(1)))
       .thenReturn(new ArrayList<>());
 
-    mockMvc.perform(get("/api/usuarios/conquistas/estatisticas")
-        .principal(() -> "test@test.com"))
+    mockMvc.perform(get("/api/usuarios/1/conquistas/estatisticas"))
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.totalConquistas").value(0))
       .andExpect(jsonPath("$.totalInsignias").value(0))
       .andExpect(jsonPath("$.totalCertificados").value(0));
 
-    verify(conquistaService, times(1)).listarConquistasUsuario("test@test.com");
+    verify(conquistaService, times(1)).listarConquistasUsuario(BigInteger.valueOf(1));
   }
 
   @Test
   void listarConquistasUsuario_WhenServiceThrowsException_ShouldReturnInternalServerError() throws Exception {
-    when(conquistaService.listarConquistasUsuario("test@test.com"))
+    when(conquistaService.listarConquistasUsuario(BigInteger.valueOf(1)))
       .thenThrow(new RuntimeException("Database error"));
 
-    mockMvc.perform(get("/api/usuarios/conquistas")
-        .principal(() -> "test@test.com"))
+    mockMvc.perform(get("/api/usuarios/1/conquistas"))
       .andExpect(status().isInternalServerError());
 
-    verify(conquistaService, times(1)).listarConquistasUsuario("test@test.com");
+    verify(conquistaService, times(1)).listarConquistasUsuario(BigInteger.valueOf(1));
   }
 }

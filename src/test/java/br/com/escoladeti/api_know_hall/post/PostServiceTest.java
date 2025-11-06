@@ -196,10 +196,9 @@ class PostServiceTest {
   @DisplayName("Deve listar posts por usuário")
   void deveListarPostsPorUsuario() {
     List<Post> posts = List.of(post);
-    when(usuarioRepository.findByEmail(mockPrincipal.getName())).thenReturn(Optional.of(usuario));
     when(postRepository.findByUsuarioId(BigInteger.ONE)).thenReturn(posts);
 
-    List<PostResponseDTO> resultado = postService.listarPorUsuario(mockPrincipal.getName());
+    List<PostResponseDTO> resultado = postService.listarPorUsuario(BigInteger.ONE);
 
     assertThat(resultado).hasSize(1);
     assertThat(resultado.get(0).usuarioId()).isEqualTo(BigInteger.ONE);

@@ -29,9 +29,9 @@ public class UsuarioController {
     return ResponseEntity.ok(usuarios);
   }
 
-  @GetMapping("/user")
-  public ResponseEntity<Usuario> getUsuarioById(Principal principal) {
-    Usuario usuario = usuarioService.getUsuarioByEmail(principal.getName());
+  @GetMapping("/{id}")
+  public ResponseEntity<Usuario> getUsuarioById(@PathVariable BigInteger id) {
+    Usuario usuario = usuarioService.getUsuarioById(id);
     return ResponseEntity.ok(usuario);
   }
 

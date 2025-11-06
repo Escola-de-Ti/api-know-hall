@@ -44,8 +44,8 @@ public class ConquistaService {
   /**
    * Verifica progresso do usuário e concede conquistas automaticamente
    */
-  public void verificarEConcederConquistas(String email, String campoValidacao, Integer progressoAtual) {
-    Usuario usuario = usuarioRepository.findByEmail(email)
+  public void verificarEConcederConquistas(BigInteger usuarioId, String campoValidacao, Integer progressoAtual) {
+    Usuario usuario = usuarioRepository.findById(usuarioId)
       .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
 
     List<Conquista> conquistas = conquistaRepository.findByCampoValidacao(campoValidacao);
@@ -77,24 +77,20 @@ public class ConquistaService {
   /**
    * Lista todas as conquistas de um usuário com seus tiers
    */
-  public List<UsuarioConquista> listarConquistasUsuario(String email) {
-    Usuario usuario = usuarioRepository.findByEmail(email)
-      .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
-    return usuarioConquistaRepository.findByUsuarioIdWithDetails(usuario.getId());
+  public List<UsuarioConquista> listarConquistasUsuario(BigInteger usuarioId) {
+    return usuarioConquistaRepository.findByUsuarioIdWithDetails(usuarioId);
   }
 
   /**
    * Obtém o progresso do usuário em uma conquista específica
    */
-  public ConquistaProgressoDTO obterProgressoConquista(String email, BigInteger conquistaId) {
-    Usuario usuario = usuarioRepository.findByEmail(email)
-      .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
+  public ConquistaProgressoDTO obterProgressoConquista(BigInteger usuarioId, BigInteger conquistaId) {
 
     Conquista conquista = conquistaRepository.findByIdWithTiers(conquistaId)
       .orElseThrow(() -> new EntityNotFoundException("Conquista não encontrada"));
 
     List<UsuarioConquista> tiersConquistados = usuarioConquistaRepository
-      .findByUsuarioIdAndConquistaId(usuario.getId(), conquistaId);
+      .findByUsuarioIdAndConquistaId(usuarioId, conquistaId);
 
     TierConquista maiorTierConquistado = tiersConquistados.stream()
       .map(uc -> uc.getConquistaTier().getTier())
@@ -165,10 +161,7 @@ public class ConquistaService {
     return conquistaRepository.findByCampoValidacao(campoValidacao);
   }
 
-  @Transactional(readOnly = true)
-  public List<UsuarioConquista> listarConquistasUsuarioPorTipo(String email, TipoConquista tipo) {
-    Usuario usuario = usuarioRepository.findByEmail(email)
-      .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
-    return usuarioConquistaRepository.findByUsuarioIdAndTipo(usuario.getId(), tipo.name());
+  public List<UsuarioConquista> listarConquistasUsuarioPorTipo(BigInteger usuarioId, TipoConquista tipo) {
+    return usuarioConquistaRepository.findByUsuarioIdAndTipo(usuarioId, tipo.name());
   }
 }

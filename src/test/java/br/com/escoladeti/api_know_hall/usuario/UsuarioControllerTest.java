@@ -30,7 +30,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigInteger;
-import java.security.Principal;
 import java.util.Arrays;
 import java.util.List;
 
@@ -74,7 +73,6 @@ class UsuarioControllerTest {
   private Usuario usuario;
   private UsuarioCreateDTO usuarioCreateDTO;
   private UsuarioUpdateDTO usuarioUpdateDTO;
-  private Principal mockPrincipal;
 
   @BeforeEach
   void setUp() {
@@ -97,9 +95,6 @@ class UsuarioControllerTest {
     usuarioUpdateDTO = new UsuarioUpdateDTO();
     usuarioUpdateDTO.setEmail("updated@test.com");
     usuarioUpdateDTO.setNome("Updated User");
-
-    // principal usado pelos endpoints que agora dependem do usuário autenticado
-    mockPrincipal = () -> "email";
   }
 
   @Test
@@ -118,28 +113,26 @@ class UsuarioControllerTest {
 
   @Test
   void getUsuarioById_WithValidId_ShouldReturnUsuario() throws Exception {
-    when(usuarioService.getUsuarioByEmail("email")).thenReturn(usuario);
+    when(usuarioService.getUsuarioById(BigInteger.valueOf(1))).thenReturn(usuario);
 
-    mockMvc.perform(get("/api/usuarios/user")
-        .principal(mockPrincipal))
+    mockMvc.perform(get("/api/usuarios/1"))
       .andExpect(status().isOk())
       .andExpect(content().contentType(MediaType.APPLICATION_JSON))
       .andExpect(jsonPath("$.email").value("test@test.com"))
       .andExpect(jsonPath("$.nome").value("Test User"));
 
-    verify(usuarioService, times(1)).getUsuarioByEmail("email");
+    verify(usuarioService, times(1)).getUsuarioById(BigInteger.valueOf(1));
   }
 
   @Test
   void getUsuarioById_WithInvalidId_ShouldReturnNotFound() throws Exception {
-    when(usuarioService.getUsuarioByEmail("email"))
+    when(usuarioService.getUsuarioById(BigInteger.valueOf(999)))
       .thenThrow(new EntityNotFoundException("Usuario não encontrado"));
 
-    mockMvc.perform(get("/api/usuarios/user")
-        .principal(mockPrincipal))
+    mockMvc.perform(get("/api/usuarios/999"))
       .andExpect(status().isNotFound());
 
-    verify(usuarioService, times(1)).getUsuarioByEmail("email");
+    verify(usuarioService, times(1)).getUsuarioById(BigInteger.valueOf(999));
   }
 
   @Test
@@ -162,7 +155,7 @@ class UsuarioControllerTest {
     when(usuarioService.updateUsuario(eq("email"), any(UsuarioUpdateDTO.class))).thenReturn(usuario);
 
     mockMvc.perform(put("/api/usuarios/user")
-        .principal(mockPrincipal)
+        .principal(() -> "email")
         .contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(usuarioUpdateDTO)))
       .andExpect(status().isOk())
@@ -178,7 +171,7 @@ class UsuarioControllerTest {
       .thenThrow(new jakarta.persistence.EntityNotFoundException());
 
     mockMvc.perform(put("/api/usuarios/user")
-        .principal(mockPrincipal)
+        .principal(() -> "email")
         .contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(usuarioUpdateDTO)))
       .andExpect(status().isNotFound());
@@ -192,7 +185,7 @@ class UsuarioControllerTest {
       .thenThrow(new RuntimeException("Database error"));
 
     mockMvc.perform(put("/api/usuarios/user")
-        .principal(mockPrincipal)
+        .principal(() -> "email")
         .contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(usuarioUpdateDTO)))
       .andExpect(status().isInternalServerError());
