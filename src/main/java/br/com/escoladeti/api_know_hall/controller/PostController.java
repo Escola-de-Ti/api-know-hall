@@ -1,6 +1,7 @@
 package br.com.escoladeti.api_know_hall.controller;
 
 import br.com.escoladeti.api_know_hall.dto.post.*;
+import br.com.escoladeti.api_know_hall.entity.Usuario;
 import br.com.escoladeti.api_know_hall.enums.OrdenacaoDirecao;
 import br.com.escoladeti.api_know_hall.enums.OrdenacaoTipo;
 import br.com.escoladeti.api_know_hall.enums.TagOperador;
@@ -13,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigInteger;
+import java.security.Principal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -41,9 +43,9 @@ public class PostController {
     return ResponseEntity.ok(posts);
   }
 
-  @GetMapping("/usuario/{usuarioId}")
-  public ResponseEntity<List<PostResponseDTO>> listarPorUsuario(@PathVariable BigInteger usuarioId) {
-    List<PostResponseDTO> posts = postService.listarPorUsuario(usuarioId);
+  @GetMapping("/usuario/meus-posts")
+  public ResponseEntity<List<PostResponseDTO>> listarPorUsuario(Principal principal) {
+    List<PostResponseDTO> posts = postService.listarPorUsuario(principal.getName());
     return ResponseEntity.ok(posts);
   }
 
@@ -64,7 +66,7 @@ public class PostController {
 
   @GetMapping("/feed")
   public ResponseEntity<FeedResponseDTO> getFeed(
-    @RequestParam BigInteger usuarioId,
+    Principal principal,
     @RequestParam(required = false, defaultValue = "20") Integer pageSize,
     @RequestParam(required = false) BigInteger lastPostId,
     @RequestParam(required = false) Double lastScore,
@@ -73,8 +75,9 @@ public class PostController {
     @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInicio,
     @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim
   ) {
+    Usuario usuario = postService.findUserByPrincipal(principal.getName());
     FeedRequestDTO request = new FeedRequestDTO(
-      usuarioId,
+      usuario.getId(),
       pageSize,
       lastPostId,
       lastScore,

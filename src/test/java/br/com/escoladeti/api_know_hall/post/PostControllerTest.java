@@ -3,9 +3,9 @@ package br.com.escoladeti.api_know_hall.post;
 import br.com.escoladeti.api_know_hall.config.JwtAuthenticationFilter;
 import br.com.escoladeti.api_know_hall.config.SecurityConfig;
 import br.com.escoladeti.api_know_hall.controller.PostController;
-import br.com.escoladeti.api_know_hall.controller.TagsController;
 import br.com.escoladeti.api_know_hall.dto.post.*;
 import br.com.escoladeti.api_know_hall.dto.tags.TagResponseDTO;
+import br.com.escoladeti.api_know_hall.entity.Usuario;
 import br.com.escoladeti.api_know_hall.enums.OrdenacaoDirecao;
 import br.com.escoladeti.api_know_hall.enums.OrdenacaoTipo;
 import br.com.escoladeti.api_know_hall.enums.TagOperador;
@@ -14,7 +14,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatchers;  // ✅ IMPORT EXPLÍCITO
+import org.mockito.ArgumentMatchers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -26,12 +26,13 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigInteger;
+import java.security.Principal;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
 
 import static org.hamcrest.Matchers.*;
-import static org.mockito.Mockito.*;  // ✅ SEM any(), eq(), etc
+import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -63,6 +64,7 @@ class PostControllerTest {
 
   private PostResponseDTO postResponseDTO;
   private PostCreateDTO postCreateDTO;
+  private Principal mockPrincipal;
 
   @BeforeEach
   void setUp() {
@@ -78,6 +80,8 @@ class PostControllerTest {
       List.of(tagDTO),
       Timestamp.from(Instant.now())
     );
+
+    mockPrincipal = () -> "joao@email.com";
 
     postCreateDTO = new PostCreateDTO(
       BigInteger.ONE,
@@ -187,17 +191,18 @@ class PostControllerTest {
 
   @Test
   @WithMockUser
-  @DisplayName("GET /api/posts/usuario/{usuarioId} - Deve listar posts por usuário")
+  @DisplayName("GET /api/posts/usuario/meus-posts - Deve listar posts por usuário")
   void deveListarPostsPorUsuario() throws Exception {
-    when(postService.listarPorUsuario(BigInteger.ONE)).thenReturn(List.of(postResponseDTO));
+    when(postService.listarPorUsuario(ArgumentMatchers.anyString())).thenReturn(List.of(postResponseDTO));
 
-    mockMvc.perform(get("/api/posts/usuario/1"))
+    mockMvc.perform(get("/api/posts/usuario/meus-posts")
+        .principal(mockPrincipal))
       .andDo(print())
       .andExpect(status().isOk())
       .andExpect(jsonPath("$", hasSize(1)))
       .andExpect(jsonPath("$[0].usuarioId").value(1));
 
-    verify(postService).listarPorUsuario(BigInteger.ONE);
+    verify(postService).listarPorUsuario(ArgumentMatchers.anyString());
   }
 
   // ==================== TESTES DE ATUALIZAÇÃO ====================
@@ -257,9 +262,14 @@ class PostControllerTest {
       List.of(feedDTO), false, BigInteger.ONE, 50.0
     );
 
+    Usuario usuario = mock(Usuario.class);
+    when(usuario.getId()).thenReturn(BigInteger.ONE);
+    when(postService.findUserByPrincipal(ArgumentMatchers.anyString())).thenReturn(usuario);
+
     when(postService.getFeed(ArgumentMatchers.any(FeedRequestDTO.class))).thenReturn(feedResponse);
 
     mockMvc.perform(get("/api/posts/feed")
+        .principal(mockPrincipal)
         .param("usuarioId", "1")
         .param("pageSize", "10"))
       .andDo(print())
@@ -274,10 +284,15 @@ class PostControllerTest {
   @WithMockUser
   @DisplayName("GET /api/posts/feed - Deve buscar feed com filtros de tags")
   void deveBuscarFeedComFiltrosDeTags() throws Exception {
+    Usuario usuario = mock(Usuario.class);
+    when(usuario.getId()).thenReturn(BigInteger.ONE);
+    when(postService.findUserByPrincipal(ArgumentMatchers.anyString())).thenReturn(usuario);
+
     when(postService.getFeed(ArgumentMatchers.any(FeedRequestDTO.class)))
       .thenReturn(new FeedResponseDTO(List.of(), false, null, null));
 
     mockMvc.perform(get("/api/posts/feed")
+        .principal(mockPrincipal)
         .param("usuarioId", "1")
         .param("tagIds", "1,2")
         .param("tagOperador", "AND"))

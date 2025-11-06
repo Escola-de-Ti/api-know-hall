@@ -70,8 +70,9 @@ public class PostService {
   }
 
   @Transactional(readOnly = true)
-  public List<PostResponseDTO> listarPorUsuario(BigInteger usuarioId) {
-    return postRepository.findByUsuarioId(usuarioId).stream()
+  public List<PostResponseDTO> listarPorUsuario(String email) {
+    Usuario usuario = findUserByPrincipal(email);
+    return postRepository.findByUsuarioId(usuario.getId()).stream()
       .map(this::mapToResponseDTO)
       .collect(Collectors.toList());
   }
@@ -302,5 +303,10 @@ public class PostService {
       tags,
       projection.getDataCriacao()
     );
+  }
+
+  public Usuario findUserByPrincipal(String email) {
+    return usuarioRepository.findByEmail(email)
+      .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
   }
 }

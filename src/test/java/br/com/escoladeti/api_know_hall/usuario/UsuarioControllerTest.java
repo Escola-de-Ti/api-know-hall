@@ -30,6 +30,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigInteger;
+import java.security.Principal;
 import java.util.Arrays;
 import java.util.List;
 
@@ -73,6 +74,7 @@ class UsuarioControllerTest {
   private Usuario usuario;
   private UsuarioCreateDTO usuarioCreateDTO;
   private UsuarioUpdateDTO usuarioUpdateDTO;
+  private Principal mockPrincipal;
 
   @BeforeEach
   void setUp() {
@@ -95,6 +97,9 @@ class UsuarioControllerTest {
     usuarioUpdateDTO = new UsuarioUpdateDTO();
     usuarioUpdateDTO.setEmail("updated@test.com");
     usuarioUpdateDTO.setNome("Updated User");
+
+    // principal usado pelos endpoints que agora dependem do usuário autenticado
+    mockPrincipal = () -> "email";
   }
 
   @Test
@@ -115,7 +120,8 @@ class UsuarioControllerTest {
   void getUsuarioById_WithValidId_ShouldReturnUsuario() throws Exception {
     when(usuarioService.getUsuarioByEmail("email")).thenReturn(usuario);
 
-    mockMvc.perform(get("/api/usuarios/1"))
+    mockMvc.perform(get("/api/usuarios/user")
+        .principal(mockPrincipal))
       .andExpect(status().isOk())
       .andExpect(content().contentType(MediaType.APPLICATION_JSON))
       .andExpect(jsonPath("$.email").value("test@test.com"))
@@ -129,7 +135,8 @@ class UsuarioControllerTest {
     when(usuarioService.getUsuarioByEmail("email"))
       .thenThrow(new EntityNotFoundException("Usuario não encontrado"));
 
-    mockMvc.perform(get("/api/usuarios/999"))
+    mockMvc.perform(get("/api/usuarios/user")
+        .principal(mockPrincipal))
       .andExpect(status().isNotFound());
 
     verify(usuarioService, times(1)).getUsuarioByEmail("email");
@@ -154,7 +161,8 @@ class UsuarioControllerTest {
   void updateUsuario_WithValidData_ShouldReturnUpdatedUsuario() throws Exception {
     when(usuarioService.updateUsuario(eq("email"), any(UsuarioUpdateDTO.class))).thenReturn(usuario);
 
-    mockMvc.perform(put("/api/usuarios/1")
+    mockMvc.perform(put("/api/usuarios/user")
+        .principal(mockPrincipal)
         .contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(usuarioUpdateDTO)))
       .andExpect(status().isOk())
@@ -169,7 +177,8 @@ class UsuarioControllerTest {
     when(usuarioService.updateUsuario(eq("email"), any(UsuarioUpdateDTO.class)))
       .thenThrow(new jakarta.persistence.EntityNotFoundException());
 
-    mockMvc.perform(put("/api/usuarios/999")
+    mockMvc.perform(put("/api/usuarios/user")
+        .principal(mockPrincipal)
         .contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(usuarioUpdateDTO)))
       .andExpect(status().isNotFound());
@@ -182,7 +191,8 @@ class UsuarioControllerTest {
     when(usuarioService.updateUsuario(eq("email"), any(UsuarioUpdateDTO.class)))
       .thenThrow(new RuntimeException("Database error"));
 
-    mockMvc.perform(put("/api/usuarios/1")
+    mockMvc.perform(put("/api/usuarios/user")
+        .principal(mockPrincipal)
         .contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(usuarioUpdateDTO)))
       .andExpect(status().isInternalServerError());

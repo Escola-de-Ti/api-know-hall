@@ -25,6 +25,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigInteger;
+import java.security.Principal;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -55,6 +56,7 @@ class PostServiceTest {
   private Post post;
   private Tag tag;
   private PostCreateDTO postCreateDTO;
+  private Principal mockPrincipal;
 
   @BeforeEach
   void setUp() {
@@ -90,6 +92,8 @@ class PostServiceTest {
       "Descrição do post",
       List.of(BigInteger.ONE)
     );
+
+    mockPrincipal = () -> "joao@email.com";
   }
 
   // ==================== TESTES DE CRIAÇÃO ====================
@@ -192,9 +196,10 @@ class PostServiceTest {
   @DisplayName("Deve listar posts por usuário")
   void deveListarPostsPorUsuario() {
     List<Post> posts = List.of(post);
+    when(usuarioRepository.findByEmail(mockPrincipal.getName())).thenReturn(Optional.of(usuario));
     when(postRepository.findByUsuarioId(BigInteger.ONE)).thenReturn(posts);
 
-    List<PostResponseDTO> resultado = postService.listarPorUsuario(BigInteger.ONE);
+    List<PostResponseDTO> resultado = postService.listarPorUsuario(mockPrincipal.getName());
 
     assertThat(resultado).hasSize(1);
     assertThat(resultado.get(0).usuarioId()).isEqualTo(BigInteger.ONE);
@@ -482,42 +487,88 @@ class PostServiceTest {
   private PostFeedProjection createMockProjection() {
     return new PostFeedProjection() {
       @Override
-      public BigInteger getId() { return BigInteger.ONE; }
+      public BigInteger getId() {
+        return BigInteger.ONE;
+      }
+
       @Override
-      public BigInteger getUsuarioId() { return BigInteger.ONE; }
+      public BigInteger getUsuarioId() {
+        return BigInteger.ONE;
+      }
+
       @Override
-      public String getUsuarioNome() { return "João Silva"; }
+      public String getUsuarioNome() {
+        return "João Silva";
+      }
+
       @Override
-      public String getTitulo() { return "Título"; }
+      public String getTitulo() {
+        return "Título";
+      }
+
       @Override
-      public String getDescricao() { return "Descrição"; }
+      public String getDescricao() {
+        return "Descrição";
+      }
+
       @Override
-      public Long getTotalUpVotes() { return 10L; }
+      public Long getTotalUpVotes() {
+        return 10L;
+      }
+
       @Override
-      public Timestamp getDataCriacao() { return Timestamp.from(Instant.now()); }
+      public Timestamp getDataCriacao() {
+        return Timestamp.from(Instant.now());
+      }
+
       @Override
-      public Double getRelevanceScore() { return 50.0; }
+      public Double getRelevanceScore() {
+        return 50.0;
+      }
+
       @Override
-      public Integer getTagsEmComum() { return 2; }
+      public Integer getTagsEmComum() {
+        return 2;
+      }
     };
   }
 
   private PostBuscaProjection createMockBuscaProjection() {
     return new PostBuscaProjection() {
       @Override
-      public BigInteger getId() { return BigInteger.ONE; }
+      public BigInteger getId() {
+        return BigInteger.ONE;
+      }
+
       @Override
-      public BigInteger getUsuarioId() { return BigInteger.ONE; }
+      public BigInteger getUsuarioId() {
+        return BigInteger.ONE;
+      }
+
       @Override
-      public String getUsuarioNome() { return "João Silva"; }
+      public String getUsuarioNome() {
+        return "João Silva";
+      }
+
       @Override
-      public String getTitulo() { return "Título"; }
+      public String getTitulo() {
+        return "Título";
+      }
+
       @Override
-      public String getDescricao() { return "Descrição"; }
+      public String getDescricao() {
+        return "Descrição";
+      }
+
       @Override
-      public Long getTotalUpVotes() { return 10L; }
+      public Long getTotalUpVotes() {
+        return 10L;
+      }
+
       @Override
-      public Timestamp getDataCriacao() { return Timestamp.from(Instant.now()); }
+      public Timestamp getDataCriacao() {
+        return Timestamp.from(Instant.now());
+      }
     };
   }
 
