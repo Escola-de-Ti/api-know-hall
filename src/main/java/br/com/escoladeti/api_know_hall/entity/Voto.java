@@ -2,9 +2,7 @@ package br.com.escoladeti.api_know_hall.entity;
 
 import br.com.escoladeti.api_know_hall.enums.TipoVoto;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigInteger;
@@ -12,7 +10,8 @@ import java.sql.Timestamp;
 
 @Entity
 @Table(name = "VOTOS")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class Voto {
