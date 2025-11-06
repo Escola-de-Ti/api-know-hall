@@ -18,7 +18,7 @@ public interface TagsRepository extends JpaRepository<Tag, BigInteger> {
                   "FROM TAGS t " +
                   "LEFT JOIN USUARIO_TAGS ut ON ut.tag_id = t.id " +
                   "GROUP BY t.id " +
-                  "ORDER BY COUNT(ut.usuario_id) DESC" +
+                  "ORDER BY COUNT(ut.usuario_id) DESC " +
                   "LIMIT :limit")
   List<Tag> findMostPopularTags(@Param("limit") int limit);
 }

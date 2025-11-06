@@ -77,6 +77,14 @@ class PostTest {
   }
 
   @Test
+  @DisplayName("Deve inicializar lista de comentários vazia")
+  void deveInicializarListaDeComentariosVazia() {
+    Post novoPost = new Post();
+    assertThat(novoPost.getComentarios()).isNotNull();
+    assertThat(novoPost.getComentarios()).isEmpty();
+  }
+
+  @Test
   @DisplayName("Deve adicionar tags ao post")
   void deveAdicionarTagsAoPost() {
     List<Tag> tags = new ArrayList<>();
@@ -133,7 +141,8 @@ class PostTest {
       "Título",
       10L,
       usuario,
-      agora
+      agora,
+      new ArrayList<>()
     );
 
     assertThat(novoPost.getId()).isEqualTo(BigInteger.TWO);
@@ -142,6 +151,7 @@ class PostTest {
     assertThat(novoPost.getTotalUpVotes()).isEqualTo(10L);
     assertThat(novoPost.getUsuario()).isEqualTo(usuario);
     assertThat(novoPost.getTags()).hasSize(2);
+    assertThat(novoPost.getComentarios()).isEmpty();  // ✅ Verifica lista de comentários
     assertThat(novoPost.getDataCriacao()).isEqualTo(agora);
   }
 

@@ -101,7 +101,7 @@ public class PostController {
     @RequestParam(required = false, defaultValue = "20") Integer pageSize,
     @RequestParam(required = false) BigInteger lastPostId,
     @RequestParam(required = false) Long lastValue,
-    @RequestParam(required = false) String termo  // ✅ NOVO PARÂMETRO
+    @RequestParam(required = false) String termo
   ) {
     PostBuscaRequestDTO request = new PostBuscaRequestDTO(
       tagIds,
@@ -117,5 +117,14 @@ public class PostController {
     );
     PostBuscaResponseDTO resultado = postService.buscarPosts(request);
     return ResponseEntity.ok(resultado);
+  }
+
+  @GetMapping("/{id}/detalhes")
+  public ResponseEntity<PostDetalhesDTO> buscarDetalhesDoPost(
+    @PathVariable BigInteger id,
+    @RequestParam(required = false, defaultValue = "10") Integer pageSize
+  ) {
+    PostDetalhesDTO detalhes = postService.buscarDetalhesDoPost(id, pageSize);
+    return ResponseEntity.ok(detalhes);
   }
 }

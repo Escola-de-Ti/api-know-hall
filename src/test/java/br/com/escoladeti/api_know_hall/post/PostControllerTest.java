@@ -3,6 +3,7 @@ package br.com.escoladeti.api_know_hall.post;
 import br.com.escoladeti.api_know_hall.config.JwtAuthenticationFilter;
 import br.com.escoladeti.api_know_hall.config.SecurityConfig;
 import br.com.escoladeti.api_know_hall.controller.PostController;
+import br.com.escoladeti.api_know_hall.dto.comentario.ComentarioResponseDTO;
 import br.com.escoladeti.api_know_hall.dto.post.*;
 import br.com.escoladeti.api_know_hall.dto.tags.TagResponseDTO;
 import br.com.escoladeti.api_know_hall.entity.Usuario;
@@ -157,8 +158,6 @@ class PostControllerTest {
     verify(postService, never()).criarPost(ArgumentMatchers.any());
   }
 
-  // ==================== TESTES DE BUSCA ====================
-
   @Test
   @WithMockUser
   @DisplayName("GET /api/posts/{id} - Deve buscar post por ID")
@@ -286,7 +285,6 @@ class PostControllerTest {
     Usuario usuario = mock(Usuario.class);
     when(usuario.getId()).thenReturn(BigInteger.ONE);
     when(postService.findUserByPrincipal(ArgumentMatchers.anyString())).thenReturn(usuario);
-
     when(postService.getFeed(ArgumentMatchers.any(FeedRequestDTO.class)))
       .thenReturn(new FeedResponseDTO(List.of(), false, null, null));
 
@@ -304,8 +302,6 @@ class PostControllerTest {
         req.tagOperador() == TagOperador.AND
     ));
   }
-
-  // ==================== TESTES DE BUSCA AVANÇADA ====================
 
   @Test
   @WithMockUser
@@ -351,5 +347,209 @@ class PostControllerTest {
         req.tagOperador() == TagOperador.OR &&
         req.pageSize() == 20
     ));
+  }
+
+  @Test
+  @WithMockUser
+  @DisplayName("GET /api/posts/{id}/detalhes - Deve buscar detalhes do post")
+  void deveBuscarDetalhesDoPost() throws Exception {
+    TagResponseDTO tagDTO = new TagResponseDTO(BigInteger.ONE, "React Native");
+
+    ComentarioResponseDTO comentario1 = new ComentarioResponseDTO(
+      BigInteger.ONE,
+      BigInteger.ONE,
+      BigInteger.ONE,
+      "João Silva",
+      "Ótimo post!",
+      5L,
+      2L,
+      null,
+      Timestamp.from(Instant.now())
+    );
+
+    PostDetalhesDTO detalhesDTO = new PostDetalhesDTO(
+      BigInteger.ONE,
+      BigInteger.ONE,
+      "João Silva",
+      "Título do Post",
+      "Descrição detalhada do post",
+      10L,
+      List.of(tagDTO),
+      Timestamp.from(Instant.now()),
+      List.of(comentario1),
+      false
+    );
+
+    when(postService.buscarDetalhesDoPost(eq(BigInteger.ONE), eq(10)))
+      .thenReturn(detalhesDTO);
+
+    mockMvc.perform(get("/api/posts/1/detalhes")
+        .param("pageSize", "10"))
+      .andDo(print())
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.id").value(1))
+      .andExpect(jsonPath("$.titulo").value("Título do Post"))
+      .andExpect(jsonPath("$.usuarioNome").value("João Silva"))
+      .andExpect(jsonPath("$.totalUpVotes").value(10))
+      .andExpect(jsonPath("$.tags", hasSize(1)))
+      .andExpect(jsonPath("$.comentarios", hasSize(1)))
+      .andExpect(jsonPath("$.comentarios[0].texto").value("Ótimo post!"))
+      .andExpect(jsonPath("$.hasMoreComentarios").value(false));
+
+    verify(postService).buscarDetalhesDoPost(eq(BigInteger.ONE), eq(10));
+  }
+
+  @Test
+  @WithMockUser
+  @DisplayName("GET /api/posts/{id}/detalhes - Deve usar pageSize padrão")
+  void deveUsarPageSizePadrao() throws Exception {
+    PostDetalhesDTO detalhesDTO = new PostDetalhesDTO(
+      BigInteger.ONE,
+      BigInteger.ONE,
+      "João Silva",
+      "Título",
+      "Descrição",
+      10L,
+      List.of(),
+      Timestamp.from(Instant.now()),
+      List.of(),
+      false
+    );
+
+    when(postService.buscarDetalhesDoPost(eq(BigInteger.ONE), eq(10)))
+      .thenReturn(detalhesDTO);
+
+    mockMvc.perform(get("/api/posts/1/detalhes"))
+      .andDo(print())
+      .andExpect(status().isOk());
+
+    verify(postService).buscarDetalhesDoPost(eq(BigInteger.ONE), eq(10));
+  }
+
+  @Test
+  @WithMockUser
+  @DisplayName("GET /api/posts/{id}/detalhes - Deve retornar 404 para post inexistente")
+  void deveRetornar404ParaDetalhesDePostInexistente() throws Exception {
+    when(postService.buscarDetalhesDoPost(eq(BigInteger.valueOf(999)), anyInt()))
+      .thenThrow(new jakarta.persistence.EntityNotFoundException("Post não encontrado"));
+
+    mockMvc.perform(get("/api/posts/999/detalhes"))
+      .andDo(print())
+      .andExpect(status().isNotFound())
+      .andExpect(jsonPath("$.status").value(404))
+      .andExpect(jsonPath("$.message").value("Post não encontrado"));
+
+    verify(postService).buscarDetalhesDoPost(eq(BigInteger.valueOf(999)), eq(10));
+  }
+
+  @Test
+  @WithMockUser
+  @DisplayName("GET /api/posts/{id}/detalhes - Deve buscar com hasMoreComentarios true")
+  void deveBuscarComHasMoreComentariosTrue() throws Exception {
+    List<ComentarioResponseDTO> comentarios = List.of(
+      new ComentarioResponseDTO(
+        BigInteger.ONE, BigInteger.ONE, BigInteger.ONE,
+        "User1", "Comentário 1", 5L, 2L, null,
+        Timestamp.from(Instant.now())
+      ),
+      new ComentarioResponseDTO(
+        BigInteger.TWO, BigInteger.ONE, BigInteger.TWO,
+        "User2", "Comentário 2", 3L, 1L, null,
+        Timestamp.from(Instant.now())
+      )
+    );
+
+    PostDetalhesDTO detalhesDTO = new PostDetalhesDTO(
+      BigInteger.ONE,
+      BigInteger.ONE,
+      "João Silva",
+      "Título",
+      "Descrição",
+      10L,
+      List.of(),
+      Timestamp.from(Instant.now()),
+      comentarios,
+      true
+    );
+
+    when(postService.buscarDetalhesDoPost(eq(BigInteger.ONE), eq(2)))
+      .thenReturn(detalhesDTO);
+
+    mockMvc.perform(get("/api/posts/1/detalhes")
+        .param("pageSize", "2"))
+      .andDo(print())
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.comentarios", hasSize(2)))
+      .andExpect(jsonPath("$.hasMoreComentarios").value(true));
+
+    verify(postService).buscarDetalhesDoPost(eq(BigInteger.ONE), eq(2));
+  }
+
+  @Test
+  @WithMockUser
+  @DisplayName("GET /api/posts/{id}/detalhes - Deve buscar post sem comentários")
+  void deveBuscarPostSemComentarios() throws Exception {
+    PostDetalhesDTO detalhesDTO = new PostDetalhesDTO(
+      BigInteger.ONE,
+      BigInteger.ONE,
+      "João Silva",
+      "Título",
+      "Descrição",
+      5L,
+      List.of(),
+      Timestamp.from(Instant.now()),
+      List.of(),
+      false
+    );
+
+    when(postService.buscarDetalhesDoPost(eq(BigInteger.ONE), anyInt()))
+      .thenReturn(detalhesDTO);
+
+    mockMvc.perform(get("/api/posts/1/detalhes"))
+      .andDo(print())
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.comentarios").isEmpty())
+      .andExpect(jsonPath("$.hasMoreComentarios").value(false));
+
+    verify(postService).buscarDetalhesDoPost(eq(BigInteger.ONE), eq(10));
+  }
+
+  @Test
+  @WithMockUser
+  @DisplayName("GET /api/posts/{id}/detalhes - Deve validar pageSize personalizado")
+  void deveValidarPageSizePersonalizado() throws Exception {
+    PostDetalhesDTO detalhesDTO = new PostDetalhesDTO(
+      BigInteger.ONE,
+      BigInteger.ONE,
+      "João Silva",
+      "Título",
+      "Descrição",
+      10L,
+      List.of(),
+      Timestamp.from(Instant.now()),
+      List.of(),
+      false
+    );
+
+    when(postService.buscarDetalhesDoPost(eq(BigInteger.ONE), eq(20)))
+      .thenReturn(detalhesDTO);
+
+    mockMvc.perform(get("/api/posts/1/detalhes")
+        .param("pageSize", "20"))
+      .andDo(print())
+      .andExpect(status().isOk());
+
+    verify(postService).buscarDetalhesDoPost(eq(BigInteger.ONE), eq(20));
+  }
+
+  @Test
+  @WithMockUser
+  @DisplayName("GET /api/posts/{id}/detalhes - Deve validar ID inválido")
+  void deveValidarIdInvalidoParaDetalhes() throws Exception {
+    mockMvc.perform(get("/api/posts/abc/detalhes"))
+      .andDo(print())
+      .andExpect(status().isBadRequest());
+
+    verify(postService, never()).buscarDetalhesDoPost(ArgumentMatchers.any(), anyInt());
   }
 }

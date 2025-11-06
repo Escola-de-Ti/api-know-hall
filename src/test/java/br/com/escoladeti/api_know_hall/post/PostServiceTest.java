@@ -1,5 +1,6 @@
 package br.com.escoladeti.api_know_hall.post;
 
+import br.com.escoladeti.api_know_hall.dto.comentario.ComentarioResponseDTO;
 import br.com.escoladeti.api_know_hall.dto.post.*;
 import br.com.escoladeti.api_know_hall.entity.Post;
 import br.com.escoladeti.api_know_hall.entity.Tag;
@@ -9,8 +10,10 @@ import br.com.escoladeti.api_know_hall.enums.OrdenacaoTipo;
 import br.com.escoladeti.api_know_hall.enums.StatusUsuario;
 import br.com.escoladeti.api_know_hall.enums.TagOperador;
 import br.com.escoladeti.api_know_hall.enums.TipoUsuario;
+import br.com.escoladeti.api_know_hall.projection.comentario.ComentarioProjection;
 import br.com.escoladeti.api_know_hall.projection.post.PostBuscaProjection;
 import br.com.escoladeti.api_know_hall.projection.post.PostFeedProjection;
+import br.com.escoladeti.api_know_hall.repository.ComentarioRepository;
 import br.com.escoladeti.api_know_hall.repository.PostRepository;
 import br.com.escoladeti.api_know_hall.repository.TagsRepository;
 import br.com.escoladeti.api_know_hall.repository.UsuarioRepository;
@@ -51,6 +54,8 @@ class PostServiceTest {
 
   @InjectMocks
   private PostService postService;
+  @Mock
+  private ComentarioRepository comentarioRepository;
 
   private Usuario usuario;
   private Post post;
@@ -627,5 +632,209 @@ class PostServiceTest {
     verify(postRepository).buscarComFiltros(
       any(), any(), any(), any(), any(), any(), any(), any(), any(), anyInt(), eq("spring boot")
     );
+  }
+
+  @Test
+  @DisplayName("Deve buscar detalhes do post com sucesso")
+  void deveBuscarDetalhesDoPostComSucesso() {
+    // Setup comentários
+    ComentarioProjection comentario1 = createMockComentarioProjection(
+      BigInteger.ONE, "Comentário 1", 5L, 2L
+    );
+    ComentarioProjection comentario2 = createMockComentarioProjection(
+      BigInteger.TWO, "Comentário 2", 3L, 1L
+    );
+
+    when(postRepository.findById(BigInteger.ONE)).thenReturn(Optional.of(post));
+    when(comentarioRepository.findComentariosByPostId(
+      eq(BigInteger.ONE),
+      eq(null),
+      eq(11) // pageSize + 1
+    )).thenReturn(List.of(comentario1, comentario2));
+
+    PostDetalhesDTO resultado = postService.buscarDetalhesDoPost(BigInteger.ONE, 10);
+
+    assertThat(resultado).isNotNull();
+    assertThat(resultado.id()).isEqualTo(BigInteger.ONE);
+    assertThat(resultado.titulo()).isEqualTo("Título do Post");
+    assertThat(resultado.usuarioId()).isEqualTo(BigInteger.ONE);
+    assertThat(resultado.usuarioNome()).isEqualTo("João Silva");
+    assertThat(resultado.tags()).hasSize(1);
+    assertThat(resultado.comentarios()).hasSize(2);
+    assertThat(resultado.hasMoreComentarios()).isFalse();
+
+    verify(postRepository).findById(BigInteger.ONE);
+    verify(comentarioRepository).findComentariosByPostId(eq(BigInteger.ONE), eq(null), eq(11));
+  }
+
+  @Test
+  @DisplayName("Deve indicar hasMoreComentarios quando há mais comentários")
+  void deveIndicarHasMoreComentariosQuandoHaMais() {
+    // Criar 11 comentários (pageSize = 10, fetchSize = 11)
+    List<ComentarioProjection> comentarios = new java.util.ArrayList<>();
+    for (int i = 1; i <= 11; i++) {
+      comentarios.add(createMockComentarioProjection(
+        BigInteger.valueOf(i),
+        "Comentário " + i,
+        5L,
+        2L
+      ));
+    }
+
+    when(postRepository.findById(BigInteger.ONE)).thenReturn(Optional.of(post));
+    when(comentarioRepository.findComentariosByPostId(
+      eq(BigInteger.ONE),
+      eq(null),
+      eq(11)
+    )).thenReturn(comentarios);
+
+    PostDetalhesDTO resultado = postService.buscarDetalhesDoPost(BigInteger.ONE, 10);
+
+    assertThat(resultado).isNotNull();
+    assertThat(resultado.comentarios()).hasSize(10); // Limitado ao pageSize
+    assertThat(resultado.hasMoreComentarios()).isTrue();
+
+    verify(postRepository).findById(BigInteger.ONE);
+    verify(comentarioRepository).findComentariosByPostId(eq(BigInteger.ONE), eq(null), eq(11));
+  }
+
+  @Test
+  @DisplayName("Deve buscar detalhes do post sem comentários")
+  void deveBuscarDetalhesDoPostSemComentarios() {
+    when(postRepository.findById(BigInteger.ONE)).thenReturn(Optional.of(post));
+    when(comentarioRepository.findComentariosByPostId(
+      any(),
+      any(),
+      anyInt()
+    )).thenReturn(List.of());
+
+    PostDetalhesDTO resultado = postService.buscarDetalhesDoPost(BigInteger.ONE, 10);
+
+    assertThat(resultado).isNotNull();
+    assertThat(resultado.comentarios()).isEmpty();
+    assertThat(resultado.hasMoreComentarios()).isFalse();
+
+    verify(postRepository).findById(BigInteger.ONE);
+    verify(comentarioRepository).findComentariosByPostId(any(), any(), anyInt());
+  }
+
+  @Test
+  @DisplayName("Deve buscar detalhes do post sem tags")
+  void deveBuscarDetalhesDoPostSemTags() {
+    Post postSemTags = new Post();
+    postSemTags.setId(BigInteger.ONE);
+    postSemTags.setTitulo("Post sem tags");
+    postSemTags.setDescricao("Descrição");
+    postSemTags.setTotalUpVotes(5L);
+    postSemTags.setUsuario(usuario);
+    postSemTags.setDataCriacao(Timestamp.from(Instant.now()));
+    postSemTags.setTags(List.of());
+
+    when(postRepository.findById(BigInteger.ONE)).thenReturn(Optional.of(postSemTags));
+    when(comentarioRepository.findComentariosByPostId(any(), any(), anyInt()))
+      .thenReturn(List.of());
+
+    PostDetalhesDTO resultado = postService.buscarDetalhesDoPost(BigInteger.ONE, 10);
+
+    assertThat(resultado).isNotNull();
+    assertThat(resultado.tags()).isEmpty();
+    assertThat(resultado.comentarios()).isEmpty();
+
+    verify(postRepository).findById(BigInteger.ONE);
+  }
+
+  @Test
+  @DisplayName("Deve lançar exceção ao buscar detalhes de post inexistente")
+  void deveLancarExcecaoAoBuscarDetalhesDePostInexistente() {
+    when(postRepository.findById(any())).thenReturn(Optional.empty());
+
+    assertThatThrownBy(() -> postService.buscarDetalhesDoPost(BigInteger.valueOf(999), 10))
+      .isInstanceOf(EntityNotFoundException.class)
+      .hasMessage("Post não encontrado");
+
+    verify(postRepository).findById(BigInteger.valueOf(999));
+    verify(comentarioRepository, never()).findComentariosByPostId(any(), any(), anyInt());
+  }
+
+  @Test
+  @DisplayName("Deve respeitar pageSize personalizado")
+  void deveRespeitarPageSizePersonalizado() {
+    List<ComentarioProjection> comentarios = new java.util.ArrayList<>();
+    for (int i = 1; i <= 6; i++) {
+      comentarios.add(createMockComentarioProjection(
+        BigInteger.valueOf(i),
+        "Comentário " + i,
+        5L,
+        2L
+      ));
+    }
+
+    when(postRepository.findById(BigInteger.ONE)).thenReturn(Optional.of(post));
+    when(comentarioRepository.findComentariosByPostId(
+      eq(BigInteger.ONE),
+      eq(null),
+      eq(6) // pageSize 5 + 1
+    )).thenReturn(comentarios);
+
+    PostDetalhesDTO resultado = postService.buscarDetalhesDoPost(BigInteger.ONE, 5);
+
+    assertThat(resultado.comentarios()).hasSize(5);
+    assertThat(resultado.hasMoreComentarios()).isTrue();
+
+    verify(comentarioRepository).findComentariosByPostId(eq(BigInteger.ONE), eq(null), eq(6));
+  }
+
+  @Test
+  @DisplayName("Deve mapear corretamente comentários para DTO")
+  void deveMaperarCorretamenteComentariosParaDTO() {
+    ComentarioProjection comentario = createMockComentarioProjection(
+      BigInteger.ONE,
+      "Texto do comentário",
+      10L,
+      3L
+    );
+
+    when(postRepository.findById(BigInteger.ONE)).thenReturn(Optional.of(post));
+    when(comentarioRepository.findComentariosByPostId(any(), any(), anyInt()))
+      .thenReturn(List.of(comentario));
+
+    PostDetalhesDTO resultado = postService.buscarDetalhesDoPost(BigInteger.ONE, 10);
+
+    assertThat(resultado.comentarios()).hasSize(1);
+    ComentarioResponseDTO comentarioDTO = resultado.comentarios().get(0);
+    assertThat(comentarioDTO.id()).isEqualTo(BigInteger.ONE);
+    assertThat(comentarioDTO.texto()).isEqualTo("Texto do comentário");
+    assertThat(comentarioDTO.totalUpVotes()).isEqualTo(10L);
+    assertThat(comentarioDTO.totalSuperVotes()).isEqualTo(3L);
+    assertThat(comentarioDTO.usuarioNome()).isEqualTo("João Silva");
+  }
+
+  // Método auxiliar para criar mock de ComentarioProjection
+  private ComentarioProjection createMockComentarioProjection(
+    BigInteger id,
+    String texto,
+    Long upVotes,
+    Long superVotes
+  ) {
+    return new ComentarioProjection() {
+      @Override
+      public BigInteger getId() { return id; }
+      @Override
+      public BigInteger getPostId() { return BigInteger.ONE; }
+      @Override
+      public BigInteger getUsuarioId() { return BigInteger.ONE; }
+      @Override
+      public String getUsuarioNome() { return "João Silva"; }
+      @Override
+      public String getTexto() { return texto; }
+      @Override
+      public Long getTotalUpVotes() { return upVotes; }
+      @Override
+      public Long getTotalSuperVotes() { return superVotes; }
+      @Override
+      public BigInteger getComentarioPaiId() { return null; }
+      @Override
+      public Timestamp getDataCriacao() { return Timestamp.from(Instant.now()); }
+    };
   }
 }
