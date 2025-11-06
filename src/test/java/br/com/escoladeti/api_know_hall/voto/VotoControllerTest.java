@@ -20,6 +20,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.math.BigInteger;
 import java.security.Principal;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -343,5 +344,44 @@ class VotoControllerTest {
       .andExpect(jsonPath("$.totalUpVotes").value(5));
 
     verify(votoService).superVotarEmComentario(eq(BigInteger.ONE), any(Principal.class));
+  }
+
+  @Test
+  @WithMockUser
+  @DisplayName("POST /api/votos/comentario/{comentarioId}/super - Deve retornar 400 quando não é autor do post")
+  void deveRetornar400QuandoNaoEAutorDoPost() throws Exception {
+    when(votoService.superVotarEmComentario(eq(BigInteger.ONE), any(Principal.class)))
+      .thenThrow(new IllegalArgumentException("Apenas o autor do post pode conceder super votos"));
+
+    mockMvc.perform(post("/api/votos/comentario/1/super")
+        .principal(mockPrincipal)
+        .with(csrf()))
+      .andDo(print())
+      .andExpect(status().isBadRequest())
+      .andExpect(jsonPath("$.status").value(400))
+      .andExpect(jsonPath("$.message").value("Apenas o autor do post pode conceder super votos"));
+
+    verify(votoService, times(1)).superVotarEmComentario(eq(BigInteger.ONE), any(Principal.class));
+  }
+
+  @Test
+  @WithMockUser
+  @DisplayName("POST /api/votos/comentario/{comentarioId}/super - Deve retornar 400 quando já existe super voto em outro comentário")
+  void deveRetornar400QuandoJaExisteSuperVotoEmOutroComentario() throws Exception {
+    when(votoService.superVotarEmComentario(eq(BigInteger.ONE), any(Principal.class)))
+      .thenThrow(new IllegalArgumentException(
+        "Você já concedeu um super voto para outro comentário deste post. " +
+          "Remova o super voto anterior para poder conceder um novo."
+      ));
+
+    mockMvc.perform(post("/api/votos/comentario/1/super")
+        .principal(mockPrincipal)
+        .with(csrf()))
+      .andDo(print())
+      .andExpect(status().isBadRequest())
+      .andExpect(jsonPath("$.status").value(400))
+      .andExpect(jsonPath("$.message").value(containsString("Você já concedeu um super voto para outro comentário")));
+
+    verify(votoService, times(1)).superVotarEmComentario(eq(BigInteger.ONE), any(Principal.class));
   }
 }

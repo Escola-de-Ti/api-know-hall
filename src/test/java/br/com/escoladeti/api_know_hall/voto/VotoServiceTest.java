@@ -55,7 +55,9 @@ class VotoServiceTest {
   private Usuario autorPost;
   private Post post;
   private Comentario comentario;
+  private Comentario comentario2;
   private Principal mockPrincipal;
+  private Principal mockPrincipalAutorPost;
 
   @BeforeEach
   void setUp() {
@@ -91,13 +93,21 @@ class VotoServiceTest {
     comentario.setTotalUpVotes(0L);
     comentario.setTotalSuperVotes(0L);
     comentario.setPost(post);
-    comentario.setUsuario(autorPost);
+    comentario.setUsuario(usuario);
     comentario.setDataCriacao(Timestamp.from(Instant.now()));
 
-    mockPrincipal = () -> "joao@email.com";
-  }
+    comentario2 = new Comentario();
+    comentario2.setId(BigInteger.TWO);
+    comentario2.setTexto("Segundo comentário de teste");
+    comentario2.setTotalUpVotes(0L);
+    comentario2.setTotalSuperVotes(0L);
+    comentario2.setPost(post);
+    comentario2.setUsuario(usuario);
+    comentario2.setDataCriacao(Timestamp.from(Instant.now()));
 
-  // ==================== TESTES DE UP_VOTE EM POST ====================
+    mockPrincipal = () -> "joao@email.com";
+    mockPrincipalAutorPost = () -> "maria@email.com";
+  }
 
   @Test
   @DisplayName("Deve adicionar voto em post com sucesso")
@@ -209,11 +219,11 @@ class VotoServiceTest {
     verify(postRepository).save(argThat(p -> p.getTotalUpVotes().equals(5L)));
   }
 
-  // ==================== TESTES DE UP_VOTE EM COMENTÁRIO ====================
-
   @Test
   @DisplayName("Deve adicionar voto em comentário com sucesso")
   void deveAdicionarVotoEmComentarioComSucesso() {
+    comentario.setUsuario(autorPost);
+
     when(comentarioRepository.findById(BigInteger.ONE)).thenReturn(Optional.of(comentario));
     when(usuarioRepository.findByEmail("joao@email.com")).thenReturn(Optional.of(usuario));
     when(votoRepository.findByComentarioIdAndUsuarioIdAndTipo(BigInteger.ONE, BigInteger.ONE, TipoVoto.UP_VOTE.name()))
@@ -238,6 +248,8 @@ class VotoServiceTest {
   @Test
   @DisplayName("Deve remover voto em comentário com sucesso")
   void deveRemoverVotoEmComentarioComSucesso() {
+    comentario.setUsuario(autorPost);
+
     Voto votoExistente = new Voto();
     votoExistente.setId(BigInteger.ONE);
     votoExistente.setUsuario(usuario);
@@ -278,8 +290,6 @@ class VotoServiceTest {
   @Test
   @DisplayName("Deve lançar exceção ao votar no próprio comentário")
   void deveLancarExcecaoAoVotarNoProprioComentario() {
-    comentario.setUsuario(usuario);
-
     when(comentarioRepository.findById(BigInteger.ONE)).thenReturn(Optional.of(comentario));
     when(usuarioRepository.findByEmail("joao@email.com")).thenReturn(Optional.of(usuario));
 
@@ -293,6 +303,8 @@ class VotoServiceTest {
   @Test
   @DisplayName("Deve atualizar totalUpVotes corretamente após múltiplos votos em comentário")
   void deveAtualizarTotalUpVotesAposMultiplosVotosEmComentario() {
+    comentario.setUsuario(autorPost);
+
     when(comentarioRepository.findById(BigInteger.ONE)).thenReturn(Optional.of(comentario));
     when(usuarioRepository.findByEmail("joao@email.com")).thenReturn(Optional.of(usuario));
     when(votoRepository.findByComentarioIdAndUsuarioIdAndTipo(BigInteger.ONE, BigInteger.ONE, TipoVoto.UP_VOTE.name()))
@@ -308,16 +320,16 @@ class VotoServiceTest {
     verify(comentarioRepository).save(argThat(c -> c.getTotalUpVotes().equals(3L)));
   }
 
-  // ==================== TESTES DE SUPER_VOTE EM COMENTÁRIO ====================
-
   @Test
-  @DisplayName("Deve adicionar super voto em comentário com sucesso")
+  @DisplayName("Deve adicionar super voto em comentário com sucesso quando é autor do post")
   void deveAdicionarSuperVotoEmComentarioComSucesso() {
     when(comentarioRepository.findById(BigInteger.ONE)).thenReturn(Optional.of(comentario));
-    when(usuarioRepository.findByEmail("joao@email.com")).thenReturn(Optional.of(usuario));
-    when(votoRepository.findByComentarioIdAndUsuarioIdAndTipo(BigInteger.ONE, BigInteger.ONE, TipoVoto.SUPER_VOTE.name()))
+    when(usuarioRepository.findByEmail("maria@email.com")).thenReturn(Optional.of(autorPost));
+    when(votoRepository.findByComentarioIdAndUsuarioIdAndTipo(BigInteger.ONE, BigInteger.TWO, TipoVoto.SUPER_VOTE.name()))
       .thenReturn(Optional.empty());
-    when(votoRepository.findByComentarioIdAndUsuarioIdAndTipo(BigInteger.ONE, BigInteger.ONE, TipoVoto.UP_VOTE.name()))
+    when(votoRepository.findSuperVoteByPostIdAndUsuarioId(BigInteger.ONE, BigInteger.TWO, TipoVoto.SUPER_VOTE.name()))
+      .thenReturn(Optional.empty());
+    when(votoRepository.findByComentarioIdAndUsuarioIdAndTipo(BigInteger.ONE, BigInteger.TWO, TipoVoto.UP_VOTE.name()))
       .thenReturn(Optional.empty());
     when(votoRepository.countByComentarioIdAndTipo(BigInteger.ONE, TipoVoto.UP_VOTE.name()))
       .thenReturn(0L);
@@ -326,14 +338,14 @@ class VotoServiceTest {
     when(votoRepository.save(any(Voto.class))).thenAnswer(invocation -> invocation.getArgument(0));
     when(comentarioRepository.save(any(Comentario.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-    VotoResponseDTO resultado = votoService.superVotarEmComentario(BigInteger.ONE, mockPrincipal);
+    VotoResponseDTO resultado = votoService.superVotarEmComentario(BigInteger.ONE, mockPrincipalAutorPost);
 
     assertThat(resultado).isNotNull();
     assertThat(resultado.votado()).isTrue();
     assertThat(resultado.totalUpVotes()).isEqualTo(1L);
 
     verify(comentarioRepository).findById(BigInteger.ONE);
-    verify(usuarioRepository).findByEmail("joao@email.com");
+    verify(usuarioRepository).findByEmail("maria@email.com");
     verify(votoRepository).save(argThat(v -> v.getTipo() == TipoVoto.SUPER_VOTE));
     verify(comentarioRepository).save(argThat(c ->
       c.getTotalUpVotes().equals(0L) && c.getTotalSuperVotes().equals(1L)
@@ -345,13 +357,13 @@ class VotoServiceTest {
   void deveRemoverSuperVotoEmComentarioComSucesso() {
     Voto superVotoExistente = new Voto();
     superVotoExistente.setId(BigInteger.ONE);
-    superVotoExistente.setUsuario(usuario);
+    superVotoExistente.setUsuario(autorPost);
     superVotoExistente.setComentario(comentario);
     superVotoExistente.setTipo(TipoVoto.SUPER_VOTE);
 
     when(comentarioRepository.findById(BigInteger.ONE)).thenReturn(Optional.of(comentario));
-    when(usuarioRepository.findByEmail("joao@email.com")).thenReturn(Optional.of(usuario));
-    when(votoRepository.findByComentarioIdAndUsuarioIdAndTipo(BigInteger.ONE, BigInteger.ONE, TipoVoto.SUPER_VOTE.name()))
+    when(usuarioRepository.findByEmail("maria@email.com")).thenReturn(Optional.of(autorPost));
+    when(votoRepository.findByComentarioIdAndUsuarioIdAndTipo(BigInteger.ONE, BigInteger.TWO, TipoVoto.SUPER_VOTE.name()))
       .thenReturn(Optional.of(superVotoExistente));
     when(votoRepository.countByComentarioIdAndTipo(BigInteger.ONE, TipoVoto.UP_VOTE.name()))
       .thenReturn(0L);
@@ -359,7 +371,7 @@ class VotoServiceTest {
       .thenReturn(0L);
     when(comentarioRepository.save(any(Comentario.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-    VotoResponseDTO resultado = votoService.superVotarEmComentario(BigInteger.ONE, mockPrincipal);
+    VotoResponseDTO resultado = votoService.superVotarEmComentario(BigInteger.ONE, mockPrincipalAutorPost);
 
     assertThat(resultado).isNotNull();
     assertThat(resultado.votado()).isFalse();
@@ -376,15 +388,17 @@ class VotoServiceTest {
   void deveSubstituirUpVotePorSuperVoteAoSuperVotar() {
     Voto upVoteExistente = new Voto();
     upVoteExistente.setId(BigInteger.ONE);
-    upVoteExistente.setUsuario(usuario);
+    upVoteExistente.setUsuario(autorPost);
     upVoteExistente.setComentario(comentario);
     upVoteExistente.setTipo(TipoVoto.UP_VOTE);
 
     when(comentarioRepository.findById(BigInteger.ONE)).thenReturn(Optional.of(comentario));
-    when(usuarioRepository.findByEmail("joao@email.com")).thenReturn(Optional.of(usuario));
-    when(votoRepository.findByComentarioIdAndUsuarioIdAndTipo(BigInteger.ONE, BigInteger.ONE, TipoVoto.SUPER_VOTE.name()))
+    when(usuarioRepository.findByEmail("maria@email.com")).thenReturn(Optional.of(autorPost));
+    when(votoRepository.findByComentarioIdAndUsuarioIdAndTipo(BigInteger.ONE, BigInteger.TWO, TipoVoto.SUPER_VOTE.name()))
       .thenReturn(Optional.empty());
-    when(votoRepository.findByComentarioIdAndUsuarioIdAndTipo(BigInteger.ONE, BigInteger.ONE, TipoVoto.UP_VOTE.name()))
+    when(votoRepository.findSuperVoteByPostIdAndUsuarioId(BigInteger.ONE, BigInteger.TWO, TipoVoto.SUPER_VOTE.name()))
+      .thenReturn(Optional.empty());
+    when(votoRepository.findByComentarioIdAndUsuarioIdAndTipo(BigInteger.ONE, BigInteger.TWO, TipoVoto.UP_VOTE.name()))
       .thenReturn(Optional.of(upVoteExistente));
     when(votoRepository.countByComentarioIdAndTipo(BigInteger.ONE, TipoVoto.UP_VOTE.name()))
       .thenReturn(0L);
@@ -393,7 +407,7 @@ class VotoServiceTest {
     when(votoRepository.save(any(Voto.class))).thenAnswer(invocation -> invocation.getArgument(0));
     when(comentarioRepository.save(any(Comentario.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-    VotoResponseDTO resultado = votoService.superVotarEmComentario(BigInteger.ONE, mockPrincipal);
+    VotoResponseDTO resultado = votoService.superVotarEmComentario(BigInteger.ONE, mockPrincipalAutorPost);
 
     assertThat(resultado).isNotNull();
     assertThat(resultado.votado()).isTrue();
@@ -411,7 +425,7 @@ class VotoServiceTest {
   void deveLancarExcecaoAoSuperVotarEmComentarioInexistente() {
     when(comentarioRepository.findById(any())).thenReturn(Optional.empty());
 
-    assertThatThrownBy(() -> votoService.superVotarEmComentario(BigInteger.valueOf(999), mockPrincipal))
+    assertThatThrownBy(() -> votoService.superVotarEmComentario(BigInteger.valueOf(999), mockPrincipalAutorPost))
       .isInstanceOf(EntityNotFoundException.class)
       .hasMessage("Comentário não encontrado");
 
@@ -422,14 +436,50 @@ class VotoServiceTest {
   @Test
   @DisplayName("Deve lançar exceção ao super votar no próprio comentário")
   void deveLancarExcecaoAoSuperVotarNoProprioComentario() {
-    comentario.setUsuario(usuario);
+    comentario.setUsuario(autorPost);
 
+    when(comentarioRepository.findById(BigInteger.ONE)).thenReturn(Optional.of(comentario));
+    when(usuarioRepository.findByEmail("maria@email.com")).thenReturn(Optional.of(autorPost));
+
+    assertThatThrownBy(() -> votoService.superVotarEmComentario(BigInteger.ONE, mockPrincipalAutorPost))
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessage("Você não pode votar no próprio comentário");
+
+    verify(votoRepository, never()).save(any());
+  }
+
+  @Test
+  @DisplayName("Deve lançar exceção ao tentar super votar sem ser autor do post")
+  void deveLancarExcecaoAoTentarSuperVotarSemSerAutorDoPost() {
     when(comentarioRepository.findById(BigInteger.ONE)).thenReturn(Optional.of(comentario));
     when(usuarioRepository.findByEmail("joao@email.com")).thenReturn(Optional.of(usuario));
 
     assertThatThrownBy(() -> votoService.superVotarEmComentario(BigInteger.ONE, mockPrincipal))
       .isInstanceOf(IllegalArgumentException.class)
-      .hasMessage("Você não pode votar no próprio comentário");
+      .hasMessage("Apenas o autor do post pode conceder super votos");
+
+    verify(votoRepository, never()).save(any());
+  }
+
+  @Test
+  @DisplayName("Deve lançar exceção ao tentar super votar quando já existe super voto em outro comentário")
+  void deveLancarExcecaoAoTentarSuperVotarQuandoJaExisteSuperVotoEmOutroComentario() {
+    Voto superVotoExistenteEmOutroComentario = new Voto();
+    superVotoExistenteEmOutroComentario.setId(BigInteger.valueOf(10));
+    superVotoExistenteEmOutroComentario.setUsuario(autorPost);
+    superVotoExistenteEmOutroComentario.setComentario(comentario2);
+    superVotoExistenteEmOutroComentario.setTipo(TipoVoto.SUPER_VOTE);
+
+    when(comentarioRepository.findById(BigInteger.ONE)).thenReturn(Optional.of(comentario));
+    when(usuarioRepository.findByEmail("maria@email.com")).thenReturn(Optional.of(autorPost));
+    when(votoRepository.findByComentarioIdAndUsuarioIdAndTipo(BigInteger.ONE, BigInteger.TWO, TipoVoto.SUPER_VOTE.name()))
+      .thenReturn(Optional.empty());
+    when(votoRepository.findSuperVoteByPostIdAndUsuarioId(BigInteger.ONE, BigInteger.TWO, TipoVoto.SUPER_VOTE.name()))
+      .thenReturn(Optional.of(superVotoExistenteEmOutroComentario));
+
+    assertThatThrownBy(() -> votoService.superVotarEmComentario(BigInteger.ONE, mockPrincipalAutorPost))
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("Você já concedeu um super voto para outro comentário deste post");
 
     verify(votoRepository, never()).save(any());
   }
@@ -438,10 +488,12 @@ class VotoServiceTest {
   @DisplayName("Deve atualizar totalSuperVotes corretamente após múltiplos super votos")
   void deveAtualizarTotalSuperVotesAposMultiplosSuperVotos() {
     when(comentarioRepository.findById(BigInteger.ONE)).thenReturn(Optional.of(comentario));
-    when(usuarioRepository.findByEmail("joao@email.com")).thenReturn(Optional.of(usuario));
-    when(votoRepository.findByComentarioIdAndUsuarioIdAndTipo(BigInteger.ONE, BigInteger.ONE, TipoVoto.SUPER_VOTE.name()))
+    when(usuarioRepository.findByEmail("maria@email.com")).thenReturn(Optional.of(autorPost));
+    when(votoRepository.findByComentarioIdAndUsuarioIdAndTipo(BigInteger.ONE, BigInteger.TWO, TipoVoto.SUPER_VOTE.name()))
       .thenReturn(Optional.empty());
-    when(votoRepository.findByComentarioIdAndUsuarioIdAndTipo(BigInteger.ONE, BigInteger.ONE, TipoVoto.UP_VOTE.name()))
+    when(votoRepository.findSuperVoteByPostIdAndUsuarioId(BigInteger.ONE, BigInteger.TWO, TipoVoto.SUPER_VOTE.name()))
+      .thenReturn(Optional.empty());
+    when(votoRepository.findByComentarioIdAndUsuarioIdAndTipo(BigInteger.ONE, BigInteger.TWO, TipoVoto.UP_VOTE.name()))
       .thenReturn(Optional.empty());
     when(votoRepository.countByComentarioIdAndTipo(BigInteger.ONE, TipoVoto.UP_VOTE.name()))
       .thenReturn(2L);
@@ -450,7 +502,7 @@ class VotoServiceTest {
     when(votoRepository.save(any(Voto.class))).thenAnswer(invocation -> invocation.getArgument(0));
     when(comentarioRepository.save(any(Comentario.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-    VotoResponseDTO resultado = votoService.superVotarEmComentario(BigInteger.ONE, mockPrincipal);
+    VotoResponseDTO resultado = votoService.superVotarEmComentario(BigInteger.ONE, mockPrincipalAutorPost);
 
     assertThat(resultado.totalUpVotes()).isEqualTo(3L);
     verify(comentarioRepository).save(argThat(c ->
@@ -462,9 +514,9 @@ class VotoServiceTest {
   @DisplayName("Deve lançar exceção ao super votar com usuário inexistente")
   void deveLancarExcecaoAoSuperVotarComUsuarioInexistente() {
     when(comentarioRepository.findById(BigInteger.ONE)).thenReturn(Optional.of(comentario));
-    when(usuarioRepository.findByEmail("joao@email.com")).thenReturn(Optional.empty());
+    when(usuarioRepository.findByEmail("maria@email.com")).thenReturn(Optional.empty());
 
-    assertThatThrownBy(() -> votoService.superVotarEmComentario(BigInteger.ONE, mockPrincipal))
+    assertThatThrownBy(() -> votoService.superVotarEmComentario(BigInteger.ONE, mockPrincipalAutorPost))
       .isInstanceOf(EntityNotFoundException.class)
       .hasMessage("Usuário não encontrado");
 

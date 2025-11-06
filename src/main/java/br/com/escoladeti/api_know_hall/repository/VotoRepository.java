@@ -27,18 +27,6 @@ public interface VotoRepository extends JpaRepository<Voto, BigInteger> {
     @Param("tipo") String tipo
   );
 
-  @Query(value = "SELECT * FROM votos v WHERE v.post_id = :postId AND v.usuario_id = :usuarioId", nativeQuery = true)
-  Optional<Voto> findByPostIdAndUsuarioId(
-    @Param("postId") BigInteger postId,
-    @Param("usuarioId") BigInteger usuarioId
-  );
-
-  @Query(value = "SELECT * FROM votos v WHERE v.comentario_id = :comentarioId AND v.usuario_id = :usuarioId", nativeQuery = true)
-  Optional<Voto> findByComentarioIdAndUsuarioId(
-    @Param("comentarioId") BigInteger comentarioId,
-    @Param("usuarioId") BigInteger usuarioId
-  );
-
   @Query(value = "SELECT COUNT(*) FROM votos v WHERE v.post_id = :postId AND v.tipo = :tipo", nativeQuery = true)
   Long countByPostIdAndTipo(
     @Param("postId") BigInteger postId,
@@ -48,6 +36,19 @@ public interface VotoRepository extends JpaRepository<Voto, BigInteger> {
   @Query(value = "SELECT COUNT(*) FROM votos v WHERE v.comentario_id = :comentarioId AND v.tipo = :tipo", nativeQuery = true)
   Long countByComentarioIdAndTipo(
     @Param("comentarioId") BigInteger comentarioId,
+    @Param("tipo") String tipo
+  );
+
+  @Query(value = """
+    SELECT v.* FROM votos v
+    INNER JOIN comentarios c ON v.comentario_id = c.id
+    WHERE c.post_id = :postId
+    AND v.usuario_id = :usuarioId
+    AND v.tipo = :tipo
+    """, nativeQuery = true)
+  Optional<Voto> findSuperVoteByPostIdAndUsuarioId(
+    @Param("postId") BigInteger postId,
+    @Param("usuarioId") BigInteger usuarioId,
     @Param("tipo") String tipo
   );
 }

@@ -114,11 +114,16 @@ public class VotoService {
     Usuario usuario = usuarioRepository.findByEmail(principal.getName())
       .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
 
+    Post post = comentario.getPost();
+
+    if (!post.getUsuario().getId().equals(usuario.getId())) {
+      throw new IllegalArgumentException("Apenas o autor do post pode conceder super votos");
+    }
+
     if (comentario.getUsuario().getId().equals(usuario.getId())) {
       throw new IllegalArgumentException("Você não pode votar no próprio comentário");
     }
 
-    // Verifica se já existe um SUPER_VOTE
     Optional<Voto> superVotoExistente = votoRepository.findByComentarioIdAndUsuarioIdAndTipo(
       comentarioId,
       usuario.getId(),
@@ -128,11 +133,22 @@ public class VotoService {
     boolean votado;
 
     if (superVotoExistente.isPresent()) {
-      // Se já tem SUPER_VOTE, remove (toggle)
       votoRepository.delete(superVotoExistente.get());
       votado = false;
     } else {
-      // Remove UP_VOTE caso exista (um usuário só pode ter um tipo de voto)
+      Optional<Voto> superVotoEmOutroComentario = votoRepository.findSuperVoteByPostIdAndUsuarioId(
+        post.getId(),
+        usuario.getId(),
+        TipoVoto.SUPER_VOTE.name()
+      );
+
+      if (superVotoEmOutroComentario.isPresent()) {
+        throw new IllegalArgumentException(
+          "Você já concedeu um super voto para outro comentário deste post. " +
+            "Remova o super voto anterior para poder conceder um novo."
+        );
+      }
+
       Optional<Voto> upVoteExistente = votoRepository.findByComentarioIdAndUsuarioIdAndTipo(
         comentarioId,
         usuario.getId(),
@@ -141,7 +157,6 @@ public class VotoService {
 
       upVoteExistente.ifPresent(votoRepository::delete);
 
-      // Cria novo SUPER_VOTE
       Voto novoVoto = new Voto();
       novoVoto.setUsuario(usuario);
       novoVoto.setComentario(comentario);
@@ -150,7 +165,6 @@ public class VotoService {
       votado = true;
     }
 
-    // Atualiza contadores
     Long totalUpVotes = votoRepository.countByComentarioIdAndTipo(comentarioId, TipoVoto.UP_VOTE.name());
     Long totalSuperVotes = votoRepository.countByComentarioIdAndTipo(comentarioId, TipoVoto.SUPER_VOTE.name());
 
