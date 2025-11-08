@@ -43,8 +43,11 @@ public class Voto {
   @PrePersist
   @PreUpdate
   public void validateVoto() {
-    if ((post == null && comentario == null) || (post != null && comentario != null)) {
-      throw new IllegalStateException("Voto deve ser associado a um Post OU a um Comentário, nunca ambos ou nenhum");
+    if (post == null && comentario == null) {
+      throw new IllegalStateException("Voto deve ser associado a um Post ou a um Comentário, mas nenhum foi associado.");
+    }
+    if (post != null && comentario != null) {
+      throw new IllegalStateException("Voto não pode ser associado a ambos Post e Comentário ao mesmo tempo.");
     }
   }
 }
