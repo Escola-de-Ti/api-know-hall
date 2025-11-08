@@ -64,9 +64,5 @@ public class Post {
     imgPost.setOrdemImagem(ordemImagem);
     this.imagens.add(imgPost);
   }
-
-  public void removeImagem(ImagemPost imgPost) {
-    this.imagens.remove(imgPost);
-    imgPost.setPost(null);
-  }
+  
 }

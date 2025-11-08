@@ -377,7 +377,8 @@ public class PostService {
   @Transactional
   public void atualizarImagemPerfil(Imagem imagem, Integer ordemImagem, BigInteger postId) {
     Post post = postRepository.findById(postId)
-      .orElseThrow(() -> new RuntimeException("Post não encontrado"));
+      .orElseThrow(() -> new EntityNotFoundException("Post não encontrado"));
     post.addImagem(imagem, ordemImagem);
+    postRepository.save(post);
   }
 }
