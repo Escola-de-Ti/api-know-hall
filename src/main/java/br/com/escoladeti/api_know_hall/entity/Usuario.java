@@ -1,7 +1,7 @@
 package br.com.escoladeti.api_know_hall.entity;
 
-import br.com.escoladeti.api_know_hall.dto.UsuarioCreateDTO;
-import br.com.escoladeti.api_know_hall.dto.UsuarioUpdateDTO;
+import br.com.escoladeti.api_know_hall.dto.usuario.UsuarioCreateDTO;
+import br.com.escoladeti.api_know_hall.dto.usuario.UsuarioUpdateDTO;
 import br.com.escoladeti.api_know_hall.entity.conquista.ConquistaTier;
 import br.com.escoladeti.api_know_hall.entity.conquista.UsuarioConquista;
 import br.com.escoladeti.api_know_hall.entity.workshop.Workshop;
@@ -10,7 +10,6 @@ import br.com.escoladeti.api_know_hall.enums.TierConquista;
 import br.com.escoladeti.api_know_hall.enums.TipoUsuario;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -21,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-import java.math.BigInteger;
 import java.util.Optional;
 
 @Entity
@@ -52,7 +50,7 @@ public class Usuario {
   @Column(name = "nome", nullable = false)
   private String nome;
 
-  @Column(name = "sobrenome")
+  @Column(name = "biografia")
   private String biografia;
 
   @Column(name = "senha_hash", nullable = false)
@@ -94,6 +92,12 @@ public class Usuario {
   @OneToMany(mappedBy = "instrutor", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
   private List<Workshop> workshops = new ArrayList<>();
 
+  @Column(name = "qntd_token")
+  private Long qntdToken;
+
+  @Column(name = "qntd_xp")
+  private Long qntdXp;
+
   public void adicionarConquista(ConquistaTier conquistaTier, Integer progressoAtual) {
     UsuarioConquista uc = new UsuarioConquista();
     uc.setUsuario(this);
@@ -128,9 +132,11 @@ public class Usuario {
     this.nome = dto.getNome();
     this.biografia = dto.getBiografia();
     this.senhaHash = dto.getSenha();
-    this.statusUsuario = StatusUsuario.ATIVO; // Depois que for implementado o fluxo de confirmação de email, mudar isso
+    this.statusUsuario = StatusUsuario.ATIVO;
     this.tipoUsuario = dto.getTipoUsuario();
     this.tags = dto.getTags();
+    this.qntdToken = 0L;
+    this.qntdXp = 0L;
   }
 
   public void applyUpdate(UsuarioUpdateDTO dto) {
