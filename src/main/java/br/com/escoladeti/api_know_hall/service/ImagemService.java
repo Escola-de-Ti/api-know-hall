@@ -90,6 +90,7 @@ public class ImagemService {
         case "perfil" -> usuarioService.atualizarImagemPerfil(userEmail, imagem);
         case "post" -> {
           BigInteger postId = new BigInteger(idType);
+
           postService.atualizarImagemPerfil(imagem, 0, postId);
         }
       }

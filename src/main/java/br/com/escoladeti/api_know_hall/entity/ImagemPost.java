@@ -25,7 +25,7 @@ public class ImagemPost {
   @JoinColumn(name = "post_id", nullable = false)
   private Post post;
 
-  @ManyToOne(cascade = CascadeType.REMOVE)
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(name = "imagem_id", nullable = false)
   private Imagem imagem;
 

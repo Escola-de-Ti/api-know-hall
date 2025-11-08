@@ -1,5 +1,6 @@
 package br.com.escoladeti.api_know_hall.service;
 
+import br.com.escoladeti.api_know_hall.dto.ImagemPostDTO;
 import br.com.escoladeti.api_know_hall.dto.comentario.ComentarioResponseDTO;
 import br.com.escoladeti.api_know_hall.dto.post.*;
 import br.com.escoladeti.api_know_hall.dto.tags.TagResponseDTO;
@@ -114,6 +115,10 @@ public class PostService {
       .map(tag -> new TagResponseDTO(tag.getId(), tag.getName()))
       .collect(Collectors.toList());
 
+    List<ImagemPostDTO> imagemDTOs = post.getImagens().stream()
+      .map(ImagemPostDTO::fromEntity)
+      .toList();
+
     return new PostResponseDTO(
       post.getId(),
       post.getUsuario().getId(),
@@ -122,7 +127,8 @@ public class PostService {
       post.getDescricao(),
       post.getTotalUpVotes(),
       tagDTOs,
-      post.getDataCriacao()
+      post.getDataCriacao(),
+      imagemDTOs
     );
   }
 
@@ -368,12 +374,10 @@ public class PostService {
     );
   }
 
+  @Transactional
   public void atualizarImagemPerfil(Imagem imagem, Integer ordemImagem, BigInteger postId) {
     Post post = postRepository.findById(postId)
       .orElseThrow(() -> new RuntimeException("Post não encontrado"));
-
     post.addImagem(imagem, ordemImagem);
-    System.out.println(post);
-    postRepository.save(post);
   }
 }
