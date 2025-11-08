@@ -2,6 +2,7 @@ package br.com.escoladeti.api_know_hall.exception.handler;
 
 import br.com.escoladeti.api_know_hall.dto.ErrorResponse;
 import br.com.escoladeti.api_know_hall.exception.PalavraProibidaException;
+import br.com.escoladeti.api_know_hall.exception.TokenInsuficienteException;
 import br.com.escoladeti.api_know_hall.exception.UsuarioInativoException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
@@ -91,5 +92,11 @@ public class GlobalExceptionHandler {
       ex.getName(), ex.getValue());
     ErrorResponse error = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), message, LocalDateTime.now());
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+  }
+
+  @ExceptionHandler(TokenInsuficienteException.class)
+  public ResponseEntity<ErrorResponse> handleTokenInsuficiente(TokenInsuficienteException ex) {
+    ErrorResponse error = new ErrorResponse(HttpStatus.PAYMENT_REQUIRED.value(), ex.getMessage(), LocalDateTime.now());
+    return ResponseEntity.status(HttpStatus.PAYMENT_REQUIRED).body(error);
   }
 }

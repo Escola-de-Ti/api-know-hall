@@ -58,6 +58,9 @@ public class Usuario {
   @Column(name = "senha_hash", nullable = false)
   private String senhaHash;
 
+  @Column(name = "qntd_token")
+  private Long qntdToken;
+
   @OneToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
   @JoinColumn(name = "id_imagem_perfil", referencedColumnName = "id", foreignKey = @ForeignKey(name = "fk_usuario_imagem"))
   private Imagem imagemPerfil;

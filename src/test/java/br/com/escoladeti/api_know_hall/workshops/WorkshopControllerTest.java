@@ -131,14 +131,13 @@ class WorkshopControllerTest {
       descricaoDTO.setDescricao("Workshop sobre Spring Boot");
 
       WorkshopCreateDTO createDTO = new WorkshopCreateDTO();
-      createDTO.setInstrutorId(instrutor.getId());
       createDTO.setTitulo("Spring Boot Avançado");
       createDTO.setLinkMeet("https://meet.google.com/abc-defg");
       createDTO.setDataInicio(dataInicio);
       createDTO.setDataTermino(dataTermino);
       createDTO.setDescricao(descricaoDTO);
 
-      when(workshopService.criarWorkshop(any(WorkshopCreateDTO.class)))
+      when(workshopService.criarWorkshop(any(WorkshopCreateDTO.class), eq(instrutor.getEmail())))
         .thenReturn(workshopAberto);
 
       mockMvc.perform(post("/api/workshops")
@@ -150,7 +149,7 @@ class WorkshopControllerTest {
         .andExpect(jsonPath("$.linkMeet").value("https://meet.google.com/abc-defg"))
         .andExpect(jsonPath("$.status").value("ABERTO"));
 
-      verify(workshopService, times(1)).criarWorkshop(any(WorkshopCreateDTO.class));
+      verify(workshopService, times(1)).criarWorkshop(any(WorkshopCreateDTO.class), eq(instrutor.getEmail()));
     }
 
     @Test
@@ -160,13 +159,12 @@ class WorkshopControllerTest {
       Timestamp fim = Timestamp.from(Instant.now().plus(4, ChronoUnit.HOURS));
 
       WorkshopCreateDTO createDTO = new WorkshopCreateDTO();
-      createDTO.setInstrutorId(instrutor.getId());
       createDTO.setTitulo("Workshop Imediato");
       createDTO.setLinkMeet("https://meet.google.com/now");
       createDTO.setDataInicio(hoje);
       createDTO.setDataTermino(fim);
 
-      when(workshopService.criarWorkshop(any(WorkshopCreateDTO.class)))
+      when(workshopService.criarWorkshop(any(WorkshopCreateDTO.class), eq(instrutor.getEmail())))
         .thenReturn(workshopEmAndamento);
 
       mockMvc.perform(post("/api/workshops")
@@ -176,7 +174,7 @@ class WorkshopControllerTest {
         .andExpect(jsonPath("$.titulo").value("Workshop Imediato"))
         .andExpect(jsonPath("$.status").value("EM_ANDAMENTO"));
 
-      verify(workshopService, times(1)).criarWorkshop(any(WorkshopCreateDTO.class));
+      verify(workshopService, times(1)).criarWorkshop(any(WorkshopCreateDTO.class), eq(instrutor.getEmail()));
     }
 
     @Test
@@ -186,7 +184,6 @@ class WorkshopControllerTest {
       Timestamp fim = Timestamp.from(Instant.now().plus(3, ChronoUnit.HOURS));
 
       WorkshopCreateDTO createDTO = new WorkshopCreateDTO();
-      createDTO.setInstrutorId(instrutor.getId());
       createDTO.setTitulo("Workshop Iniciado");
       createDTO.setLinkMeet("https://meet.google.com/started");
       createDTO.setDataInicio(passado);
@@ -198,7 +195,7 @@ class WorkshopControllerTest {
       workshopIniciado.setStatus(StatusWorkshop.EM_ANDAMENTO);
       workshopIniciado.setInstrutor(instrutor);
 
-      when(workshopService.criarWorkshop(any(WorkshopCreateDTO.class)))
+      when(workshopService.criarWorkshop(any(WorkshopCreateDTO.class), eq(instrutor.getEmail())))
         .thenReturn(workshopIniciado);
 
       mockMvc.perform(post("/api/workshops")
@@ -207,7 +204,7 @@ class WorkshopControllerTest {
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.status").value("EM_ANDAMENTO"));
 
-      verify(workshopService, times(1)).criarWorkshop(any(WorkshopCreateDTO.class));
+      verify(workshopService, times(1)).criarWorkshop(any(WorkshopCreateDTO.class), eq(instrutor.getEmail()));
     }
 
     @Test
@@ -217,7 +214,6 @@ class WorkshopControllerTest {
       Timestamp dataTermino = Timestamp.from(Instant.now().plus(7, ChronoUnit.DAYS).plus(4, ChronoUnit.HOURS));
 
       WorkshopCreateDTO createDTO = new WorkshopCreateDTO();
-      createDTO.setInstrutorId(instrutor.getId());
       createDTO.setTitulo("Workshop Sem Descrição");
       createDTO.setLinkMeet("https://meet.google.com/no-desc");
       createDTO.setDataInicio(dataInicio);
@@ -229,7 +225,7 @@ class WorkshopControllerTest {
       workshopSemDesc.setStatus(StatusWorkshop.ABERTO);
       workshopSemDesc.setInstrutor(instrutor);
 
-      when(workshopService.criarWorkshop(any(WorkshopCreateDTO.class)))
+      when(workshopService.criarWorkshop(any(WorkshopCreateDTO.class), eq(instrutor.getEmail())))
         .thenReturn(workshopSemDesc);
 
       mockMvc.perform(post("/api/workshops")
@@ -238,7 +234,7 @@ class WorkshopControllerTest {
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.titulo").value("Workshop Sem Descrição"));
 
-      verify(workshopService, times(1)).criarWorkshop(any(WorkshopCreateDTO.class));
+      verify(workshopService, times(1)).criarWorkshop(any(WorkshopCreateDTO.class), eq(instrutor.getEmail()));
     }
 
     @Test
@@ -248,13 +244,12 @@ class WorkshopControllerTest {
       Timestamp dataTermino = Timestamp.from(Instant.now().plus(7, ChronoUnit.DAYS).plus(4, ChronoUnit.HOURS));
 
       WorkshopCreateDTO createDTO = new WorkshopCreateDTO();
-      createDTO.setInstrutorId(usuarioComum.getId());
       createDTO.setTitulo("Workshop Inválido");
       createDTO.setLinkMeet("https://meet.google.com/invalid");
       createDTO.setDataInicio(dataInicio);
       createDTO.setDataTermino(dataTermino);
 
-      when(workshopService.criarWorkshop(any(WorkshopCreateDTO.class)))
+      when(workshopService.criarWorkshop(any(WorkshopCreateDTO.class), eq(instrutor.getEmail())))
         .thenThrow(new IllegalArgumentException("Apenas usuários do tipo INSTRUTOR podem criar workshops"));
 
       mockMvc.perform(post("/api/workshops")
@@ -262,7 +257,7 @@ class WorkshopControllerTest {
           .content(objectMapper.writeValueAsString(createDTO)))
         .andExpect(status().isBadRequest());
 
-      verify(workshopService, times(1)).criarWorkshop(any(WorkshopCreateDTO.class));
+      verify(workshopService, times(1)).criarWorkshop(any(WorkshopCreateDTO.class), eq(instrutor.getEmail()));
     }
 
     @Test
@@ -272,12 +267,11 @@ class WorkshopControllerTest {
       Timestamp dataTermino = Timestamp.from(Instant.now().plus(6, ChronoUnit.DAYS));
 
       WorkshopCreateDTO createDTO = new WorkshopCreateDTO();
-      createDTO.setInstrutorId(instrutor.getId());
       createDTO.setTitulo("Workshop Inválido");
       createDTO.setDataInicio(dataInicio);
       createDTO.setDataTermino(dataTermino);
 
-      when(workshopService.criarWorkshop(any(WorkshopCreateDTO.class)))
+      when(workshopService.criarWorkshop(any(WorkshopCreateDTO.class), eq(instrutor.getEmail())))
         .thenThrow(new IllegalArgumentException("Data de término deve ser maior que data de início"));
 
       mockMvc.perform(post("/api/workshops")
@@ -285,7 +279,7 @@ class WorkshopControllerTest {
           .content(objectMapper.writeValueAsString(createDTO)))
         .andExpect(status().isBadRequest());
 
-      verify(workshopService, times(1)).criarWorkshop(any(WorkshopCreateDTO.class));
+      verify(workshopService, times(1)).criarWorkshop(any(WorkshopCreateDTO.class), eq(instrutor.getEmail()));
     }
 
     @Test
@@ -295,7 +289,6 @@ class WorkshopControllerTest {
       Timestamp dataTermino = Timestamp.from(Instant.now().plus(7, ChronoUnit.DAYS).plus(4, ChronoUnit.HOURS));
 
       WorkshopCreateDTO createDTO = new WorkshopCreateDTO();
-      createDTO.setInstrutorId(instrutor.getId());
       createDTO.setTitulo("");
       createDTO.setDataInicio(dataInicio);
       createDTO.setDataTermino(dataTermino);
@@ -305,7 +298,7 @@ class WorkshopControllerTest {
           .content(objectMapper.writeValueAsString(createDTO)))
         .andExpect(status().isBadRequest());
 
-      verify(workshopService, never()).criarWorkshop(any(WorkshopCreateDTO.class));
+      verify(workshopService, never()).criarWorkshop(any(WorkshopCreateDTO.class), eq(instrutor.getEmail()));
     }
 
     @Test
@@ -314,7 +307,6 @@ class WorkshopControllerTest {
       Timestamp dataTermino = Timestamp.from(Instant.now().plus(7, ChronoUnit.DAYS).plus(4, ChronoUnit.HOURS));
 
       WorkshopCreateDTO createDTO = new WorkshopCreateDTO();
-      createDTO.setInstrutorId(instrutor.getId());
       createDTO.setTitulo("Workshop Sem Data Início");
       createDTO.setDataTermino(dataTermino);
 
@@ -323,7 +315,7 @@ class WorkshopControllerTest {
           .content(objectMapper.writeValueAsString(createDTO)))
         .andExpect(status().isBadRequest());
 
-      verify(workshopService, never()).criarWorkshop(any(WorkshopCreateDTO.class));
+      verify(workshopService, never()).criarWorkshop(any(WorkshopCreateDTO.class), eq(instrutor.getEmail()));
     }
 
     @Test
@@ -332,7 +324,6 @@ class WorkshopControllerTest {
       Timestamp dataInicio = Timestamp.from(Instant.now().plus(7, ChronoUnit.DAYS));
 
       WorkshopCreateDTO createDTO = new WorkshopCreateDTO();
-      createDTO.setInstrutorId(instrutor.getId());
       createDTO.setTitulo("Workshop Sem Data Término");
       createDTO.setDataInicio(dataInicio);
 
@@ -341,7 +332,7 @@ class WorkshopControllerTest {
           .content(objectMapper.writeValueAsString(createDTO)))
         .andExpect(status().isBadRequest());
 
-      verify(workshopService, never()).criarWorkshop(any(WorkshopCreateDTO.class));
+      verify(workshopService, never()).criarWorkshop(any(WorkshopCreateDTO.class), eq(instrutor.getEmail()));
     }
 
     @Test
@@ -351,12 +342,11 @@ class WorkshopControllerTest {
       Timestamp dataTermino = Timestamp.from(Instant.now().plus(7, ChronoUnit.DAYS).plus(4, ChronoUnit.HOURS));
 
       WorkshopCreateDTO createDTO = new WorkshopCreateDTO();
-      createDTO.setInstrutorId(BigInteger.valueOf(99999));
       createDTO.setTitulo("Workshop Instrutor Inexistente");
       createDTO.setDataInicio(dataInicio);
       createDTO.setDataTermino(dataTermino);
 
-      when(workshopService.criarWorkshop(any(WorkshopCreateDTO.class)))
+      when(workshopService.criarWorkshop(any(WorkshopCreateDTO.class), eq(instrutor.getEmail())))
         .thenThrow(new jakarta.persistence.EntityNotFoundException("Usuário com ID 99999 não encontrado"));
 
       mockMvc.perform(post("/api/workshops")
@@ -364,7 +354,7 @@ class WorkshopControllerTest {
           .content(objectMapper.writeValueAsString(createDTO)))
         .andExpect(status().isNotFound());
 
-      verify(workshopService, times(1)).criarWorkshop(any(WorkshopCreateDTO.class));
+      verify(workshopService, times(1)).criarWorkshop(any(WorkshopCreateDTO.class), eq(instrutor.getEmail()));
     }
   }
 

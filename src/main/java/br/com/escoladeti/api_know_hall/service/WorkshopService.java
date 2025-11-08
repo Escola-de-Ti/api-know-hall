@@ -29,10 +29,11 @@ public class WorkshopService {
   private final UsuarioRepository usuarioRepository;
 
   @Transactional
-  public Workshop criarWorkshop(WorkshopCreateDTO dto) {
-    Usuario instrutor = usuarioRepository.findById(dto.getInstrutorId())
+  public Workshop criarWorkshop(WorkshopCreateDTO dto, String emailInstrutor) {
+
+    Usuario instrutor = usuarioRepository.findByEmail(emailInstrutor)
       .orElseThrow(() -> new EntityNotFoundException(
-        "Usuário com ID " + dto.getInstrutorId() + " não encontrado"
+        "Usuário com ID " + emailInstrutor + " não encontrado"
       ));
 
     if (instrutor.getTipoUsuario() != TipoUsuario.INSTRUTOR) {

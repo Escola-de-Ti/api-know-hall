@@ -20,9 +20,6 @@ import java.sql.Timestamp;
 @AllArgsConstructor
 public class WorkshopCreateDTO {
 
-  @NotNull(message = "ID do instrutor é obrigatório")
-  private BigInteger instrutorId;
-
   @NotBlank(message = "Título é obrigatório")
   @Size(max = 255, message = "Título não pode ter mais de 255 caracteres")
   private String titulo;

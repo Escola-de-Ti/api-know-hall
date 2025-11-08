@@ -85,7 +85,6 @@ class WorkshopServiceTest {
     descricaoDTO.setDescricao("Workshop sobre Spring Boot");
 
     workshopCreateDTO = new WorkshopCreateDTO();
-    workshopCreateDTO.setInstrutorId(BigInteger.ONE);
     workshopCreateDTO.setTitulo("Spring Boot Avançado");
     workshopCreateDTO.setLinkMeet("https://meet.google.com/abc-defg");
     workshopCreateDTO.setDataInicio(dataInicio);
@@ -108,6 +107,7 @@ class WorkshopServiceTest {
     descricaoWorkshop.setTema("Backend Java");
     descricaoWorkshop.setDescricao("Workshop sobre Spring Boot");
     descricaoWorkshop.setWorkshop(workshop);
+
   }
 
   @Nested
@@ -123,7 +123,7 @@ class WorkshopServiceTest {
       when(descricaoWorkshopRepository.save(any(DescricaoWorkshop.class))).thenReturn(descricaoWorkshop);
 
       // Act
-      Workshop resultado = workshopService.criarWorkshop(workshopCreateDTO);
+      Workshop resultado = workshopService.criarWorkshop(workshopCreateDTO, usuarioComum.getEmail());
 
       // Assert
       assertThat(resultado).isNotNull();
@@ -152,7 +152,7 @@ class WorkshopServiceTest {
       when(descricaoWorkshopRepository.save(any(DescricaoWorkshop.class))).thenReturn(descricaoWorkshop);
 
       // Act
-      Workshop resultado = workshopService.criarWorkshop(workshopCreateDTO);
+      Workshop resultado = workshopService.criarWorkshop(workshopCreateDTO, usuarioComum.getEmail());
 
       // Assert
       assertThat(resultado.getStatus()).isEqualTo(StatusWorkshop.EM_ANDAMENTO);
@@ -168,7 +168,7 @@ class WorkshopServiceTest {
       when(workshopRepository.save(any(Workshop.class))).thenReturn(workshop);
 
       // Act
-      Workshop resultado = workshopService.criarWorkshop(workshopCreateDTO);
+      Workshop resultado = workshopService.criarWorkshop(workshopCreateDTO, usuarioComum.getEmail());
 
       // Assert
       assertThat(resultado).isNotNull();
@@ -179,12 +179,12 @@ class WorkshopServiceTest {
     @DisplayName("Deve lançar exceção quando usuário não encontrado")
     void deveLancarExcecaoQuandoUsuarioNaoEncontrado() {
       // Arrange
-      when(usuarioRepository.findById(BigInteger.ONE)).thenReturn(Optional.empty());
+      when(usuarioRepository.findByEmail(usuarioComum.getEmail())).thenReturn(Optional.empty());
 
       // Act & Assert
-      assertThatThrownBy(() -> workshopService.criarWorkshop(workshopCreateDTO))
+      assertThatThrownBy(() -> workshopService.criarWorkshop(workshopCreateDTO, usuarioComum.getEmail()))
         .isInstanceOf(EntityNotFoundException.class)
-        .hasMessageContaining("Usuário com ID 1 não encontrado");
+        .hasMessageContaining("Usuário com ID " + usuarioComum.getEmail() + " não encontrado");
 
       verify(workshopRepository, never()).save(any(Workshop.class));
     }
@@ -193,11 +193,10 @@ class WorkshopServiceTest {
     @DisplayName("Deve lançar exceção quando usuário não é INSTRUTOR")
     void deveLancarExcecaoQuandoUsuarioNaoEhInstrutor() {
       // Arrange
-      workshopCreateDTO.setInstrutorId(BigInteger.TWO);
-      when(usuarioRepository.findById(BigInteger.TWO)).thenReturn(Optional.of(usuarioComum));
+      when(usuarioRepository.findByEmail(usuarioComum.getEmail())).thenReturn(Optional.of(usuarioComum));
 
       // Act & Assert
-      assertThatThrownBy(() -> workshopService.criarWorkshop(workshopCreateDTO))
+      assertThatThrownBy(() -> workshopService.criarWorkshop(workshopCreateDTO, usuarioComum.getEmail()))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("Apenas usuários do tipo INSTRUTOR podem criar workshops");
 
@@ -214,10 +213,10 @@ class WorkshopServiceTest {
       workshopCreateDTO.setDataInicio(dataInicio);
       workshopCreateDTO.setDataTermino(dataTermino);
 
-      when(usuarioRepository.findById(BigInteger.ONE)).thenReturn(Optional.of(instrutor));
+      when(usuarioRepository.findByEmail(instrutor.getEmail())).thenReturn(Optional.of(instrutor));
 
       // Act & Assert
-      assertThatThrownBy(() -> workshopService.criarWorkshop(workshopCreateDTO))
+      assertThatThrownBy(() -> workshopService.criarWorkshop(workshopCreateDTO, instrutor.getEmail()))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("Data de término deve ser maior que data de início");
 
