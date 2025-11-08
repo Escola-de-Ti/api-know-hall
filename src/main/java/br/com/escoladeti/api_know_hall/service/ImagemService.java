@@ -68,11 +68,11 @@ public class ImagemService {
         .build();
 
       HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-      ImageResponseDTO imageResponse = objectMapper.readValue(response.body(), ImageResponseDTO.class);
 
       if (response.statusCode() < 200 || response.statusCode() >= 300) {
         throw new IllegalStateException("Falha ao enviar imagem para Supabase. Status: " + response.statusCode() + " Body: " + response.body());
       }
+      ImageResponseDTO imageResponse = objectMapper.readValue(response.body(), ImageResponseDTO.class);
 
       Imagem imagem = new Imagem();
       imagem.setNome(imageName);
@@ -95,6 +95,33 @@ public class ImagemService {
         }
       }
       return imagem;
+
+    } catch (IOException | InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new IllegalStateException("Erro ao enviar imagem para Supabase", e);
+    }
+  }
+
+  public void UpdateImagem(BigInteger idImagem, byte[] imageBytes) {
+    try {
+      Imagem existingImage = imagemRepository.findById(idImagem)
+        .orElseThrow(() -> new IllegalStateException("Imagem não encontrada com id: " + idImagem));
+
+      URI uri = URI.create(supabaseUrl + existingImage.getPath().replace("files", ""));
+
+      HttpRequest request = HttpRequest.newBuilder()
+        .uri(uri)
+        .timeout(Duration.ofMinutes(1))
+        .header("Authorization", "Bearer " + token)
+        .header("Content-Type", "image/png")
+        .PUT(HttpRequest.BodyPublishers.ofByteArray(imageBytes))
+        .build();
+
+      HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+      if (response.statusCode() < 200 || response.statusCode() >= 300) {
+        throw new IllegalStateException("Falha ao enviar imagem para Supabase. Status: " + response.statusCode() + " Body: " + response.body());
+      }
 
     } catch (IOException | InterruptedException e) {
       Thread.currentThread().interrupt();
