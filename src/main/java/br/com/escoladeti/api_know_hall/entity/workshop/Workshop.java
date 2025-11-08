@@ -1,5 +1,6 @@
 package br.com.escoladeti.api_know_hall.entity.workshop;
 
+import br.com.escoladeti.api_know_hall.entity.Imagem;
 import br.com.escoladeti.api_know_hall.entity.Usuario;
 import br.com.escoladeti.api_know_hall.enums.workshop.StatusWorkshop;
 import jakarta.persistence.*;

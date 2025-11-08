@@ -37,6 +37,9 @@ public class ImagemService {
   @Autowired
   private PostService postService;
 
+  @Autowired
+  private WorkshopService workshopService;
+
   public ImagemService(
     @Value("${supabase.url:${SUPABASE_URL:}}") String supabaseUrl,
     @Value("${supabase.token:${SUPABASE_TOKEN:}}") String token
@@ -92,6 +95,10 @@ public class ImagemService {
           BigInteger postId = new BigInteger(idType);
 
           postService.atualizarImagemPerfil(imagem, 0, postId);
+        }
+        case "workshop" -> {
+          BigInteger workshopId = new BigInteger(idType);
+          workshopService.atualizarImagemWorkshop(imagem, workshopId);
         }
       }
       return imagem;

@@ -191,5 +191,30 @@
     </createIndex>
   </changeSet>
 
+  <changeSet id="KH-33" author="Willyan Tomaz">
+    <preConditions onFail="MARK_RAN">
+      <tableExists tableName="descricao_workshop"/>
+    </preConditions>
+
+    <addColumn tableName="descricao_workshop">
+      <column name="id_imagem_workshop" type="BIGINT"/>
+    </addColumn>
+
+    <addForeignKeyConstraint
+      baseTableName="descricao_workshop"
+      baseColumnNames="id_imagem_workshop"
+      referencedTableName="imagem"
+      referencedColumnNames="id"
+      constraintName="fk_descricao_workshop_imagem"/>
+
+    <rollback>
+      <dropForeignKeyConstraint
+        baseTableName="descricao_workshop"
+        constraintName="fk_descricao_workshop_imagem"/>
+
+      <dropColumn tableName="descricao_workshop" columnName="id_imagem_workshop"/>
+    </rollback>
+  </changeSet>
+
 
 </databaseChangeLog>
