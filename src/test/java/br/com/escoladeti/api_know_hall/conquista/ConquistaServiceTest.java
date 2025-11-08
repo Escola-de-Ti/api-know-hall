@@ -1,4 +1,5 @@
 package br.com.escoladeti.api_know_hall.conquista;
+
 import br.com.escoladeti.api_know_hall.dto.conquista.ConquistaProgressoDTO;
 import br.com.escoladeti.api_know_hall.entity.Usuario;
 import br.com.escoladeti.api_know_hall.entity.conquista.*;
@@ -187,7 +188,6 @@ class ConquistaServiceTest {
 
     conquistaService.verificarEConcederConquistas(BigInteger.valueOf(1), "participacoes", 30);
 
-    // Deve conceder Bronze (10) e Prata (25)
     verify(usuarioConquistaRepository, times(2)).save(any(UsuarioConquista.class));
   }
 

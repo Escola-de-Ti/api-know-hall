@@ -309,6 +309,11 @@ public class PostService {
     );
   }
 
+  public Usuario findUserByPrincipal(String email) {
+    return usuarioRepository.findByEmail(email)
+      .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
+  }
+
   @Transactional(readOnly = true)
   public PostDetalhesDTO buscarDetalhesDoPost(BigInteger postId, Integer pageSize) {
     Post post = postRepository.findById(postId)
