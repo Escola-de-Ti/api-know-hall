@@ -3,6 +3,7 @@ package br.com.escoladeti.api_know_hall.service;
 import br.com.escoladeti.api_know_hall.dto.comentario.ComentarioResponseDTO;
 import br.com.escoladeti.api_know_hall.dto.post.*;
 import br.com.escoladeti.api_know_hall.dto.tags.TagResponseDTO;
+import br.com.escoladeti.api_know_hall.entity.Imagem;
 import br.com.escoladeti.api_know_hall.entity.Post;
 import br.com.escoladeti.api_know_hall.entity.Tag;
 import br.com.escoladeti.api_know_hall.entity.Usuario;
@@ -360,5 +361,14 @@ public class PostService {
       projection.getComentarioPaiId(),
       projection.getDataCriacao()
     );
+  }
+
+  public void atualizarImagemPerfil(Imagem imagem, Integer ordemImagem, BigInteger postId) {
+    Post post = postRepository.findById(postId)
+      .orElseThrow(() -> new RuntimeException("Post não encontrado"));
+
+    post.addImagem(imagem, ordemImagem);
+    System.out.println(post);
+    postRepository.save(post);
   }
 }

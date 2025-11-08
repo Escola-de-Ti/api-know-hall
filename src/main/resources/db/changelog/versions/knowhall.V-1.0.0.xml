@@ -90,8 +90,8 @@
       onDelete="CASCADE"/>
     <comment>Criação da tabela de relacionamento POST_TAGS</comment>
   </changeSet>
-  
-    <changeSet id="KH-25" author="Willyan Tomaz">
+
+  <changeSet id="KH-25" author="Willyan Tomaz">
     <preConditions onFail="MARK_RAN">
       <not>
         <tableExists tableName="IMAGEM"/>
@@ -136,5 +136,60 @@
       <column name="id_imagem_perfil"/>
     </createIndex>
   </changeSet>
+
+  <changeSet id="KH-29" author="Willyan Tomaz">
+    <preConditions onFail="MARK_RAN">
+      <and>
+        <tableExists tableName="POST"/>
+        <tableExists tableName="IMAGEM"/>
+        <not>
+          <tableExists tableName="IMAGEM_POST"/>
+        </not>
+      </and>
+    </preConditions>
+
+    <createTable tableName="IMAGEM_POST">
+      <column name="id" type="BIGINT" autoIncrement="true">
+        <constraints primaryKey="true" primaryKeyName="pk_imagem_post"/>
+      </column>
+
+      <column name="post_id" type="BIGINT">
+        <constraints nullable="false"/>
+      </column>
+
+      <column name="imagem_id" type="BIGINT">
+        <constraints nullable="false"/>
+      </column>
+
+      <column name="ordem_imagem" type="INT">
+        <constraints nullable="false"/>
+      </column>
+    </createTable>
+
+    <addForeignKeyConstraint
+      baseTableName="IMAGEM_POST"
+      baseColumnNames="post_id"
+      constraintName="fk_imagem_post_post"
+      referencedTableName="POST"
+      referencedColumnNames="id"
+      onDelete="CASCADE"/>
+
+    <addForeignKeyConstraint
+      baseTableName="IMAGEM_POST"
+      baseColumnNames="imagem_id"
+      constraintName="fk_imagem_post_imagem"
+      referencedTableName="IMAGEM"
+      referencedColumnNames="id"
+      onDelete="CASCADE"/>
+
+    <createIndex tableName="IMAGEM_POST" indexName="idx_imagem_post_post">
+      <column name="post_id"/>
+    </createIndex>
+
+    <createIndex tableName="IMAGEM_POST" indexName="idx_imagem_post_ordem">
+      <column name="ordem_imagem"/>
+    </createIndex>
+  </changeSet>
+
 
 </databaseChangeLog>

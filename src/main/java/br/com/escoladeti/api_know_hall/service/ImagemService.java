@@ -34,6 +34,9 @@ public class ImagemService {
   @Autowired
   private UsuarioService usuarioService;
 
+  @Autowired
+  private PostService postService;
+
   public ImagemService(
     @Value("${supabase.url:${SUPABASE_URL:}}") String supabaseUrl,
     @Value("${supabase.token:${SUPABASE_TOKEN:}}") String token
@@ -51,8 +54,9 @@ public class ImagemService {
 
   }
 
-  public Imagem uploadImage(byte[] imageBytes, String imageName, String type) {
+  public Imagem uploadImage(byte[] imageBytes, String userEmail, String type, String idType) {
     try {
+      String imageName = userEmail + idType + java.util.UUID.randomUUID();
       URI uri = URI.create(supabaseUrl + "/assets/" + type + "/" + imageName);
 
       HttpRequest request = HttpRequest.newBuilder()
@@ -79,10 +83,15 @@ public class ImagemService {
       imagemRepository.findByIdImagem(imagem.getIdImagem()).ifPresent(existingImage -> {
         imagem.setId(existingImage.getId());
       });
+
       imagemRepository.save(imagem);
 
-      if (type.equals("perfil")) {
-        usuarioService.atualizarImagemPerfil(imageName, imagem);
+      switch (type) {
+        case "perfil" -> usuarioService.atualizarImagemPerfil(userEmail, imagem);
+        case "post" -> {
+          BigInteger postId = new BigInteger(idType);
+          postService.atualizarImagemPerfil(imagem, 0, postId);
+        }
       }
       return imagem;
 

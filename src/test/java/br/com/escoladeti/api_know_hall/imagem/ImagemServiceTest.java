@@ -66,8 +66,9 @@ public class ImagemServiceTest {
   @Test
   void uploadImage_success_nonPerfil_callsSaveAndReturnsImagem() throws Exception {
     byte[] bytes = new byte[]{1, 2, 3};
-    String imageName = "image.png";
+    String userEmail = "user@example.com";
     String type = "outro";
+    String idType = "";
 
     HttpResponse<String> response = mock(HttpResponse.class);
     when(response.statusCode()).thenReturn(200);
@@ -75,19 +76,23 @@ public class ImagemServiceTest {
 
     when(httpClient.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class))).thenReturn(response);
 
-    // save should return the same image passed
     when(imagemRepository.save(any(Imagem.class))).thenAnswer(invocation -> invocation.getArgument(0));
     when(imagemRepository.findByIdImagem(anyString())).thenReturn(Optional.empty());
 
-    Imagem result = imagemService.uploadImage(bytes, imageName, type);
+    Imagem result = imagemService.uploadImage(bytes, userEmail, type, idType);
+
+    // captura o Imagem salvo e validações que não dependem do UUID
+    var captor = org.mockito.ArgumentCaptor.forClass(Imagem.class);
+    verify(imagemRepository).save(captor.capture());
+    Imagem saved = captor.getValue();
 
     assertNotNull(result);
-    assertEquals(imageName, result.getNome());
-    assertTrue(result.getUrl().contains(SUPABASE));
-    assertEquals("path/key", result.getPath());
-    assertEquals("id123", result.getIdImagem());
+    assertSame(saved, result);
+    assertTrue(saved.getNome().startsWith(userEmail + idType));
+    assertTrue(saved.getUrl().contains(SUPABASE + "/assets/" + type + "/"));
+    assertEquals("path/key", saved.getPath());
+    assertEquals("id123", saved.getIdImagem());
 
-    verify(imagemRepository).save(any(Imagem.class));
     verify(usuarioService, never()).atualizarImagemPerfil(anyString(), any(Imagem.class));
   }
 
@@ -96,6 +101,7 @@ public class ImagemServiceTest {
     byte[] bytes = new byte[]{1, 2, 3};
     String imageName = "image.png";
     String type = "outro";
+    String idType = null;
 
     HttpResponse<String> response = mock(HttpResponse.class);
     when(response.statusCode()).thenReturn(500);
@@ -103,7 +109,7 @@ public class ImagemServiceTest {
 
     when(httpClient.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class))).thenReturn(response);
 
-    IllegalStateException ex = assertThrows(IllegalStateException.class, () -> imagemService.uploadImage(bytes, imageName, type));
+    IllegalStateException ex = assertThrows(IllegalStateException.class, () -> imagemService.uploadImage(bytes, imageName, type, idType));
     assertTrue(
       ex.getMessage().contains("Falha ao enviar imagem") ||
         ex.getMessage().contains("Erro ao enviar imagem para Supabase")

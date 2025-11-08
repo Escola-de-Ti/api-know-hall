@@ -42,7 +42,7 @@ public class ImagemControllerTest {
     String type = "perfil";
     String principalName = "user123";
     Imagem imagem = new Imagem(BigInteger.ONE, principalName, "url", "idImagem", "path");
-    when(imagemService.uploadImage(eq(imageBytes), eq(principalName), eq(type))).thenReturn(imagem);
+    when(imagemService.uploadImage(eq(imageBytes), eq(principalName), eq(type), any())).thenReturn(imagem);
 
     mockMvc.perform(post("/api/imagem/upload")
         .content(imageBytes)
@@ -61,7 +61,7 @@ public class ImagemControllerTest {
     byte[] imageBytes = new byte[]{1, 2, 3};
     String type = "perfil";
     String principalName = "user123";
-    when(imagemService.uploadImage(any(), any(), any())).thenThrow(new RuntimeException("erro"));
+    when(imagemService.uploadImage(any(), any(), any(), any())).thenThrow(new RuntimeException("erro"));
 
     mockMvc.perform(post("/api/imagem/upload")
         .content(imageBytes)

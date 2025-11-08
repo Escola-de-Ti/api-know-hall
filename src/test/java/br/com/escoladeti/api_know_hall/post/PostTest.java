@@ -142,6 +142,7 @@ class PostTest {
       10L,
       usuario,
       agora,
+      new ArrayList<>(),
       new ArrayList<>()
     );
 

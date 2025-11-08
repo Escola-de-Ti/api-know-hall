@@ -52,4 +52,21 @@ public class Post {
 
   @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
   private List<Comentario> comentarios = new ArrayList<>();
+
+  @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+  @OrderBy("ordemImagem ASC")
+  private List<ImagemPost> imagens = new ArrayList<>();
+
+  public void addImagem(Imagem imagem, Integer ordemImagem) {
+    ImagemPost imgPost = new ImagemPost();
+    imgPost.setPost(this);
+    imgPost.setImagem(imagem);
+    imgPost.setOrdemImagem(ordemImagem);
+    this.imagens.add(imgPost);
+  }
+
+  public void removeImagem(ImagemPost imgPost) {
+    this.imagens.remove(imgPost);
+    imgPost.setPost(null);
+  }
 }
