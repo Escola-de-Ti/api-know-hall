@@ -134,7 +134,7 @@ class VotoTest {
 
     assertThatThrownBy(votoInvalido::validateVoto)
       .isInstanceOf(IllegalStateException.class)
-      .hasMessageContaining("Voto deve ser associado a um Post OU a um Comentário");
+      .hasMessageContaining("Voto deve ser associado a um Post ou a um Comentário, mas nenhum foi associado.");
   }
 
   @Test
@@ -150,7 +150,7 @@ class VotoTest {
 
     assertThatThrownBy(votoInvalido::validateVoto)
       .isInstanceOf(IllegalStateException.class)
-      .hasMessageContaining("Voto deve ser associado a um Post OU a um Comentário");
+      .hasMessageContaining("Voto não pode ser associado a ambos Post e Comentário ao mesmo tempo.");
   }
 
   @Test
