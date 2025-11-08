@@ -118,23 +118,23 @@ class UsuarioServiceTest {
 
   @Test
   void updateUsuario_WithValidData_ShouldReturnUpdatedUsuario() {
-    when(usuarioRepository.findById(BigInteger.valueOf(1))).thenReturn(Optional.of(usuario));
+    when(usuarioRepository.findByEmail("test@test.com")).thenReturn(Optional.of(usuario));
     when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuario);
 
-    Usuario result = usuarioService.updateUsuario(BigInteger.valueOf(1), usuarioUpdateDTO);
+    Usuario result = usuarioService.updateUsuario("test@test.com", usuarioUpdateDTO);
 
     assertNotNull(result);
-    verify(usuarioRepository, times(1)).findById(BigInteger.valueOf(1));
+    verify(usuarioRepository, times(1)).findByEmail("test@test.com");
     verify(usuarioRepository, times(1)).save(any(Usuario.class));
   }
 
   @Test
   void updateUsuario_WithInvalidId_ShouldThrowException() {
-    when(usuarioRepository.findById(BigInteger.valueOf(999))).thenReturn(Optional.empty());
+    when(usuarioRepository.findByEmail("test@test.com")).thenReturn(Optional.empty());
 
-    assertThrows(RuntimeException.class, () -> usuarioService.updateUsuario(BigInteger.valueOf(999), usuarioUpdateDTO));
+    assertThrows(RuntimeException.class, () -> usuarioService.updateUsuario("test@test.com", usuarioUpdateDTO));
 
-    verify(usuarioRepository, times(1)).findById(BigInteger.valueOf(999));
+    verify(usuarioRepository, times(1)).findByEmail("test@test.com");
     verify(usuarioRepository, never()).save(any(Usuario.class));
   }
 

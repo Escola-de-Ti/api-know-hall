@@ -48,16 +48,12 @@ public class ConquistaService {
     Usuario usuario = usuarioRepository.findById(usuarioId)
       .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
 
-    // Busca todas as conquistas relacionadas ao campo de validação
     List<Conquista> conquistas = conquistaRepository.findByCampoValidacao(campoValidacao);
 
     for (Conquista conquista : conquistas) {
-      // Para cada tier da conquista
       for (ConquistaTier tier : conquista.getTiers()) {
-        // Verifica se o usuário atingiu a quantidade necessária
         if (progressoAtual >= tier.getQuantidadeNecessaria()) {
-          // Verifica se já não possui este tier
-          if (!usuarioConquistaRepository.existsByUsuarioIdAndConquistaTierId(usuarioId, tier.getId())) {
+          if (!usuarioConquistaRepository.existsByUsuarioIdAndConquistaTierId(usuario.getId(), tier.getId())) {
             concederConquistaTier(usuario, tier, progressoAtual);
           }
         }
@@ -89,6 +85,7 @@ public class ConquistaService {
    * Obtém o progresso do usuário em uma conquista específica
    */
   public ConquistaProgressoDTO obterProgressoConquista(BigInteger usuarioId, BigInteger conquistaId) {
+
     Conquista conquista = conquistaRepository.findByIdWithTiers(conquistaId)
       .orElseThrow(() -> new EntityNotFoundException("Conquista não encontrada"));
 
@@ -164,7 +161,6 @@ public class ConquistaService {
     return conquistaRepository.findByCampoValidacao(campoValidacao);
   }
 
-  @Transactional(readOnly = true)
   public List<UsuarioConquista> listarConquistasUsuarioPorTipo(BigInteger usuarioId, TipoConquista tipo) {
     return usuarioConquistaRepository.findByUsuarioIdAndTipo(usuarioId, tipo.name());
   }

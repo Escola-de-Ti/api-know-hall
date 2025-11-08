@@ -3,10 +3,10 @@ package br.com.escoladeti.api_know_hall.post;
 import br.com.escoladeti.api_know_hall.config.JwtAuthenticationFilter;
 import br.com.escoladeti.api_know_hall.config.SecurityConfig;
 import br.com.escoladeti.api_know_hall.controller.PostController;
-import br.com.escoladeti.api_know_hall.controller.TagsController;
 import br.com.escoladeti.api_know_hall.dto.comentario.ComentarioResponseDTO;
 import br.com.escoladeti.api_know_hall.dto.post.*;
 import br.com.escoladeti.api_know_hall.dto.tags.TagResponseDTO;
+import br.com.escoladeti.api_know_hall.entity.Usuario;
 import br.com.escoladeti.api_know_hall.enums.OrdenacaoDirecao;
 import br.com.escoladeti.api_know_hall.enums.OrdenacaoTipo;
 import br.com.escoladeti.api_know_hall.enums.TagOperador;
@@ -27,6 +27,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigInteger;
+import java.security.Principal;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
@@ -64,6 +65,7 @@ class PostControllerTest {
 
   private PostResponseDTO postResponseDTO;
   private PostCreateDTO postCreateDTO;
+  private Principal mockPrincipal;
 
   @BeforeEach
   void setUp() {
@@ -80,6 +82,8 @@ class PostControllerTest {
       Timestamp.from(Instant.now())
     );
 
+    mockPrincipal = () -> "joao@email.com";
+
     postCreateDTO = new PostCreateDTO(
       BigInteger.ONE,
       "Título do Post",
@@ -88,10 +92,13 @@ class PostControllerTest {
     );
   }
 
+  // ==================== TESTES DE CRIAÇÃO ====================
+
   @Test
   @WithMockUser
   @DisplayName("POST /api/posts - Deve criar post com sucesso")
   void deveCriarPostComSucesso() throws Exception {
+    // ✅ USE ArgumentMatchers.any()
     when(postService.criarPost(ArgumentMatchers.any(PostCreateDTO.class))).thenReturn(postResponseDTO);
 
     mockMvc.perform(post("/api/posts")
@@ -196,6 +203,8 @@ class PostControllerTest {
     verify(postService).listarPorUsuario(BigInteger.ONE);
   }
 
+  // ==================== TESTES DE ATUALIZAÇÃO ====================
+
   @Test
   @WithMockUser
   @DisplayName("PATCH /api/posts/{id} - Deve atualizar post")
@@ -206,6 +215,7 @@ class PostControllerTest {
       "Novo Título", "Descrição", 10L, List.of(), Timestamp.from(Instant.now())
     );
 
+    // ✅ USE ArgumentMatchers.eq() e .any()
     when(postService.atualizarPost(ArgumentMatchers.eq(BigInteger.ONE), ArgumentMatchers.any(PostUpdateDTO.class)))
       .thenReturn(atualizado);
 
@@ -219,6 +229,8 @@ class PostControllerTest {
 
     verify(postService).atualizarPost(ArgumentMatchers.eq(BigInteger.ONE), ArgumentMatchers.any(PostUpdateDTO.class));
   }
+
+  // ==================== TESTES DE DELEÇÃO ====================
 
   @Test
   @WithMockUser
@@ -234,6 +246,8 @@ class PostControllerTest {
     verify(postService).deletarPost(BigInteger.ONE);
   }
 
+  // ==================== TESTES DE FEED ====================
+
   @Test
   @WithMockUser
   @DisplayName("GET /api/posts/feed - Deve buscar feed básico")
@@ -246,9 +260,14 @@ class PostControllerTest {
       List.of(feedDTO), false, BigInteger.ONE, 50.0
     );
 
+    Usuario usuario = mock(Usuario.class);
+    when(usuario.getId()).thenReturn(BigInteger.ONE);
+    when(postService.findUserByPrincipal(ArgumentMatchers.anyString())).thenReturn(usuario);
+
     when(postService.getFeed(ArgumentMatchers.any(FeedRequestDTO.class))).thenReturn(feedResponse);
 
     mockMvc.perform(get("/api/posts/feed")
+        .principal(mockPrincipal)
         .param("usuarioId", "1")
         .param("pageSize", "10"))
       .andDo(print())
@@ -263,10 +282,14 @@ class PostControllerTest {
   @WithMockUser
   @DisplayName("GET /api/posts/feed - Deve buscar feed com filtros de tags")
   void deveBuscarFeedComFiltrosDeTags() throws Exception {
+    Usuario usuario = mock(Usuario.class);
+    when(usuario.getId()).thenReturn(BigInteger.ONE);
+    when(postService.findUserByPrincipal(ArgumentMatchers.anyString())).thenReturn(usuario);
     when(postService.getFeed(ArgumentMatchers.any(FeedRequestDTO.class)))
       .thenReturn(new FeedResponseDTO(List.of(), false, null, null));
 
     mockMvc.perform(get("/api/posts/feed")
+        .principal(mockPrincipal)
         .param("usuarioId", "1")
         .param("tagIds", "1,2")
         .param("tagOperador", "AND"))
