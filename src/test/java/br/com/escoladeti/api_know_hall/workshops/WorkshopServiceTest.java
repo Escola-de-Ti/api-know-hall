@@ -3,6 +3,7 @@ package br.com.escoladeti.api_know_hall.workshops;
 import br.com.escoladeti.api_know_hall.dto.workshop.DescricaoWorkshopDTO;
 import br.com.escoladeti.api_know_hall.dto.workshop.WorkshopCreateDTO;
 import br.com.escoladeti.api_know_hall.dto.workshop.WorkshopUpdateDTO;
+import br.com.escoladeti.api_know_hall.entity.Imagem;
 import br.com.escoladeti.api_know_hall.entity.workshop.DescricaoWorkshop;
 import br.com.escoladeti.api_know_hall.entity.Usuario;
 import br.com.escoladeti.api_know_hall.entity.workshop.Workshop;
@@ -605,4 +606,58 @@ class WorkshopServiceTest {
       verify(workshopRepository, never()).delete(any(Workshop.class));
     }
   }
+
+  @Test
+  void atualizarImagemWorkshop_sucesso() {
+    BigInteger workshopId = BigInteger.ONE;
+    Imagem imagem = new Imagem(workshopId, "img.png", "url", "idImg", "path");
+
+    DescricaoWorkshop descricaoWorkshop = new DescricaoWorkshop();
+    Workshop workshop = new Workshop();
+    workshop.setId(workshopId);
+    workshop.setDescricao(descricaoWorkshop);
+
+    when(workshopRepository.findById(workshopId)).thenReturn(Optional.of(workshop));
+    when(workshopRepository.save(any(Workshop.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+    assertThatCode(() -> workshopService.atualizarImagemWorkshop(imagem, workshopId))
+      .doesNotThrowAnyException();
+
+    assertThat(descricaoWorkshop.getImagemWorkshop()).isEqualTo(imagem);
+    verify(workshopRepository).save(workshop);
+  }
+
+  @Test
+  void atualizarImagemWorkshop_workshopNaoEncontrado_lancaExcecao() {
+    BigInteger workshopId = BigInteger.ONE;
+    Imagem imagem = new Imagem(workshopId, "img.png", "url", "idImg", "path");
+
+    when(workshopRepository.findById(workshopId)).thenReturn(Optional.empty());
+
+    assertThatThrownBy(() -> workshopService.atualizarImagemWorkshop(imagem, workshopId))
+      .isInstanceOf(EntityNotFoundException.class)
+      .hasMessageContaining("Workshop não encontrado");
+
+    verify(workshopRepository, never()).save(any());
+  }
+
+  @Test
+  void atualizarImagemWorkshop_semDescricao_lancaExcecao() {
+    BigInteger workshopId = BigInteger.ONE;
+    Imagem imagem = new Imagem(workshopId, "img.png", "url", "idImg", "path");
+
+    Workshop workshop = new Workshop();
+    workshop.setId(workshopId);
+    workshop.setDescricao(null); // <--- sem descrição
+
+    when(workshopRepository.findById(workshopId)).thenReturn(Optional.of(workshop));
+
+    assertThatThrownBy(() -> workshopService.atualizarImagemWorkshop(imagem, workshopId))
+      .isInstanceOf(EntityNotFoundException.class)
+      .hasMessageContaining("Descrição do workshop não encontrada");
+
+    verify(workshopRepository, never()).save(any());
+  }
+
+
 }

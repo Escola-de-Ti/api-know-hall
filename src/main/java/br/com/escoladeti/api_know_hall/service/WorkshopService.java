@@ -223,11 +223,11 @@ public class WorkshopService {
   @Transactional
   public void atualizarImagemWorkshop(Imagem imagem, BigInteger workshopId) {
     Workshop workshop = workshopRepository.findById(workshopId)
-      .orElseThrow(() -> new RuntimeException("Workshop não encontrado"));
+      .orElseThrow(() -> new EntityNotFoundException("Workshop não encontrado"));
 
     DescricaoWorkshop descricaoWorkshop = workshop.getDescricao();
     if (descricaoWorkshop == null) {
-      throw new RuntimeException("Descrição do workshop não encontrada");
+      throw new EntityNotFoundException("Descrição do workshop não encontrada");
     }
 
     descricaoWorkshop.setImagemWorkshop(imagem);
