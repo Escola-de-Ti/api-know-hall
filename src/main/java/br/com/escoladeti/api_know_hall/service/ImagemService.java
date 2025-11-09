@@ -3,6 +3,7 @@ package br.com.escoladeti.api_know_hall.service;
 
 import br.com.escoladeti.api_know_hall.dto.ImageResponseDTO;
 import br.com.escoladeti.api_know_hall.entity.Imagem;
+import br.com.escoladeti.api_know_hall.enums.ImagemTipo;
 import br.com.escoladeti.api_know_hall.repository.ImagemRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,10 +58,10 @@ public class ImagemService {
 
   }
 
-  public Imagem uploadImage(byte[] imageBytes, String userEmail, String type, String idType) {
+  public Imagem uploadImage(byte[] imageBytes, String userEmail, ImagemTipo type, String idType) {
     try {
       String imageName = userEmail + idType + java.util.UUID.randomUUID();
-      URI uri = URI.create(supabaseUrl + "/assets/" + type + "/" + imageName);
+      URI uri = URI.create(supabaseUrl + "/assets/" + type.getTipo() + "/" + imageName);
 
       HttpRequest request = HttpRequest.newBuilder()
         .uri(uri)
@@ -90,13 +91,12 @@ public class ImagemService {
       imagemRepository.save(imagem);
 
       switch (type) {
-        case "perfil" -> usuarioService.atualizarImagemPerfil(userEmail, imagem);
-        case "post" -> {
+        case USUARIO -> usuarioService.atualizarImagemPerfil(userEmail, imagem);
+        case POST -> {
           BigInteger postId = new BigInteger(idType);
-
           postService.atualizarImagemPerfil(imagem, 0, postId);
         }
-        case "workshop" -> {
+        case WORKSHOP -> {
           BigInteger workshopId = new BigInteger(idType);
           workshopService.atualizarImagemWorkshop(imagem, workshopId);
         }

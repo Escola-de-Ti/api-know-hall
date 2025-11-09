@@ -1,6 +1,7 @@
 package br.com.escoladeti.api_know_hall.imagem;
 
 import br.com.escoladeti.api_know_hall.entity.Imagem;
+import br.com.escoladeti.api_know_hall.enums.ImagemTipo;
 import br.com.escoladeti.api_know_hall.repository.ImagemRepository;
 import br.com.escoladeti.api_know_hall.service.ImagemService;
 import br.com.escoladeti.api_know_hall.service.UsuarioService;
@@ -80,7 +81,7 @@ public class ImagemServiceTest {
   void uploadImage_success_nonPerfil_callsSaveAndReturnsImagem() throws Exception {
     byte[] bytes = new byte[]{1, 2, 3};
     String userEmail = "user@example.com";
-    String type = "outro";
+    ImagemTipo type = ImagemTipo.USUARIO;
     String idType = "";
 
     HttpResponse<String> response = mock(HttpResponse.class);
@@ -112,7 +113,7 @@ public class ImagemServiceTest {
   void uploadImage_httpError_throwsIllegalStateException() throws Exception {
     byte[] bytes = new byte[]{1, 2, 3};
     String imageName = "image.png";
-    String type = "outro";
+    ImagemTipo type = ImagemTipo.USUARIO;
     String idType = null;
 
     HttpResponse<String> response = mock(HttpResponse.class);
@@ -160,7 +161,7 @@ public class ImagemServiceTest {
   void uploadImage_perfil_callsAtualizarImagemPerfil() throws Exception {
     byte[] bytes = new byte[]{1, 2, 3};
     String userEmail = "user@example.com";
-    String type = "perfil";
+    ImagemTipo type = ImagemTipo.USUARIO;
     String idType = "";
 
     HttpResponse<String> response = mock(HttpResponse.class);
@@ -181,7 +182,7 @@ public class ImagemServiceTest {
   void uploadImage_post_callsAtualizarImagemPerfilPost() throws Exception {
     byte[] bytes = new byte[]{1, 2, 3};
     String userEmail = "user@example.com";
-    String type = "post";
+    ImagemTipo type = ImagemTipo.POST;
     String idType = "123";
 
     HttpResponse<String> response = mock(HttpResponse.class);
@@ -202,7 +203,7 @@ public class ImagemServiceTest {
   void uploadImage_workshop_callsAtualizarImagemWorkshop() throws Exception {
     byte[] bytes = new byte[]{1, 2, 3};
     String userEmail = "user@example.com";
-    String type = "workshop";
+    ImagemTipo type = ImagemTipo.WORKSHOP;
     String idType = "456";
 
     HttpResponse<String> response = mock(HttpResponse.class);

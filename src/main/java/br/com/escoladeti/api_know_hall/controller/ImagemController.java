@@ -1,6 +1,7 @@
 package br.com.escoladeti.api_know_hall.controller;
 
 import br.com.escoladeti.api_know_hall.entity.Imagem;
+import br.com.escoladeti.api_know_hall.enums.ImagemTipo;
 import br.com.escoladeti.api_know_hall.service.ImagemService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,7 +20,7 @@ public class ImagemController {
   }
 
   @PostMapping("/upload")
-  public ResponseEntity<Imagem> upload(@RequestBody byte[] imagem, @RequestParam("type") String type, @RequestParam(value = "id_type", required = false) String idType, Principal principal) {
+  public ResponseEntity<Imagem> upload(@RequestBody byte[] imagem, @RequestParam("type") ImagemTipo type, @RequestParam(value = "id_type", required = false) String idType, Principal principal) {
     Imagem url = imagemService.uploadImage(imagem, principal.getName(), type, idType);
     return ResponseEntity.ok(url);
   }

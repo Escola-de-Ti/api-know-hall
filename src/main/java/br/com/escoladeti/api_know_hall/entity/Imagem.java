@@ -25,8 +25,8 @@ public class Imagem {
   @Column(name = "url", nullable = false)
   private String url;
 
-  @Column(name = "id_imagem")
-  private String idImagem;
+  @Column(name = "id_imagem_supabase")
+  private String idImagemSupabase;
 
   @Column(name = "path", nullable = false)
   private String path;
