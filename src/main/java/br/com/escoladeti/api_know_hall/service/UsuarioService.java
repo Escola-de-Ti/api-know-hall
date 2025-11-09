@@ -113,12 +113,8 @@ public class UsuarioService {
     String senhaCriptografada = passwordEncoder.encode(dto.getSenha());
     dto.setSenha(senhaCriptografada);
 
-    if (dto.getTelefone() != null && !dto.getTelefone().isBlank()) {
-      dto.setTelefone(telefoneValidator.formatarTelefone(dto.getTelefone()));
-    }
-    if (dto.getTelefone2() != null && !dto.getTelefone2().isBlank()) {
-      dto.setTelefone2(telefoneValidator.formatarTelefone(dto.getTelefone2()));
-    }
+    dto.setTelefone(formatPhone(dto.getTelefone()));
+    dto.setTelefone2(formatPhone(dto.getTelefone2()));
 
     Usuario newUsuario = new Usuario(dto);
     return usuarioRepository.save(newUsuario);
@@ -168,17 +164,8 @@ public class UsuarioService {
       }
     }
 
-    if (dto.getTelefone() != null && !dto.getTelefone().isBlank()) {
-      if (!telefoneValidator.isValid(dto.getTelefone())) {
-        throw new ValidationException("Formato de telefone inválido");
-      }
-    }
-
-    if (dto.getTelefone2() != null && !dto.getTelefone2().isBlank()) {
-      if (!telefoneValidator.isValid(dto.getTelefone2())) {
-        throw new ValidationException("Formato de telefone 2 inválido");
-      }
-    }
+    validaTelefone(dto.getTelefone());
+    validaTelefone(dto.getTelefone2());
 
     if (dto.getSenha() != null && !dto.getSenha().isBlank()) {
       if (!senhaValidator.isValid(dto.getSenha())) {
@@ -188,15 +175,26 @@ public class UsuarioService {
       dto.setSenha(passwordEncoder.encode(dto.getSenha()));
     }
 
-    if (dto.getTelefone() != null && !dto.getTelefone().isBlank()) {
-      dto.setTelefone(telefoneValidator.formatarTelefone(dto.getTelefone()));
-    }
-    if (dto.getTelefone2() != null && !dto.getTelefone2().isBlank()) {
-      dto.setTelefone2(telefoneValidator.formatarTelefone(dto.getTelefone2()));
-    }
+    dto.setTelefone(formatPhone(dto.getTelefone()));
+    dto.setTelefone2(formatPhone(dto.getTelefone2()));
 
     usuario.applyUpdate(dto);
     return usuarioRepository.save(usuario);
+  }
+
+  private void validaTelefone(String telefone) {
+    if (telefone != null && !telefone.isBlank()) {
+      if (!telefoneValidator.isValid(telefone)) {
+        throw new ValidationException("Formato de telefone inválido " + telefone);
+      }
+    }
+  }
+
+  private String formatPhone(String numeroTelefone) {
+    if (numeroTelefone != null && !numeroTelefone.isBlank()) {
+      return telefoneValidator.formatarTelefone(numeroTelefone);
+    }
+    return numeroTelefone;
   }
 
   @Transactional
