@@ -27,7 +27,6 @@ public class DescricaoWorkshop {
   @Column(name = "descricao", columnDefinition = "TEXT")
   private String descricao;
 
-  // Relacionamento 1:1 com Workshop (lado proprietário)
   @OneToOne
   @JoinColumn(name = "id_workshop", nullable = false, unique = true)
   private Workshop workshop;
