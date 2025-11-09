@@ -223,12 +223,12 @@ public class VotoService {
       usuarioRepository.save(autorPost);
 
       String descricao = String.format(
+        "Post '%s' (ID: %s) atingiu %d upvotes - %d marco de 25 conquistados",
         truncarTexto(post.getTitulo(), 50),
         post.getId(),
         totalAtual,
         novosMarcos
       );
-
       historicoTransacaoService.registrarTransacao(
         autorPost,
         tokensGanhos,
@@ -252,7 +252,7 @@ public class VotoService {
       usuarioRepository.save(autorComentario);
 
       String descricao = String.format(
-        "Comentário '%s...' (ID: %s) atingiu %d upvotes - %d marcos de 5 conquistados",
+        "Comentário '%s...' (ID: %s) atingiu %d upvotes - %d marco de 5 conquistados",
         truncarTexto(comentario.getTexto(), 30),
         comentario.getId(),
         totalAtual,
