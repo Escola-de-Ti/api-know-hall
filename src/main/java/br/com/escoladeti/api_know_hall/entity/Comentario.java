@@ -52,4 +52,10 @@ public class Comentario {
   @Column(name = "data_criacao", nullable = false, updatable = false)
   @CreationTimestamp
   private Timestamp dataCriacao;
+
+  @Column(name = "resposta_destaque", nullable = false)
+  private Boolean respostaDestaque = false;
+
+  @Column(name = "maior_qntd_voto")
+  private Long maiorQntdVoto;
 }

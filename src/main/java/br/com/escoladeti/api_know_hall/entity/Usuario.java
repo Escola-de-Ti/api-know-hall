@@ -94,6 +94,12 @@ public class Usuario {
   @OneToMany(mappedBy = "instrutor", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
   private List<Workshop> workshops = new ArrayList<>();
 
+  @Column(name = "qntd_token")
+  private Long qntdToken;
+
+  @Column(name = "qntd_xp")
+  private Long qntdXp;
+
   public void adicionarConquista(ConquistaTier conquistaTier, Integer progressoAtual) {
     UsuarioConquista uc = new UsuarioConquista();
     uc.setUsuario(this);
