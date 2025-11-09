@@ -12,6 +12,7 @@ import br.com.escoladeti.api_know_hall.exception.DuplicateResourceException;
 import br.com.escoladeti.api_know_hall.exception.InvalidCredentialsException;
 import br.com.escoladeti.api_know_hall.exception.UsuarioInativoException;
 import br.com.escoladeti.api_know_hall.exception.ValidationException;
+import br.com.escoladeti.api_know_hall.projection.usuario.UsuarioRankingProjection;
 import br.com.escoladeti.api_know_hall.repository.UsuarioRepository;
 import br.com.escoladeti.api_know_hall.service.UsuarioService;
 import br.com.escoladeti.api_know_hall.service.utils.PalavrasProibidasService;
@@ -25,6 +26,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
+import br.com.escoladeti.api_know_hall.dto.usuario.RankingResponseDTO;
+import br.com.escoladeti.api_know_hall.dto.usuario.UsuarioRankingDTO;
+import static org.mockito.Mockito.mock;
 
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -539,5 +543,233 @@ class UsuarioServiceTest {
 
     assertTrue(exception.getMessage().contains("Biografia contém conteúdo não permitido"));
     verify(usuarioRepository, never()).save(any(Usuario.class));
+  }
+
+  @Test
+  void obterRanking_WithValidEmail_ShouldReturnRankingResponse() {
+    // Arrange
+    String email = "test@test.com";
+
+    // Mock do usuário logado
+    when(usuarioRepository.findByEmail(email)).thenReturn(Optional.of(usuario));
+
+    // Mock das projections do top 50
+    UsuarioRankingProjection projection1 = mock(UsuarioRankingProjection.class);
+    when(projection1.getPosicao()).thenReturn(1L);
+    when(projection1.getNome()).thenReturn("Usuario Top 1");
+    when(projection1.getQntdXp()).thenReturn(5000);
+    when(projection1.getNivel()).thenReturn(10);
+
+    UsuarioRankingProjection projection2 = mock(UsuarioRankingProjection.class);
+    when(projection2.getPosicao()).thenReturn(2L);
+    when(projection2.getNome()).thenReturn("Usuario Top 2");
+    when(projection2.getQntdXp()).thenReturn(4500);
+    when(projection2.getNivel()).thenReturn(9);
+
+    List<UsuarioRankingProjection> top50Projections = Arrays.asList(projection1, projection2);
+    when(usuarioRepository.findTop50UsuariosPorXp()).thenReturn(top50Projections);
+
+    when(usuarioRepository.findPosicaoNoRanking(BigInteger.valueOf(1))).thenReturn(15L);
+
+    when(usuarioRepository.findXpRecebidoUltimos30Dias(BigInteger.valueOf(1))).thenReturn(250);
+
+    RankingResponseDTO result = usuarioService.obterRanking(email);
+
+    assertNotNull(result);
+    assertNotNull(result.getRankingList());
+    assertEquals(2, result.getRankingList().size());
+
+    assertEquals(1L, result.getRankingList().get(0).getPosicao());
+    assertEquals("Usuario Top 1", result.getRankingList().get(0).getNome());
+    assertEquals(5000, result.getRankingList().get(0).getQntdXp());
+    assertEquals(10, result.getRankingList().get(0).getNivel());
+
+    assertEquals(2L, result.getRankingList().get(1).getPosicao());
+    assertEquals("Usuario Top 2", result.getRankingList().get(1).getNome());
+    assertEquals(4500, result.getRankingList().get(1).getQntdXp());
+    assertEquals(9, result.getRankingList().get(1).getNivel());
+
+    assertNotNull(result.getUsuarioLogado());
+    assertEquals(15L, result.getUsuarioLogado().getPosicao());
+    assertEquals(250, result.getUsuarioLogado().getXpRecebidoUltimos30Dias());
+
+    verify(usuarioRepository, times(1)).findByEmail(email);
+    verify(usuarioRepository, times(1)).findTop50UsuariosPorXp();
+    verify(usuarioRepository, times(1)).findPosicaoNoRanking(BigInteger.valueOf(1));
+    verify(usuarioRepository, times(1)).findXpRecebidoUltimos30Dias(BigInteger.valueOf(1));
+  }
+
+  @Test
+  void obterRanking_WithInvalidEmail_ShouldThrowEntityNotFoundException() {
+    String email = "invalido@test.com";
+    when(usuarioRepository.findByEmail(email)).thenReturn(Optional.empty());
+
+    EntityNotFoundException exception = assertThrows(
+      EntityNotFoundException.class,
+      () -> usuarioService.obterRanking(email)
+    );
+
+    assertEquals("Usuário não encontrado", exception.getMessage());
+    verify(usuarioRepository, times(1)).findByEmail(email);
+    verify(usuarioRepository, never()).findTop50UsuariosPorXp();
+    verify(usuarioRepository, never()).findPosicaoNoRanking(any());
+    verify(usuarioRepository, never()).findXpRecebidoUltimos30Dias(any());
+  }
+
+  @Test
+  void obterRanking_WithUserInTop50_ShouldReturnCorrectData() {
+    // Arrange
+    String email = "test@test.com";
+
+    when(usuarioRepository.findByEmail(email)).thenReturn(Optional.of(usuario));
+
+    // Mock - usuário está em 10º lugar
+    UsuarioRankingProjection projection = mock(UsuarioRankingProjection.class);
+    when(projection.getPosicao()).thenReturn(10L);
+    when(projection.getNome()).thenReturn("Test User");
+    when(projection.getQntdXp()).thenReturn(3000);
+    when(projection.getNivel()).thenReturn(8);
+
+    when(usuarioRepository.findTop50UsuariosPorXp()).thenReturn(Arrays.asList(projection));
+    when(usuarioRepository.findPosicaoNoRanking(BigInteger.valueOf(1))).thenReturn(10L);
+    when(usuarioRepository.findXpRecebidoUltimos30Dias(BigInteger.valueOf(1))).thenReturn(500);
+
+    // Act
+    RankingResponseDTO result = usuarioService.obterRanking(email);
+
+    // Assert
+    assertNotNull(result);
+    assertEquals(10L, result.getUsuarioLogado().getPosicao());
+    assertEquals(500, result.getUsuarioLogado().getXpRecebidoUltimos30Dias());
+    verify(usuarioRepository, times(1)).findByEmail(email);
+  }
+
+  @Test
+  void obterRanking_WithUserOutsideTop50_ShouldStillReturnUserPosition() {
+    // Arrange
+    String email = "test@test.com";
+
+    when(usuarioRepository.findByEmail(email)).thenReturn(Optional.of(usuario));
+
+    // Top 50 não contém o usuário logado
+    UsuarioRankingProjection projection = mock(UsuarioRankingProjection.class);
+    when(projection.getPosicao()).thenReturn(1L);
+    when(projection.getNome()).thenReturn("Usuario Top 1");
+    when(projection.getQntdXp()).thenReturn(10000);
+    when(projection.getNivel()).thenReturn(20);
+
+    when(usuarioRepository.findTop50UsuariosPorXp()).thenReturn(Arrays.asList(projection));
+
+    // Usuário está em 127º lugar (fora do top 50)
+    when(usuarioRepository.findPosicaoNoRanking(BigInteger.valueOf(1))).thenReturn(127L);
+    when(usuarioRepository.findXpRecebidoUltimos30Dias(BigInteger.valueOf(1))).thenReturn(150);
+
+    // Act
+    RankingResponseDTO result = usuarioService.obterRanking(email);
+
+    // Assert
+    assertNotNull(result);
+    assertEquals(127L, result.getUsuarioLogado().getPosicao());
+    assertEquals(150, result.getUsuarioLogado().getXpRecebidoUltimos30Dias());
+    assertEquals(1, result.getRankingList().size());
+    verify(usuarioRepository, times(1)).findPosicaoNoRanking(BigInteger.valueOf(1));
+  }
+
+  @Test
+  void obterRanking_WithNoXpInLast30Days_ShouldReturnZero() {
+    // Arrange
+    String email = "test@test.com";
+
+    when(usuarioRepository.findByEmail(email)).thenReturn(Optional.of(usuario));
+
+    UsuarioRankingProjection projection = mock(UsuarioRankingProjection.class);
+    when(projection.getPosicao()).thenReturn(1L);
+    when(projection.getNome()).thenReturn("Usuario Top 1");
+    when(projection.getQntdXp()).thenReturn(5000);
+    when(projection.getNivel()).thenReturn(10);
+
+    when(usuarioRepository.findTop50UsuariosPorXp()).thenReturn(Arrays.asList(projection));
+    when(usuarioRepository.findPosicaoNoRanking(BigInteger.valueOf(1))).thenReturn(50L);
+
+    when(usuarioRepository.findXpRecebidoUltimos30Dias(BigInteger.valueOf(1))).thenReturn(0);
+
+    RankingResponseDTO result = usuarioService.obterRanking(email);
+
+    assertNotNull(result);
+    assertEquals(0, result.getUsuarioLogado().getXpRecebidoUltimos30Dias());
+    verify(usuarioRepository, times(1)).findXpRecebidoUltimos30Dias(BigInteger.valueOf(1));
+  }
+
+  @Test
+  void obterRanking_WithEmptyRanking_ShouldReturnEmptyTop50() {
+    // Arrange
+    String email = "test@test.com";
+
+    when(usuarioRepository.findByEmail(email)).thenReturn(Optional.of(usuario));
+
+    when(usuarioRepository.findTop50UsuariosPorXp()).thenReturn(Arrays.asList());
+    when(usuarioRepository.findPosicaoNoRanking(BigInteger.valueOf(1))).thenReturn(1L);
+    when(usuarioRepository.findXpRecebidoUltimos30Dias(BigInteger.valueOf(1))).thenReturn(0);
+
+    RankingResponseDTO result = usuarioService.obterRanking(email);
+
+    assertNotNull(result);
+    assertTrue(result.getRankingList().isEmpty());
+    assertEquals(1L, result.getUsuarioLogado().getPosicao());
+    verify(usuarioRepository, times(1)).findTop50UsuariosPorXp();
+  }
+
+  @Test
+  void obterRanking_ShouldConvertProjectionsToDTO() {
+    // Arrange
+    String email = "test@test.com";
+
+    when(usuarioRepository.findByEmail(email)).thenReturn(Optional.of(usuario));
+
+    // Criar 3 projections para verificar a conversão
+    UsuarioRankingProjection p1 = mock(UsuarioRankingProjection.class);
+    when(p1.getPosicao()).thenReturn(1L);
+    when(p1.getNome()).thenReturn("User 1");
+    when(p1.getQntdXp()).thenReturn(1000);
+    when(p1.getNivel()).thenReturn(5);
+
+    UsuarioRankingProjection p2 = mock(UsuarioRankingProjection.class);
+    when(p2.getPosicao()).thenReturn(2L);
+    when(p2.getNome()).thenReturn("User 2");
+    when(p2.getQntdXp()).thenReturn(900);
+    when(p2.getNivel()).thenReturn(4);
+
+    UsuarioRankingProjection p3 = mock(UsuarioRankingProjection.class);
+    when(p3.getPosicao()).thenReturn(3L);
+    when(p3.getNome()).thenReturn("User 3");
+    when(p3.getQntdXp()).thenReturn(800);
+    when(p3.getNivel()).thenReturn(4);
+
+    when(usuarioRepository.findTop50UsuariosPorXp())
+      .thenReturn(Arrays.asList(p1, p2, p3));
+
+    when(usuarioRepository.findPosicaoNoRanking(BigInteger.valueOf(1))).thenReturn(5L);
+    when(usuarioRepository.findXpRecebidoUltimos30Dias(BigInteger.valueOf(1))).thenReturn(100);
+
+    // Act
+    RankingResponseDTO result = usuarioService.obterRanking(email);
+
+    assertNotNull(result);
+    assertEquals(3, result.getRankingList().size());
+
+    // Verificar conversão correta de cada projection
+    UsuarioRankingDTO dto1 = result.getRankingList().get(0);
+    assertEquals(1L, dto1.getPosicao());
+    assertEquals("User 1", dto1.getNome());
+    assertEquals(1000, dto1.getQntdXp());
+    assertEquals(5, dto1.getNivel());
+
+    UsuarioRankingDTO dto2 = result.getRankingList().get(1);
+    assertEquals(2L, dto2.getPosicao());
+    assertEquals("User 2", dto2.getNome());
+
+    UsuarioRankingDTO dto3 = result.getRankingList().get(2);
+    assertEquals(3L, dto3.getPosicao());
+    assertEquals("User 3", dto3.getNome());
   }
 }
