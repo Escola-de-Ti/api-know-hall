@@ -2,8 +2,7 @@ package br.com.escoladeti.api_know_hall.service;
 
 import br.com.escoladeti.api_know_hall.config.JwtTokenService;
 import br.com.escoladeti.api_know_hall.dto.JwtTokenDTO;
-import br.com.escoladeti.api_know_hall.dto.usuario.UsuarioCreateDTO;
-import br.com.escoladeti.api_know_hall.dto.usuario.UsuarioUpdateDTO;
+import br.com.escoladeti.api_know_hall.dto.usuario.*;
 import br.com.escoladeti.api_know_hall.entity.Imagem;
 import br.com.escoladeti.api_know_hall.entity.Usuario;
 import br.com.escoladeti.api_know_hall.enums.StatusUsuario;
@@ -19,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigInteger;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class UsuarioService {
@@ -230,5 +230,24 @@ public class UsuarioService {
       .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
     usuario.setImagemPerfil(imagem);
     usuarioRepository.save(usuario);
+  }
+
+  public RankingResponseDTO obterRanking(String emailUsuario) {
+    Usuario usuario = usuarioRepository.findByEmail(emailUsuario)
+      .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
+
+    List<UsuarioRankingDTO> top50 = usuarioRepository.findTop50UsuariosPorXp().stream()
+      .map(UsuarioRankingDTO::new)
+      .collect(Collectors.toList());
+
+    Long posicaoUsuario = usuarioRepository.findPosicaoNoRanking(usuario.getId());
+    Integer xpUltimos30Dias = usuarioRepository.findXpRecebidoUltimos30Dias(usuario.getId());
+
+    UsuarioLogadoRankingDTO usuarioLogado = new UsuarioLogadoRankingDTO(
+      posicaoUsuario,
+      xpUltimos30Dias
+    );
+
+    return new RankingResponseDTO(top50, usuarioLogado);
   }
 }

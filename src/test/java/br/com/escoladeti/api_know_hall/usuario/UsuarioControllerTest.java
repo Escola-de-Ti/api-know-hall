@@ -4,9 +4,7 @@ import br.com.escoladeti.api_know_hall.controller.UsuarioController;
 import br.com.escoladeti.api_know_hall.config.JwtAuthenticationFilter;
 import br.com.escoladeti.api_know_hall.config.JwtTokenService;
 import br.com.escoladeti.api_know_hall.config.SecurityConfig;
-import br.com.escoladeti.api_know_hall.dto.usuario.UsuarioCreateDTO;
-import br.com.escoladeti.api_know_hall.dto.usuario.UsuarioLoginDTO;
-import br.com.escoladeti.api_know_hall.dto.usuario.UsuarioUpdateDTO;
+import br.com.escoladeti.api_know_hall.dto.usuario.*;
 import br.com.escoladeti.api_know_hall.entity.Usuario;
 import br.com.escoladeti.api_know_hall.enums.StatusUsuario;
 import br.com.escoladeti.api_know_hall.enums.TipoUsuario;
@@ -412,7 +410,6 @@ class UsuarioControllerTest {
   @Test
   void createUsuario_WithMissingRequiredFields_ShouldReturnBadRequest() throws Exception {
     UsuarioCreateDTO invalidDTO = new UsuarioCreateDTO();
-    // Não preenche campos obrigatórios
 
     mockMvc.perform(post("/api/usuarios")
         .contentType(MediaType.APPLICATION_JSON)
@@ -442,5 +439,209 @@ class UsuarioControllerTest {
         .content(objectMapper.writeValueAsString(usuarioCreateDTO)));
 
     verify(usuarioService, never()).createUsuario(any(UsuarioCreateDTO.class));
+  }
+
+  @Test
+  void obterRanking_WithAuthenticatedUser_ShouldReturnRankingResponse() throws Exception {
+    String email = "test@test.com";
+
+    UsuarioRankingDTO usuario1 = new UsuarioRankingDTO(1L, "Usuario Top 1", 5000, 10);
+    UsuarioRankingDTO usuario2 = new UsuarioRankingDTO(2L, "Usuario Top 2", 4500, 9);
+    UsuarioRankingDTO usuario3 = new UsuarioRankingDTO(3L, "Usuario Top 3", 4000, 8);
+
+    List<UsuarioRankingDTO> rankingList = Arrays.asList(usuario1, usuario2, usuario3);
+
+    UsuarioLogadoRankingDTO usuarioLogado = new UsuarioLogadoRankingDTO(15L, 250);
+
+    RankingResponseDTO rankingResponse = new RankingResponseDTO(rankingList, usuarioLogado);
+
+    when(usuarioService.obterRanking(email)).thenReturn(rankingResponse);
+
+    mockMvc.perform(get("/api/usuarios/ranking")
+        .principal(() -> email))
+      .andExpect(status().isOk())
+      .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+      .andExpect(jsonPath("$.rankingList").isArray())
+      .andExpect(jsonPath("$.rankingList.length()").value(3))
+
+      .andExpect(jsonPath("$.rankingList[0].posicao").value(1))
+      .andExpect(jsonPath("$.rankingList[0].nome").value("Usuario Top 1"))
+      .andExpect(jsonPath("$.rankingList[0].qntdXp").value(5000))
+      .andExpect(jsonPath("$.rankingList[0].nivel").value(10))
+
+      .andExpect(jsonPath("$.rankingList[1].posicao").value(2))
+      .andExpect(jsonPath("$.rankingList[1].nome").value("Usuario Top 2"))
+      .andExpect(jsonPath("$.rankingList[1].qntdXp").value(4500))
+      .andExpect(jsonPath("$.rankingList[1].nivel").value(9))
+
+      .andExpect(jsonPath("$.rankingList[2].posicao").value(3))
+      .andExpect(jsonPath("$.rankingList[2].nome").value("Usuario Top 3"))
+      .andExpect(jsonPath("$.rankingList[2].qntdXp").value(4000))
+      .andExpect(jsonPath("$.rankingList[2].nivel").value(8))
+
+      .andExpect(jsonPath("$.usuarioLogado").exists())
+      .andExpect(jsonPath("$.usuarioLogado.posicao").value(15))
+      .andExpect(jsonPath("$.usuarioLogado.xpRecebidoUltimos30Dias").value(250));
+
+    verify(usuarioService, times(1)).obterRanking(email);
+  }
+
+  @Test
+  void obterRanking_WithUserNotFound_ShouldReturnNotFound() throws Exception {
+    String email = "naoexiste@test.com";
+
+    when(usuarioService.obterRanking(email))
+      .thenThrow(new EntityNotFoundException("Usuário não encontrado"));
+
+    mockMvc.perform(get("/api/usuarios/ranking")
+        .principal(() -> email))
+      .andExpect(status().isNotFound())
+      .andExpect(jsonPath("$.status").value(404))
+      .andExpect(jsonPath("$.message").value("Usuário não encontrado"));
+
+    verify(usuarioService, times(1)).obterRanking(email);
+  }
+
+  @Test
+  void obterRanking_WithEmptyRankingList_ShouldReturnEmptyList() throws Exception {
+    String email = "test@test.com";
+
+    List<UsuarioRankingDTO> rankingList = Arrays.asList();
+    UsuarioLogadoRankingDTO usuarioLogado = new UsuarioLogadoRankingDTO(1L, 0);
+    RankingResponseDTO rankingResponse = new RankingResponseDTO(rankingList, usuarioLogado);
+
+    when(usuarioService.obterRanking(email)).thenReturn(rankingResponse);
+
+    mockMvc.perform(get("/api/usuarios/ranking")
+        .principal(() -> email))
+      .andExpect(status().isOk())
+      .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+      .andExpect(jsonPath("$.rankingList").isArray())
+      .andExpect(jsonPath("$.rankingList.length()").value(0))
+      .andExpect(jsonPath("$.usuarioLogado.posicao").value(1))
+      .andExpect(jsonPath("$.usuarioLogado.xpRecebidoUltimos30Dias").value(0));
+
+    verify(usuarioService, times(1)).obterRanking(email);
+  }
+
+  @Test
+  void obterRanking_WithUserInTop50_ShouldReturnCorrectRanking() throws Exception {
+    String email = "test@test.com";
+
+    UsuarioRankingDTO usuario1 = new UsuarioRankingDTO(1L, "Top 1", 10000, 20);
+    UsuarioRankingDTO usuario2 = new UsuarioRankingDTO(2L, "Top 2", 9000, 18);
+    UsuarioRankingDTO usuario3 = new UsuarioRankingDTO(3L, "Top 3", 8000, 17);
+    UsuarioRankingDTO usuario4 = new UsuarioRankingDTO(4L, "Top 4", 7000, 15);
+    UsuarioRankingDTO usuario5 = new UsuarioRankingDTO(5L, "Test User", 6000, 14);
+
+    List<UsuarioRankingDTO> rankingList = Arrays.asList(usuario1, usuario2, usuario3, usuario4, usuario5);
+
+    UsuarioLogadoRankingDTO usuarioLogado = new UsuarioLogadoRankingDTO(5L, 500);
+
+    RankingResponseDTO rankingResponse = new RankingResponseDTO(rankingList, usuarioLogado);
+
+    when(usuarioService.obterRanking(email)).thenReturn(rankingResponse);
+
+    mockMvc.perform(get("/api/usuarios/ranking")
+        .principal(() -> email))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.rankingList.length()").value(5))
+      .andExpect(jsonPath("$.rankingList[4].posicao").value(5))
+      .andExpect(jsonPath("$.rankingList[4].nome").value("Test User"))
+      .andExpect(jsonPath("$.usuarioLogado.posicao").value(5))
+      .andExpect(jsonPath("$.usuarioLogado.xpRecebidoUltimos30Dias").value(500));
+
+    verify(usuarioService, times(1)).obterRanking(email);
+  }
+
+  @Test
+  void obterRanking_WithUserOutsideTop50_ShouldReturnUserPositionAnyway() throws Exception {
+    String email = "test@test.com";
+
+    UsuarioRankingDTO usuario1 = new UsuarioRankingDTO(1L, "Top 1", 10000, 20);
+    UsuarioRankingDTO usuario2 = new UsuarioRankingDTO(2L, "Top 2", 9000, 18);
+
+    List<UsuarioRankingDTO> rankingList = Arrays.asList(usuario1, usuario2);
+
+    UsuarioLogadoRankingDTO usuarioLogado = new UsuarioLogadoRankingDTO(127L, 150);
+
+    RankingResponseDTO rankingResponse = new RankingResponseDTO(rankingList, usuarioLogado);
+
+    when(usuarioService.obterRanking(email)).thenReturn(rankingResponse);
+
+    mockMvc.perform(get("/api/usuarios/ranking")
+        .principal(() -> email))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.rankingList.length()").value(2))
+      .andExpect(jsonPath("$.usuarioLogado.posicao").value(127))
+      .andExpect(jsonPath("$.usuarioLogado.xpRecebidoUltimos30Dias").value(150));
+
+    verify(usuarioService, times(1)).obterRanking(email);
+  }
+
+  @Test
+  void obterRanking_WithNoXpInLast30Days_ShouldReturnZeroXp() throws Exception {
+    String email = "test@test.com";
+
+    UsuarioRankingDTO usuario1 = new UsuarioRankingDTO(1L, "Top 1", 5000, 10);
+    List<UsuarioRankingDTO> rankingList = Arrays.asList(usuario1);
+
+    UsuarioLogadoRankingDTO usuarioLogado = new UsuarioLogadoRankingDTO(50L, 0);
+
+    RankingResponseDTO rankingResponse = new RankingResponseDTO(rankingList, usuarioLogado);
+
+    when(usuarioService.obterRanking(email)).thenReturn(rankingResponse);
+
+    mockMvc.perform(get("/api/usuarios/ranking")
+        .principal(() -> email))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.usuarioLogado.xpRecebidoUltimos30Dias").value(0));
+
+    verify(usuarioService, times(1)).obterRanking(email);
+  }
+
+  @Test
+  void obterRanking_WhenServiceThrowsException_ShouldReturnInternalServerError() throws Exception {
+    String email = "test@test.com";
+
+    when(usuarioService.obterRanking(email))
+      .thenThrow(new RuntimeException("Database error"));
+
+    mockMvc.perform(get("/api/usuarios/ranking")
+        .principal(() -> email))
+      .andExpect(status().isInternalServerError());
+
+    verify(usuarioService, times(1)).obterRanking(email);
+  }
+
+  @Test
+  void obterRanking_WithFullTop50_ShouldReturn50Users() throws Exception {
+    String email = "test@test.com";
+
+    List<UsuarioRankingDTO> rankingList = new java.util.ArrayList<>();
+    for (int i = 1; i <= 50; i++) {
+      rankingList.add(new UsuarioRankingDTO(
+        (long) i,
+        "Usuario " + i,
+        5000 - (i * 50),
+        20 - (i / 5)
+      ));
+    }
+
+    UsuarioLogadoRankingDTO usuarioLogado = new UsuarioLogadoRankingDTO(75L, 300);
+
+    RankingResponseDTO rankingResponse = new RankingResponseDTO(rankingList, usuarioLogado);
+
+    when(usuarioService.obterRanking(email)).thenReturn(rankingResponse);
+
+    mockMvc.perform(get("/api/usuarios/ranking")
+        .principal(() -> email))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.rankingList.length()").value(50))
+      .andExpect(jsonPath("$.rankingList[0].posicao").value(1))
+      .andExpect(jsonPath("$.rankingList[49].posicao").value(50))
+      .andExpect(jsonPath("$.usuarioLogado.posicao").value(75));
+
+    verify(usuarioService, times(1)).obterRanking(email);
   }
 }
