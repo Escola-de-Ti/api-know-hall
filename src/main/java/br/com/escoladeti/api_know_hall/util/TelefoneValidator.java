@@ -7,7 +7,7 @@ public class TelefoneValidator {
 
   public boolean isValid(String telefone) {
     if (telefone == null || telefone.isEmpty()) {
-      return true; // Telefone pode ser opcional
+      return true;
     }
 
     String apenasNumeros = telefone.replaceAll("[^0-9]", "");
@@ -16,7 +16,14 @@ public class TelefoneValidator {
       return false;
     }
 
-    int ddd = Integer.parseInt(apenasNumeros.substring(0, 2));
+    int ddd;
+
+    try {
+      ddd = Integer.parseInt(apenasNumeros.substring(0, 2));
+    } catch (NumberFormatException e) {
+      return false;
+    }
+
     if (ddd < 11 || ddd > 99) {
       return false;
     }
