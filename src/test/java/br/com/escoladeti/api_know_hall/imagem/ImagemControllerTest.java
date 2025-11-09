@@ -44,17 +44,18 @@ public class ImagemControllerTest {
     ImagemTipo type = ImagemTipo.USUARIO;
     String principalName = "user123";
     Imagem imagem = new Imagem(BigInteger.ONE, principalName, "url", "idImagem", "path");
-    when(imagemService.uploadImage(eq(imageBytes), eq(principalName), eq(type), any())).thenReturn(imagem);
+    when(imagemService.uploadImage(eq(imageBytes), eq(principalName), eq(type), eq(""))).thenReturn(imagem);
 
     mockMvc.perform(post("/api/imagem/upload")
         .content(imageBytes)
         .contentType(MediaType.APPLICATION_OCTET_STREAM)
-        .param("type", type.getTipo())
+        .param("type", type.name())
+        .param("id_type", "")
         .principal(() -> principalName))
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.nome").value(principalName))
       .andExpect(jsonPath("$.url").value("url"))
-      .andExpect(jsonPath("$.idImagem").value("idImagem"))
+      .andExpect(jsonPath("$.idImagemSupabase").value("idImagem"))
       .andExpect(jsonPath("$.path").value("path"));
   }
 
@@ -68,10 +69,12 @@ public class ImagemControllerTest {
     mockMvc.perform(post("/api/imagem/upload")
         .content(imageBytes)
         .contentType(MediaType.APPLICATION_OCTET_STREAM)
-        .param("type", type.getTipo())
+        .param("type", type.name())
+        .param("id_type", "")
         .principal(() -> principalName))
       .andExpect(status().isInternalServerError());
   }
+
 
   @Test
   void deleteImage_success_returnsNoContent() throws Exception {

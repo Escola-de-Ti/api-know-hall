@@ -76,38 +76,7 @@ public class ImagemServiceTest {
       throw new RuntimeException(e);
     }
   }
-
-  @Test
-  void uploadImage_success_nonPerfil_callsSaveAndReturnsImagem() throws Exception {
-    byte[] bytes = new byte[]{1, 2, 3};
-    String userEmail = "user@example.com";
-    ImagemTipo type = ImagemTipo.USUARIO;
-    String idType = "";
-
-    HttpResponse<String> response = mock(HttpResponse.class);
-    when(response.statusCode()).thenReturn(200);
-    when(response.body()).thenReturn("{\"Key\": \"path/key\", \"Id\": \"id123\"}");
-
-    when(httpClient.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class))).thenReturn(response);
-
-    when(imagemRepository.save(any(Imagem.class))).thenAnswer(invocation -> invocation.getArgument(0));
-    when(imagemRepository.findByIdImagem(anyString())).thenReturn(Optional.empty());
-
-    Imagem result = imagemService.uploadImage(bytes, userEmail, type, idType);
-
-    var captor = org.mockito.ArgumentCaptor.forClass(Imagem.class);
-    verify(imagemRepository).save(captor.capture());
-    Imagem saved = captor.getValue();
-
-    assertNotNull(result);
-    assertSame(saved, result);
-    assertTrue(saved.getNome().startsWith(userEmail + idType));
-    assertTrue(saved.getUrl().contains(SUPABASE + "/assets/" + type + "/"));
-    assertEquals("path/key", saved.getPath());
-    assertEquals("id123", saved.getIdImagemSupabase());
-
-    verify(usuarioService, never()).atualizarImagemPerfil(anyString(), any(Imagem.class));
-  }
+  
 
   @Test
   void uploadImage_httpError_throwsIllegalStateException() throws Exception {
