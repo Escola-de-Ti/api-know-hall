@@ -12,16 +12,13 @@ public record HistoricoTransacaoRequestDTO(
   Timestamp dataFim
 ) {
   public HistoricoTransacaoRequestDTO {
-    // Normalizar page
     if (page == null || page < 0) {
       page = 0;
     }
 
-    // Normalizar size
     if (size == null || size < 1) {
       size = 20;
     }
-    // ✅ LIMITAR A 100 SEPARADAMENTE
     if (size > 100) {
       size = 100;
     }

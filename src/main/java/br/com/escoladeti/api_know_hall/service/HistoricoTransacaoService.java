@@ -66,10 +66,6 @@ public class HistoricoTransacaoService {
     return buscarHistoricoUsuario(usuario.getId(), request);
   }
 
-  /**
-   * Busca o histórico de transações por ID do usuário
-   * Método auxiliar que pode ser usado internamente
-   */
   @Transactional(readOnly = true)
   public HistoricoTransacaoListResponseDTO buscarHistoricoUsuario(
     BigInteger usuarioId,
@@ -86,9 +82,7 @@ public class HistoricoTransacaoService {
 
     Page<HistoricoTransacao> page;
 
-    // Aplica filtros conforme necessário
     if (request.motivo() != null && request.dataInicio() != null && request.dataFim() != null) {
-      // Filtro por motivo E período
       page = historicoTransacaoRepository.findByUsuarioIdAndMotivoAndPeriodo(
         usuarioId,
         request.motivo(),
