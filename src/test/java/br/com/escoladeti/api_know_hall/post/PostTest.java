@@ -142,7 +142,8 @@ class PostTest {
       10L,
       usuario,
       agora,
-      new ArrayList<>()
+      new ArrayList<>(),
+      0L
     );
 
     assertThat(novoPost.getId()).isEqualTo(BigInteger.TWO);
@@ -151,7 +152,7 @@ class PostTest {
     assertThat(novoPost.getTotalUpVotes()).isEqualTo(10L);
     assertThat(novoPost.getUsuario()).isEqualTo(usuario);
     assertThat(novoPost.getTags()).hasSize(2);
-    assertThat(novoPost.getComentarios()).isEmpty();  // ✅ Verifica lista de comentários
+    assertThat(novoPost.getComentarios()).isEmpty();
     assertThat(novoPost.getDataCriacao()).isEqualTo(agora);
   }
 
