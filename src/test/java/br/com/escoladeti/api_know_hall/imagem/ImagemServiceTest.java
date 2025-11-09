@@ -4,8 +4,8 @@ import br.com.escoladeti.api_know_hall.entity.Imagem;
 import br.com.escoladeti.api_know_hall.enums.ImagemTipo;
 import br.com.escoladeti.api_know_hall.repository.ImagemRepository;
 import br.com.escoladeti.api_know_hall.service.ImagemService;
-import br.com.escoladeti.api_know_hall.service.UsuarioService;
 import br.com.escoladeti.api_know_hall.service.PostService;
+import br.com.escoladeti.api_know_hall.service.UsuarioService;
 import br.com.escoladeti.api_know_hall.service.WorkshopService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -104,7 +104,7 @@ public class ImagemServiceTest {
     assertTrue(saved.getNome().startsWith(userEmail + idType));
     assertTrue(saved.getUrl().contains(SUPABASE + "/assets/" + type + "/"));
     assertEquals("path/key", saved.getPath());
-    assertEquals("id123", saved.getIdImagem());
+    assertEquals("id123", saved.getIdImagemSupabase());
 
     verify(usuarioService, never()).atualizarImagemPerfil(anyString(), any(Imagem.class));
   }

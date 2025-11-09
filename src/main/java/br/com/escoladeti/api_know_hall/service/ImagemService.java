@@ -82,9 +82,9 @@ public class ImagemService {
       imagem.setNome(imageName);
       imagem.setUrl(String.valueOf(uri));
       imagem.setPath(imageResponse.key());
-      imagem.setIdImagem(imageResponse.id());
+      imagem.setIdImagemSupabase(imageResponse.id());
 
-      imagemRepository.findByIdImagem(imagem.getIdImagem()).ifPresent(existingImage -> {
+      imagemRepository.findByIdImagem(imagem.getIdImagemSupabase()).ifPresent(existingImage -> {
         imagem.setId(existingImage.getId());
       });
 
