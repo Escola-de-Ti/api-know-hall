@@ -49,7 +49,7 @@ public class UsuarioController {
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
-  @PutMapping()
+  @PutMapping("/user")
   public ResponseEntity<UsuarioResponseDTO> updateUsuario(
     Principal principal,
     @Valid @RequestBody UsuarioUpdateDTO usuarioDetails) {
