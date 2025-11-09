@@ -2,10 +2,7 @@ package br.com.escoladeti.api_know_hall.controller;
 
 import br.com.escoladeti.api_know_hall.dto.JwtTokenDTO;
 import br.com.escoladeti.api_know_hall.dto.RefreshTokenRequest;
-import br.com.escoladeti.api_know_hall.dto.usuario.UsuarioCreateDTO;
-import br.com.escoladeti.api_know_hall.dto.usuario.UsuarioLoginDTO;
-import br.com.escoladeti.api_know_hall.dto.usuario.UsuarioResponseDTO;
-import br.com.escoladeti.api_know_hall.dto.usuario.UsuarioUpdateDTO;
+import br.com.escoladeti.api_know_hall.dto.usuario.*;
 import br.com.escoladeti.api_know_hall.entity.Usuario;
 import br.com.escoladeti.api_know_hall.service.UsuarioService;
 import jakarta.validation.Valid;
@@ -75,4 +72,11 @@ public class UsuarioController {
     JwtTokenDTO token = usuarioService.refreshToken(request.refresh_token());
     return ResponseEntity.ok(token);
   }
+
+  @GetMapping("/ranking")
+  public ResponseEntity<RankingResponseDTO> obterRanking(Principal principal) {
+    RankingResponseDTO ranking = usuarioService.obterRanking(principal.getName());
+    return ResponseEntity.ok(ranking);
+  }
+
 }
