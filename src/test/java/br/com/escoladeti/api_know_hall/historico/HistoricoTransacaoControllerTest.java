@@ -84,7 +84,7 @@ class HistoricoTransacaoControllerTest {
       50L,
       MotivoTransacao.UP_VOTE_COMENTARIO,
       "Up vote em comentário",
-      "Comentário atingiu 5 upvotes - 1 marcos de 5 conquistados",
+      "Comentário atingiu 5 upvotes - 1 marco de 5 conquistados",
       agora
     );
 
