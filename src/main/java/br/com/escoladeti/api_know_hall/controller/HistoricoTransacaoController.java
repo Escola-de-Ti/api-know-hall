@@ -2,6 +2,7 @@ package br.com.escoladeti.api_know_hall.controller;
 
 import br.com.escoladeti.api_know_hall.dto.historico.HistoricoTransacaoListResponseDTO;
 import br.com.escoladeti.api_know_hall.dto.historico.HistoricoTransacaoRequestDTO;
+import br.com.escoladeti.api_know_hall.dto.historico.ResumoTransacoesDTO;
 import br.com.escoladeti.api_know_hall.enums.MotivoTransacao;
 import br.com.escoladeti.api_know_hall.service.HistoricoTransacaoService;
 import lombok.RequiredArgsConstructor;
@@ -62,11 +63,4 @@ public class HistoricoTransacaoController {
 
     return ResponseEntity.ok(resumo);
   }
-
-  public record ResumoTransacoesDTO(
-    Long totalRecebido,
-    Long totalGasto,
-    Long saldoAtual,
-    Long totalTransacoes
-  ) {}
 }
