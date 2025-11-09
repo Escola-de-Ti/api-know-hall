@@ -2,14 +2,8 @@
 <databaseChangeLog
   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
-  xmlns:pro="http://www.liquibase.org/xml/ns/pro"
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
-    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
-    http://www.liquibase.org/xml/ns/dbchangelog-ext
-    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
-    http://www.liquibase.org/xml/ns/pro
-    http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
   <changeSet id="KH-3" author="Gabriel Marassi">
     <preConditions onFail="MARK_RAN">
@@ -90,7 +84,7 @@
       onDelete="CASCADE"/>
     <comment>Criação da tabela de relacionamento POST_TAGS</comment>
   </changeSet>
-  
+
     <changeSet id="KH-25" author="Willyan Tomaz">
     <preConditions onFail="MARK_RAN">
       <not>
@@ -135,6 +129,70 @@
     <createIndex tableName="USUARIO" indexName="idx_usuario_id_imagem_perfil">
       <column name="id_imagem_perfil"/>
     </createIndex>
+  </changeSet>
+
+  <changeSet id="KH-30" author="GABRIEL MARASSI">
+    <preConditions onFail="MARK_RAN">
+      <and>
+        <tableExists tableName="USUARIO"/>
+        <not>
+          <columnExists tableName="USUARIO" columnName="qntd_token"/>
+        </not>
+        <not>
+          <columnExists tableName="USUARIO" columnName="qntd_xp"/>
+        </not>
+      </and>
+    </preConditions>
+
+    <addColumn tableName="USUARIO">
+      <column name="qntd_token" type="INTEGER" defaultValueNumeric="0">
+        <constraints nullable="false"/>
+      </column>
+      <column name="qntd_xp" type="INTEGER" defaultValueNumeric="0">
+        <constraints nullable="false"/>
+      </column>
+    </addColumn>
+
+    <createIndex tableName="USUARIO" indexName="idx_usuario_qntd_token">
+      <column name="qntd_token"/>
+    </createIndex>
+
+    <createIndex tableName="USUARIO" indexName="idx_usuario_qntd_xp">
+      <column name="qntd_xp"/>
+    </createIndex>
+
+    <rollback>
+      <dropIndex tableName="USUARIO" indexName="idx_usuario_qntd_token"/>
+      <dropIndex tableName="USUARIO" indexName="idx_usuario_qntd_xp"/>
+      <dropColumn tableName="USUARIO" columnName="qntd_token"/>
+      <dropColumn tableName="USUARIO" columnName="qntd_xp"/>
+    </rollback>
+  </changeSet>
+
+  <changeSet id="KH-31" author="GABRIEL MARASSI">
+    <preConditions onFail="MARK_RAN">
+      <and>
+        <tableExists tableName="USUARIO"/>
+        <columnExists tableName="USUARIO" columnName="sobrenome"/>
+        <not>
+          <columnExists tableName="USUARIO" columnName="biografia"/>
+        </not>
+      </and>
+    </preConditions>
+
+    <renameColumn
+      tableName="USUARIO"
+      oldColumnName="sobrenome"
+      newColumnName="biografia"
+      columnDataType="VARCHAR(500)"/>
+
+    <rollback>
+      <renameColumn
+        tableName="USUARIO"
+        oldColumnName="biografia"
+        newColumnName="sobrenome"
+        columnDataType="VARCHAR(500)"/>
+    </rollback>
   </changeSet>
 
 </databaseChangeLog>

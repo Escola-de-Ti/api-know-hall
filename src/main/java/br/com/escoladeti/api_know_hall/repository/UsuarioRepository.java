@@ -11,4 +11,7 @@ import java.util.Optional;
 public interface UsuarioRepository extends JpaRepository<Usuario, BigInteger> {
 
   Optional<Usuario> findByEmail(String email);
+
+  Optional<Usuario> findByCpf(String cpf);
+
 }
