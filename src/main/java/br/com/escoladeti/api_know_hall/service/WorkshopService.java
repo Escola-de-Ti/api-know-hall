@@ -116,9 +116,20 @@ public class WorkshopService {
   }
 
   @Transactional
-  public Workshop atualizarWorkshop(BigInteger id, WorkshopUpdateDTO dto) {
+  public Workshop atualizarWorkshop(BigInteger id, WorkshopUpdateDTO dto,String emailInstrutor) {
     Workshop workshop = buscarPorId(id);
 
+    Usuario instrutor = usuarioRepository.findByEmail(emailInstrutor)
+      .orElseThrow(() -> new EntityNotFoundException(
+        "Usuário com ID " + emailInstrutor + " não encontrado"
+      )); 
+      
+    if (!workshop.getInstrutor().getId().equals(instrutor.getId())) {
+      throw new IllegalArgumentException(
+        "Apenas o instrutor que criou o workshop pode atualizá-lo"
+      );
+    }   
+    
     if (dto.getTitulo() != null) {
       workshop.setTitulo(dto.getTitulo());
     }

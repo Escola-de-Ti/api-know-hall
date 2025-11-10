@@ -31,7 +31,6 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import static org.hamcrest.Matchers.*;
@@ -141,6 +140,7 @@ class WorkshopControllerTest {
         .thenReturn(workshopAberto);
 
       mockMvc.perform(post("/api/workshops")
+          .principal(() -> instrutor.getEmail())
           .contentType(MediaType.APPLICATION_JSON)
           .content(objectMapper.writeValueAsString(createDTO)))
         .andExpect(status().isCreated())
@@ -168,6 +168,7 @@ class WorkshopControllerTest {
         .thenReturn(workshopEmAndamento);
 
       mockMvc.perform(post("/api/workshops")
+          .principal(() -> instrutor.getEmail())
           .contentType(MediaType.APPLICATION_JSON)
           .content(objectMapper.writeValueAsString(createDTO)))
         .andExpect(status().isCreated())
@@ -199,6 +200,7 @@ class WorkshopControllerTest {
         .thenReturn(workshopIniciado);
 
       mockMvc.perform(post("/api/workshops")
+          .principal(() -> instrutor.getEmail())
           .contentType(MediaType.APPLICATION_JSON)
           .content(objectMapper.writeValueAsString(createDTO)))
         .andExpect(status().isCreated())
@@ -229,6 +231,7 @@ class WorkshopControllerTest {
         .thenReturn(workshopSemDesc);
 
       mockMvc.perform(post("/api/workshops")
+          .principal(() -> instrutor.getEmail())
           .contentType(MediaType.APPLICATION_JSON)
           .content(objectMapper.writeValueAsString(createDTO)))
         .andExpect(status().isCreated())
@@ -253,6 +256,7 @@ class WorkshopControllerTest {
         .thenThrow(new IllegalArgumentException("Apenas usuários do tipo INSTRUTOR podem criar workshops"));
 
       mockMvc.perform(post("/api/workshops")
+          .principal(() -> instrutor.getEmail())
           .contentType(MediaType.APPLICATION_JSON)
           .content(objectMapper.writeValueAsString(createDTO)))
         .andExpect(status().isBadRequest());
@@ -275,6 +279,7 @@ class WorkshopControllerTest {
         .thenThrow(new IllegalArgumentException("Data de término deve ser maior que data de início"));
 
       mockMvc.perform(post("/api/workshops")
+          .principal(() -> instrutor.getEmail())
           .contentType(MediaType.APPLICATION_JSON)
           .content(objectMapper.writeValueAsString(createDTO)))
         .andExpect(status().isBadRequest());
@@ -294,6 +299,7 @@ class WorkshopControllerTest {
       createDTO.setDataTermino(dataTermino);
 
       mockMvc.perform(post("/api/workshops")
+          .principal(() -> instrutor.getEmail())
           .contentType(MediaType.APPLICATION_JSON)
           .content(objectMapper.writeValueAsString(createDTO)))
         .andExpect(status().isBadRequest());
@@ -311,6 +317,7 @@ class WorkshopControllerTest {
       createDTO.setDataTermino(dataTermino);
 
       mockMvc.perform(post("/api/workshops")
+          .principal(() -> instrutor.getEmail())
           .contentType(MediaType.APPLICATION_JSON)
           .content(objectMapper.writeValueAsString(createDTO)))
         .andExpect(status().isBadRequest());
@@ -328,6 +335,7 @@ class WorkshopControllerTest {
       createDTO.setDataInicio(dataInicio);
 
       mockMvc.perform(post("/api/workshops")
+          .principal(() -> instrutor.getEmail())
           .contentType(MediaType.APPLICATION_JSON)
           .content(objectMapper.writeValueAsString(createDTO)))
         .andExpect(status().isBadRequest());
@@ -350,6 +358,7 @@ class WorkshopControllerTest {
         .thenThrow(new jakarta.persistence.EntityNotFoundException("Usuário com ID 99999 não encontrado"));
 
       mockMvc.perform(post("/api/workshops")
+          .principal(() -> instrutor.getEmail())
           .contentType(MediaType.APPLICATION_JSON)
           .content(objectMapper.writeValueAsString(createDTO)))
         .andExpect(status().isNotFound());
@@ -457,16 +466,17 @@ class WorkshopControllerTest {
       workshopAtualizado.setDataInicio(Timestamp.from(Instant.now().plus(7, ChronoUnit.DAYS)));
       workshopAtualizado.setDataTermino(Timestamp.from(Instant.now().plus(7, ChronoUnit.DAYS).plus(4, ChronoUnit.HOURS)));
 
-      when(workshopService.atualizarWorkshop(eq(BigInteger.valueOf(1)), any(WorkshopUpdateDTO.class)))
+      when(workshopService.atualizarWorkshop(eq(BigInteger.valueOf(1)), any(WorkshopUpdateDTO.class), eq(instrutor.getEmail())))
         .thenReturn(workshopAtualizado);
 
       mockMvc.perform(patch("/api/workshops/{id}", 1)
+          .principal(() -> instrutor.getEmail())
           .contentType(MediaType.APPLICATION_JSON)
           .content(objectMapper.writeValueAsString(updateDTO)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.titulo").value("Workshop Atualizado"));
 
-      verify(workshopService, times(1)).atualizarWorkshop(eq(BigInteger.valueOf(1)), any(WorkshopUpdateDTO.class));
+      verify(workshopService, times(1)).atualizarWorkshop(eq(BigInteger.valueOf(1)), any(WorkshopUpdateDTO.class), eq(instrutor.getEmail()));
     }
 
     @Test
@@ -485,16 +495,17 @@ class WorkshopControllerTest {
       workshopAtualizado.setDataInicio(Timestamp.from(Instant.now().plus(7, ChronoUnit.DAYS)));
       workshopAtualizado.setDataTermino(Timestamp.from(Instant.now().plus(7, ChronoUnit.DAYS).plus(4, ChronoUnit.HOURS)));
 
-      when(workshopService.atualizarWorkshop(eq(BigInteger.valueOf(1)), any(WorkshopUpdateDTO.class)))
+      when(workshopService.atualizarWorkshop(eq(BigInteger.valueOf(1)), any(WorkshopUpdateDTO.class), eq(instrutor.getEmail())))
         .thenReturn(workshopAtualizado);
 
       mockMvc.perform(patch("/api/workshops/{id}", 1)
+          .principal(() -> instrutor.getEmail())
           .contentType(MediaType.APPLICATION_JSON)
           .content(objectMapper.writeValueAsString(updateDTO)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.linkMeet").value("https://meet.google.com/atualizado"));
 
-      verify(workshopService, times(1)).atualizarWorkshop(eq(BigInteger.valueOf(1)), any(WorkshopUpdateDTO.class));
+      verify(workshopService, times(1)).atualizarWorkshop(eq(BigInteger.valueOf(1)), any(WorkshopUpdateDTO.class), eq(instrutor.getEmail()));
     }
 
     @Test
@@ -513,16 +524,17 @@ class WorkshopControllerTest {
       workshopAtualizado.setDataInicio(Timestamp.from(Instant.now()));
       workshopAtualizado.setDataTermino(Timestamp.from(Instant.now().plus(4, ChronoUnit.HOURS)));
 
-      when(workshopService.atualizarWorkshop(eq(BigInteger.valueOf(1)), any(WorkshopUpdateDTO.class)))
+      when(workshopService.atualizarWorkshop(eq(BigInteger.valueOf(1)), any(WorkshopUpdateDTO.class), eq(instrutor.getEmail())))
         .thenReturn(workshopAtualizado);
 
       mockMvc.perform(patch("/api/workshops/{id}", 1)
+          .principal(() -> instrutor.getEmail())
           .contentType(MediaType.APPLICATION_JSON)
           .content(objectMapper.writeValueAsString(updateDTO)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("EM_ANDAMENTO"));
 
-      verify(workshopService, times(1)).atualizarWorkshop(eq(BigInteger.valueOf(1)), any(WorkshopUpdateDTO.class));
+      verify(workshopService, times(1)).atualizarWorkshop(eq(BigInteger.valueOf(1)), any(WorkshopUpdateDTO.class), eq(instrutor.getEmail()));
     }
 
     @Test
@@ -541,16 +553,17 @@ class WorkshopControllerTest {
       workshopConcluido.setDataInicio(Timestamp.from(Instant.now()));
       workshopConcluido.setDataTermino(Timestamp.from(Instant.now().plus(4, ChronoUnit.HOURS)));
 
-      when(workshopService.atualizarWorkshop(eq(BigInteger.valueOf(2)), any(WorkshopUpdateDTO.class)))
+      when(workshopService.atualizarWorkshop(eq(BigInteger.valueOf(2)), any(WorkshopUpdateDTO.class), eq(instrutor.getEmail())))
         .thenReturn(workshopConcluido);
 
       mockMvc.perform(patch("/api/workshops/{id}", 2)
+          .principal(() -> instrutor.getEmail())
           .contentType(MediaType.APPLICATION_JSON)
           .content(objectMapper.writeValueAsString(updateDTO)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("CONCLUIDO"));
 
-      verify(workshopService, times(1)).atualizarWorkshop(eq(BigInteger.valueOf(2)), any(WorkshopUpdateDTO.class));
+      verify(workshopService, times(1)).atualizarWorkshop(eq(BigInteger.valueOf(2)), any(WorkshopUpdateDTO.class), eq(instrutor.getEmail()));
     }
 
     @Test
@@ -559,15 +572,16 @@ class WorkshopControllerTest {
       WorkshopUpdateDTO updateDTO = new WorkshopUpdateDTO();
       updateDTO.setStatus(StatusWorkshop.EM_ANDAMENTO);
 
-      when(workshopService.atualizarWorkshop(eq(BigInteger.valueOf(1)), any(WorkshopUpdateDTO.class)))
+      when(workshopService.atualizarWorkshop(eq(BigInteger.valueOf(1)), any(WorkshopUpdateDTO.class), eq(instrutor.getEmail())))
         .thenThrow(new IllegalArgumentException("Não é possível iniciar workshop antes da data de início prevista"));
 
       mockMvc.perform(patch("/api/workshops/{id}", 1)
+          .principal(() -> instrutor.getEmail())
           .contentType(MediaType.APPLICATION_JSON)
           .content(objectMapper.writeValueAsString(updateDTO)))
         .andExpect(status().isBadRequest());
 
-      verify(workshopService, times(1)).atualizarWorkshop(eq(BigInteger.valueOf(1)), any(WorkshopUpdateDTO.class));
+      verify(workshopService, times(1)).atualizarWorkshop(eq(BigInteger.valueOf(1)), any(WorkshopUpdateDTO.class), eq(instrutor.getEmail()));
     }
 
     @Test
@@ -576,15 +590,16 @@ class WorkshopControllerTest {
       WorkshopUpdateDTO updateDTO = new WorkshopUpdateDTO();
       updateDTO.setStatus(StatusWorkshop.CONCLUIDO);
 
-      when(workshopService.atualizarWorkshop(eq(BigInteger.valueOf(1)), any(WorkshopUpdateDTO.class)))
+      when(workshopService.atualizarWorkshop(eq(BigInteger.valueOf(1)), any(WorkshopUpdateDTO.class), eq(instrutor.getEmail())))
         .thenThrow(new IllegalArgumentException("Apenas workshops EM_ANDAMENTO podem ser concluídos"));
 
       mockMvc.perform(patch("/api/workshops/{id}", 1)
+          .principal(() -> instrutor.getEmail())
           .contentType(MediaType.APPLICATION_JSON)
           .content(objectMapper.writeValueAsString(updateDTO)))
         .andExpect(status().isBadRequest());
 
-      verify(workshopService, times(1)).atualizarWorkshop(eq(BigInteger.valueOf(1)), any(WorkshopUpdateDTO.class));
+      verify(workshopService, times(1)).atualizarWorkshop(eq(BigInteger.valueOf(1)), any(WorkshopUpdateDTO.class), eq(instrutor.getEmail()));
     }
 
     @Test
@@ -607,15 +622,16 @@ class WorkshopControllerTest {
       workshopAtualizado.setDataInicio(Timestamp.from(Instant.now().plus(7, ChronoUnit.DAYS)));
       workshopAtualizado.setDataTermino(Timestamp.from(Instant.now().plus(7, ChronoUnit.DAYS).plus(4, ChronoUnit.HOURS)));
 
-      when(workshopService.atualizarWorkshop(eq(BigInteger.valueOf(1)), any(WorkshopUpdateDTO.class)))
+      when(workshopService.atualizarWorkshop(eq(BigInteger.valueOf(1)), any(WorkshopUpdateDTO.class), eq(instrutor.getEmail())))
         .thenReturn(workshopAtualizado);
 
       mockMvc.perform(patch("/api/workshops/{id}", 1)
+          .principal(() -> instrutor.getEmail())
           .contentType(MediaType.APPLICATION_JSON)
           .content(objectMapper.writeValueAsString(updateDTO)))
         .andExpect(status().isOk());
 
-      verify(workshopService, times(1)).atualizarWorkshop(eq(BigInteger.valueOf(1)), any(WorkshopUpdateDTO.class));
+      verify(workshopService, times(1)).atualizarWorkshop(eq(BigInteger.valueOf(1)), any(WorkshopUpdateDTO.class), eq(instrutor.getEmail()));
     }
   }
 

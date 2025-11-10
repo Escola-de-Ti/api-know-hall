@@ -101,9 +101,10 @@ public class WorkshopController {
   @PatchMapping("/{id}")
   public ResponseEntity<WorkshopResponseDTO> atualizarWorkshop(
     @PathVariable BigInteger id,
-    @Valid @RequestBody WorkshopUpdateDTO dto) {
+    @Valid @RequestBody WorkshopUpdateDTO dto,
+    Principal principal) {
 
-    Workshop workshop = workshopService.atualizarWorkshop(id, dto);
+    Workshop workshop = workshopService.atualizarWorkshop(id, dto, principal.getName());
     WorkshopResponseDTO response = WorkshopResponseDTO.fromEntity(workshop);
 
     return ResponseEntity.ok(response);

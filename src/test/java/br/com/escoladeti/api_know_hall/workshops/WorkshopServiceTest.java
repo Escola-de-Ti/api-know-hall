@@ -33,7 +33,6 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -118,12 +117,12 @@ class WorkshopServiceTest {
     @DisplayName("Deve criar workshop com sucesso quando usuário é INSTRUTOR e data futura")
     void deveCriarWorkshopComSucesso() {
       // Arrange
-      when(usuarioRepository.findById(BigInteger.ONE)).thenReturn(Optional.of(instrutor));
+      when(usuarioRepository.findByEmail(instrutor.getEmail())).thenReturn(Optional.of(instrutor));
       when(workshopRepository.save(any(Workshop.class))).thenReturn(workshop);
       when(descricaoWorkshopRepository.save(any(DescricaoWorkshop.class))).thenReturn(descricaoWorkshop);
 
       // Act
-      Workshop resultado = workshopService.criarWorkshop(workshopCreateDTO, usuarioComum.getEmail());
+      Workshop resultado = workshopService.criarWorkshop(workshopCreateDTO, instrutor.getEmail());
 
       // Assert
       assertThat(resultado).isNotNull();
@@ -131,7 +130,7 @@ class WorkshopServiceTest {
       assertThat(resultado.getStatus()).isEqualTo(StatusWorkshop.ABERTO);
       assertThat(resultado.getInstrutor()).isEqualTo(instrutor);
 
-      verify(usuarioRepository).findById(BigInteger.ONE);
+      verify(usuarioRepository).findByEmail(instrutor.getEmail());
       verify(workshopRepository).save(any(Workshop.class));
       verify(descricaoWorkshopRepository).save(any(DescricaoWorkshop.class));
     }
@@ -147,12 +146,12 @@ class WorkshopServiceTest {
       workshop.setDataInicio(hoje);
       workshop.setStatus(StatusWorkshop.EM_ANDAMENTO);
 
-      when(usuarioRepository.findById(BigInteger.ONE)).thenReturn(Optional.of(instrutor));
+      when(usuarioRepository.findByEmail(instrutor.getEmail())).thenReturn(Optional.of(instrutor));
       when(workshopRepository.save(any(Workshop.class))).thenReturn(workshop);
       when(descricaoWorkshopRepository.save(any(DescricaoWorkshop.class))).thenReturn(descricaoWorkshop);
 
       // Act
-      Workshop resultado = workshopService.criarWorkshop(workshopCreateDTO, usuarioComum.getEmail());
+      Workshop resultado = workshopService.criarWorkshop(workshopCreateDTO, instrutor.getEmail());
 
       // Assert
       assertThat(resultado.getStatus()).isEqualTo(StatusWorkshop.EM_ANDAMENTO);
@@ -164,11 +163,11 @@ class WorkshopServiceTest {
       // Arrange
       workshopCreateDTO.setDescricao(null);
 
-      when(usuarioRepository.findById(BigInteger.ONE)).thenReturn(Optional.of(instrutor));
+      when(usuarioRepository.findByEmail(instrutor.getEmail())).thenReturn(Optional.of(instrutor));
       when(workshopRepository.save(any(Workshop.class))).thenReturn(workshop);
 
       // Act
-      Workshop resultado = workshopService.criarWorkshop(workshopCreateDTO, usuarioComum.getEmail());
+      Workshop resultado = workshopService.criarWorkshop(workshopCreateDTO, instrutor.getEmail());
 
       // Assert
       assertThat(resultado).isNotNull();
@@ -352,10 +351,11 @@ class WorkshopServiceTest {
       // Arrange
       updateDTO.setTitulo("Novo Título");
       when(workshopRepository.findById(BigInteger.ONE)).thenReturn(Optional.of(workshop));
+      when(usuarioRepository.findByEmail(instrutor.getEmail())).thenReturn(Optional.of(instrutor));
       when(workshopRepository.save(any(Workshop.class))).thenReturn(workshop);
 
       // Act
-      Workshop resultado = workshopService.atualizarWorkshop(BigInteger.ONE, updateDTO);
+      Workshop resultado = workshopService.atualizarWorkshop(BigInteger.ONE, updateDTO, instrutor.getEmail());
 
       // Assert
       assertThat(resultado.getTitulo()).isEqualTo("Novo Título");
@@ -368,10 +368,11 @@ class WorkshopServiceTest {
       // Arrange
       updateDTO.setLinkMeet("https://meet.google.com/novo-link");
       when(workshopRepository.findById(BigInteger.ONE)).thenReturn(Optional.of(workshop));
+      when(usuarioRepository.findByEmail(instrutor.getEmail())).thenReturn(Optional.of(instrutor));
       when(workshopRepository.save(any(Workshop.class))).thenReturn(workshop);
 
       // Act
-      Workshop resultado = workshopService.atualizarWorkshop(BigInteger.ONE, updateDTO);
+      Workshop resultado = workshopService.atualizarWorkshop(BigInteger.ONE, updateDTO, instrutor.getEmail());
 
       // Assert
       assertThat(resultado.getLinkMeet()).isEqualTo("https://meet.google.com/novo-link");
@@ -389,10 +390,11 @@ class WorkshopServiceTest {
       updateDTO.setDataTermino(novaDataTermino);
 
       when(workshopRepository.findById(BigInteger.ONE)).thenReturn(Optional.of(workshop));
+      when(usuarioRepository.findByEmail(instrutor.getEmail())).thenReturn(Optional.of(instrutor));
       when(workshopRepository.save(any(Workshop.class))).thenReturn(workshop);
 
       // Act
-      Workshop resultado = workshopService.atualizarWorkshop(BigInteger.ONE, updateDTO);
+      Workshop resultado = workshopService.atualizarWorkshop(BigInteger.ONE, updateDTO, instrutor.getEmail());
 
       // Assert
       assertThat(resultado.getDataInicio()).isEqualTo(novaDataInicio);
@@ -408,10 +410,11 @@ class WorkshopServiceTest {
       updateDTO.setDataInicio(hoje);
 
       when(workshopRepository.findById(BigInteger.ONE)).thenReturn(Optional.of(workshop));
+      when(usuarioRepository.findByEmail(instrutor.getEmail())).thenReturn(Optional.of(instrutor));
       when(workshopRepository.save(any(Workshop.class))).thenReturn(workshop);
 
       // Act
-      Workshop resultado = workshopService.atualizarWorkshop(BigInteger.ONE, updateDTO);
+      Workshop resultado = workshopService.atualizarWorkshop(BigInteger.ONE, updateDTO, instrutor.getEmail());
 
       // Assert
       assertThat(resultado.getStatus()).isEqualTo(StatusWorkshop.EM_ANDAMENTO);
@@ -430,11 +433,12 @@ class WorkshopServiceTest {
       updateDTO.setDescricao(novaDescricaoDTO);
 
       when(workshopRepository.findById(BigInteger.ONE)).thenReturn(Optional.of(workshop));
+      when(usuarioRepository.findByEmail(instrutor.getEmail())).thenReturn(Optional.of(instrutor));
       when(descricaoWorkshopRepository.save(any(DescricaoWorkshop.class))).thenReturn(descricaoWorkshop);
       when(workshopRepository.save(any(Workshop.class))).thenReturn(workshop);
 
       // Act
-      Workshop resultado = workshopService.atualizarWorkshop(BigInteger.ONE, updateDTO);
+      workshopService.atualizarWorkshop(BigInteger.ONE, updateDTO, instrutor.getEmail());
 
       // Assert
       verify(descricaoWorkshopRepository).save(any(DescricaoWorkshop.class));
@@ -451,11 +455,12 @@ class WorkshopServiceTest {
       updateDTO.setDescricao(novaDescricaoDTO);
 
       when(workshopRepository.findById(BigInteger.ONE)).thenReturn(Optional.of(workshop));
+      when(usuarioRepository.findByEmail(instrutor.getEmail())).thenReturn(Optional.of(instrutor));
       when(descricaoWorkshopRepository.save(any(DescricaoWorkshop.class))).thenReturn(descricaoWorkshop);
       when(workshopRepository.save(any(Workshop.class))).thenReturn(workshop);
 
       // Act
-      workshopService.atualizarWorkshop(BigInteger.ONE, updateDTO);
+      workshopService.atualizarWorkshop(BigInteger.ONE, updateDTO, instrutor.getEmail());
 
       // Assert
       verify(descricaoWorkshopRepository).save(any(DescricaoWorkshop.class));
@@ -472,9 +477,10 @@ class WorkshopServiceTest {
       updateDTO.setDataTermino(dataTermino);
 
       when(workshopRepository.findById(BigInteger.ONE)).thenReturn(Optional.of(workshop));
+      when(usuarioRepository.findByEmail(instrutor.getEmail())).thenReturn(Optional.of(instrutor));
 
       // Act & Assert
-      assertThatThrownBy(() -> workshopService.atualizarWorkshop(BigInteger.ONE, updateDTO))
+      assertThatThrownBy(() -> workshopService.atualizarWorkshop(BigInteger.ONE, updateDTO, instrutor.getEmail()))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("Data de término deve ser maior que data de início");
     }
@@ -499,10 +505,11 @@ class WorkshopServiceTest {
       updateDTO.setStatus(StatusWorkshop.EM_ANDAMENTO);
 
       when(workshopRepository.findById(BigInteger.ONE)).thenReturn(Optional.of(workshop));
+      when(usuarioRepository.findByEmail(instrutor.getEmail())).thenReturn(Optional.of(instrutor));
       when(workshopRepository.save(any(Workshop.class))).thenReturn(workshop);
 
       // Act
-      Workshop resultado = workshopService.atualizarWorkshop(BigInteger.ONE, updateDTO);
+      Workshop resultado = workshopService.atualizarWorkshop(BigInteger.ONE, updateDTO, instrutor.getEmail());
 
       // Assert
       assertThat(resultado.getStatus()).isEqualTo(StatusWorkshop.EM_ANDAMENTO);
@@ -516,9 +523,10 @@ class WorkshopServiceTest {
       updateDTO.setStatus(StatusWorkshop.EM_ANDAMENTO);
 
       when(workshopRepository.findById(BigInteger.ONE)).thenReturn(Optional.of(workshop));
+      when(usuarioRepository.findByEmail(instrutor.getEmail())).thenReturn(Optional.of(instrutor));
 
       // Act & Assert
-      assertThatThrownBy(() -> workshopService.atualizarWorkshop(BigInteger.ONE, updateDTO))
+      assertThatThrownBy(() -> workshopService.atualizarWorkshop(BigInteger.ONE, updateDTO, instrutor.getEmail()))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("Não é possível iniciar workshop antes da data de início prevista");
     }
@@ -531,10 +539,11 @@ class WorkshopServiceTest {
       updateDTO.setStatus(StatusWorkshop.CONCLUIDO);
 
       when(workshopRepository.findById(BigInteger.ONE)).thenReturn(Optional.of(workshop));
+      when(usuarioRepository.findByEmail(instrutor.getEmail())).thenReturn(Optional.of(instrutor));
       when(workshopRepository.save(any(Workshop.class))).thenReturn(workshop);
 
       // Act
-      Workshop resultado = workshopService.atualizarWorkshop(BigInteger.ONE, updateDTO);
+      Workshop resultado = workshopService.atualizarWorkshop(BigInteger.ONE, updateDTO, instrutor.getEmail());
 
       // Assert
       assertThat(resultado.getStatus()).isEqualTo(StatusWorkshop.CONCLUIDO);
@@ -548,9 +557,10 @@ class WorkshopServiceTest {
       updateDTO.setStatus(StatusWorkshop.CONCLUIDO);
 
       when(workshopRepository.findById(BigInteger.ONE)).thenReturn(Optional.of(workshop));
+      when(usuarioRepository.findByEmail(instrutor.getEmail())).thenReturn(Optional.of(instrutor));
 
       // Act & Assert
-      assertThatThrownBy(() -> workshopService.atualizarWorkshop(BigInteger.ONE, updateDTO))
+      assertThatThrownBy(() -> workshopService.atualizarWorkshop(BigInteger.ONE, updateDTO, instrutor.getEmail()))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("Apenas workshops EM_ANDAMENTO podem ser concluídos");
     }
@@ -563,9 +573,10 @@ class WorkshopServiceTest {
       updateDTO.setStatus(StatusWorkshop.ABERTO);
 
       when(workshopRepository.findById(BigInteger.ONE)).thenReturn(Optional.of(workshop));
+      when(usuarioRepository.findByEmail(instrutor.getEmail())).thenReturn(Optional.of(instrutor));
 
       // Act & Assert
-      assertThatThrownBy(() -> workshopService.atualizarWorkshop(BigInteger.ONE, updateDTO))
+      assertThatThrownBy(() -> workshopService.atualizarWorkshop(BigInteger.ONE, updateDTO, instrutor.getEmail()))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("Não é possível reabrir um workshop já concluído");
     }
