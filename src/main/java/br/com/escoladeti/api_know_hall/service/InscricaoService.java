@@ -1,9 +1,11 @@
 package br.com.escoladeti.api_know_hall.service;
 
+import br.com.escoladeti.api_know_hall.dto.inscricao.InscricaoResponseDTO;
 import br.com.escoladeti.api_know_hall.entity.Inscricao;
 import br.com.escoladeti.api_know_hall.entity.Usuario;
 import br.com.escoladeti.api_know_hall.entity.workshop.Workshop;
 import br.com.escoladeti.api_know_hall.enums.StatusInscricao;
+import br.com.escoladeti.api_know_hall.enums.workshop.StatusWorkshop;
 import br.com.escoladeti.api_know_hall.exception.TokenInsuficienteException;
 import br.com.escoladeti.api_know_hall.repository.InscricaoRepository;
 import br.com.escoladeti.api_know_hall.repository.UsuarioRepository;
@@ -13,7 +15,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigInteger;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class InscricaoService {
@@ -27,7 +32,7 @@ public class InscricaoService {
   @Autowired
   private InscricaoRepository inscricaoRepository;
 
-  public void inscrever(String email, BigInteger workshopId) {
+  public InscricaoResponseDTO inscrever(String email, BigInteger workshopId) {
     Usuario usuario = usuarioRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("Email ou senha inválidos"));
     Workshop workshop = workshopRepository.findById(workshopId)
       .orElseThrow(() -> new EntityNotFoundException(
@@ -38,9 +43,18 @@ public class InscricaoService {
       throw new RuntimeException("Usuário já está inscrito neste workshop.");
     }
 
+    if(workshop.getInstrutor().getId().equals(usuario.getId())) {
+      throw new RuntimeException("Instrutor não pode se inscrever em seu próprio workshop.");
+    }
+
     if (usuario.getQntdToken() < workshop.getCusto()) {
       throw new TokenInsuficienteException("Usuário não possui tokens suficientes para se inscrever neste workshop.");
     }
+
+    if(workshop.getStatus() != StatusWorkshop.ABERTO) {
+      throw new RuntimeException("Inscrições só podem ser feitas em workshops com status ABERTO.");
+    }
+
     try {
 
       Inscricao inscricao = new Inscricao();
@@ -48,9 +62,14 @@ public class InscricaoService {
       inscricao.setWorkshop(workshop);
       inscricao.setStatus(StatusInscricao.INSCRITO);
 
-      inscricaoRepository.save(inscricao);
+      Inscricao inscricaoSalva = inscricaoRepository.save(inscricao);
       usuario.setQntdToken(usuario.getQntdToken() - workshop.getCusto());
       usuarioRepository.save(usuario);
+      Usuario instrutor = workshop.getInstrutor();
+      instrutor.setQntdToken(instrutor.getQntdToken() + workshop.getCusto());
+      usuarioRepository.save(instrutor);
+
+      return toResponseDTO(inscricaoSalva);
     } catch (Exception e) {
       throw new RuntimeException("Erro ao processar inscrição: " + e.getMessage(), e);
     }
@@ -78,43 +97,72 @@ public class InscricaoService {
 
       usuario.setQntdToken(usuario.getQntdToken() + workshop.getCusto());
       usuarioRepository.save(usuario);
+      Usuario instrutor = workshop.getInstrutor();
+      instrutor.setQntdToken(instrutor.getQntdToken() - workshop.getCusto());
+      usuarioRepository.save(instrutor);
+      
     } catch (Exception e) {
       throw new RuntimeException("Erro ao cancelar inscrição: " + e.getMessage(), e);
     }
   }
 
-  public Inscricao buscarInscricao(String email, BigInteger workshopId) {
+  public InscricaoResponseDTO buscarInscricao(String email, BigInteger workshopId) {
     Usuario usuario = usuarioRepository.findByEmail(email)
       .orElseThrow(() -> new EntityNotFoundException("Email ou senha inválidos"));
     Workshop workshop = workshopRepository.findById(workshopId)
       .orElseThrow(() -> new EntityNotFoundException(
         "Workshop com ID " + workshopId + " não encontrado"
       ));
-    return inscricaoRepository.findByUsuarioIdAndWorkshopId(usuario.getId(), workshop.getId())
+    Inscricao inscricao = inscricaoRepository.findByUsuarioIdAndWorkshopId(usuario.getId(), workshop.getId())
       .orElseThrow(() -> new RuntimeException("Inscrição não encontrada para este usuário nesse workshop."));
-
+    
+    return toResponseDTO(inscricao);
   }
 
-  public List<Inscricao> listarInscricoesPorUsuario(String email) {
+  public List<InscricaoResponseDTO> listarInscricoesPorUsuario(String email) {
     Usuario usuario = usuarioRepository.findByEmail(email)
       .orElseThrow(() -> new EntityNotFoundException("Email ou senha inválidos"));
-    return inscricaoRepository.findByUsuarioId(usuario.getId())
+    List<Inscricao> inscricoes = inscricaoRepository.findByUsuarioId(usuario.getId())
       .orElseThrow(() -> new RuntimeException("Nenhuma inscrição encontrada para este usuário."));
+    
+    return inscricoes.stream()
+      .map(this::toResponseDTO)
+      .collect(Collectors.toList());
   }
 
-  public List<Inscricao> listarInscricoesPorWorkshop(BigInteger workshopId) {
+  public List<InscricaoResponseDTO> listarInscricoesPorWorkshop(BigInteger workshopId) {
     Workshop workshop = workshopRepository.findById(workshopId)
       .orElseThrow(() -> new EntityNotFoundException(
         "Workshop com ID " + workshopId + " não encontrado"
       ));
-    return inscricaoRepository.findByWorkshopId(workshop.getId())
+    List<Inscricao> inscricoes = inscricaoRepository.findByWorkshopId(workshop.getId())
       .orElseThrow(() -> new RuntimeException("Nenhuma inscrição encontrada para este workshop."));
+    
+    return inscricoes.stream()
+      .map(this::toResponseDTO)
+      .collect(Collectors.toList());
   }
 
-  public void atualizarStatusInscricao(BigInteger inscricaoId, StatusInscricao novoStatus) {
+  public InscricaoResponseDTO atualizarStatusInscricao(BigInteger inscricaoId, StatusInscricao novoStatus) {
     Inscricao inscricao = inscricaoRepository.findById(inscricaoId)
       .orElseThrow(() -> new RuntimeException("Inscrição não encontrada."));
     inscricao.setStatus(novoStatus);
-    inscricaoRepository.save(inscricao);
+    Inscricao inscricaoAtualizada = inscricaoRepository.save(inscricao);
+    return toResponseDTO(inscricaoAtualizada);
+  }
+  
+  private InscricaoResponseDTO toResponseDTO(Inscricao inscricao) {
+    return InscricaoResponseDTO.builder()
+      .id(inscricao.getId())
+      .usuarioId(inscricao.getUsuario().getId())
+      .usuarioNome(inscricao.getUsuario().getNome())
+      .workshopId(inscricao.getWorkshop().getId())
+      .workshopTitulo(inscricao.getWorkshop().getTitulo())
+      .status(inscricao.getStatus())
+      .dataInscricao(LocalDateTime.ofInstant(
+        inscricao.getDataInscricao().toInstant(), 
+        ZoneId.systemDefault()
+      ))
+      .build();
   }
 }
