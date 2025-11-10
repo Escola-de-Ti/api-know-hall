@@ -7,6 +7,7 @@ import br.com.escoladeti.api_know_hall.entity.Imagem;
 import br.com.escoladeti.api_know_hall.entity.workshop.DescricaoWorkshop;
 import br.com.escoladeti.api_know_hall.entity.Usuario;
 import br.com.escoladeti.api_know_hall.entity.workshop.Workshop;
+import br.com.escoladeti.api_know_hall.enums.ImagemTipo;
 import br.com.escoladeti.api_know_hall.enums.StatusUsuario;
 import br.com.escoladeti.api_know_hall.enums.workshop.StatusWorkshop;
 import br.com.escoladeti.api_know_hall.enums.TipoUsuario;
@@ -610,7 +611,7 @@ class WorkshopServiceTest {
   @Test
   void atualizarImagemWorkshop_sucesso() {
     BigInteger workshopId = BigInteger.ONE;
-    Imagem imagem = new Imagem(workshopId, "img.png", "url", "idImg", "path");
+    Imagem imagem = new Imagem(workshopId, "img.png", "url", "idImg", "path", ImagemTipo.WORKSHOP);
 
     DescricaoWorkshop descricaoWorkshop = new DescricaoWorkshop();
     Workshop workshop = new Workshop();
@@ -630,7 +631,7 @@ class WorkshopServiceTest {
   @Test
   void atualizarImagemWorkshop_workshopNaoEncontrado_lancaExcecao() {
     BigInteger workshopId = BigInteger.ONE;
-    Imagem imagem = new Imagem(workshopId, "img.png", "url", "idImg", "path");
+    Imagem imagem = new Imagem(workshopId, "img.png", "url", "idImg", "path", ImagemTipo.WORKSHOP);
 
     when(workshopRepository.findById(workshopId)).thenReturn(Optional.empty());
 
@@ -644,7 +645,7 @@ class WorkshopServiceTest {
   @Test
   void atualizarImagemWorkshop_semDescricao_lancaExcecao() {
     BigInteger workshopId = BigInteger.ONE;
-    Imagem imagem = new Imagem(workshopId, "img.png", "url", "idImg", "path");
+    Imagem imagem = new Imagem(workshopId, "img.png", "url", "idImg", "path", ImagemTipo.WORKSHOP);
 
     Workshop workshop = new Workshop();
     workshop.setId(workshopId);

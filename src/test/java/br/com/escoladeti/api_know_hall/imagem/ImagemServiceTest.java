@@ -76,7 +76,7 @@ public class ImagemServiceTest {
       throw new RuntimeException(e);
     }
   }
-  
+
 
   @Test
   void uploadImage_httpError_throwsIllegalStateException() throws Exception {
@@ -102,7 +102,7 @@ public class ImagemServiceTest {
   @Test
   void deleteImage_success_callsHttpClient() throws Exception {
     BigInteger id = BigInteger.ONE;
-    Imagem img = new Imagem(id, "name", SUPABASE + "/assets/outro/name", "id123", "path/key");
+    Imagem img = new Imagem(id, "name", SUPABASE + "/assets/outro/name", "id123", "path/key", ImagemTipo.USUARIO);
 
     when(imagemRepository.findById(id)).thenReturn(Optional.of(img));
 
@@ -138,11 +138,11 @@ public class ImagemServiceTest {
     when(response.body()).thenReturn("{\"Key\": \"path/key\", \"Id\": \"id123\"}");
     when(httpClient.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class))).thenReturn(response);
     when(imagemRepository.save(any(Imagem.class))).thenAnswer(invocation -> invocation.getArgument(0));
-    when(imagemRepository.findByIdImagem(anyString())).thenReturn(Optional.empty());
+    when(imagemRepository.findByIdImagemSupabase(anyString())).thenReturn(Optional.empty());
 
     Imagem result = imagemService.uploadImage(bytes, userEmail, type, idType);
     verify(usuarioService).atualizarImagemPerfil(eq(userEmail), any(Imagem.class));
-    verify(postService, never()).atualizarImagemPerfil(any(), anyInt(), any());
+    verify(postService, never()).adicionaAtualizarImagemPost(any(), anyInt(), any());
     verify(workshopService, never()).atualizarImagemWorkshop(any(), any());
     assertNotNull(result);
   }
@@ -159,10 +159,10 @@ public class ImagemServiceTest {
     when(response.body()).thenReturn("{\"Key\": \"path/key\", \"Id\": \"id123\"}");
     when(httpClient.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class))).thenReturn(response);
     when(imagemRepository.save(any(Imagem.class))).thenAnswer(invocation -> invocation.getArgument(0));
-    when(imagemRepository.findByIdImagem(anyString())).thenReturn(Optional.empty());
+    when(imagemRepository.findByIdImagemSupabase(anyString())).thenReturn(Optional.empty());
 
     Imagem result = imagemService.uploadImage(bytes, userEmail, type, idType);
-    verify(postService).atualizarImagemPerfil(any(Imagem.class), eq(0), eq(new java.math.BigInteger(idType)));
+    verify(postService).adicionaAtualizarImagemPost(any(Imagem.class), eq(0), eq(new java.math.BigInteger(idType)));
     verify(usuarioService, never()).atualizarImagemPerfil(anyString(), any(Imagem.class));
     verify(workshopService, never()).atualizarImagemWorkshop(any(), any());
     assertNotNull(result);
@@ -180,19 +180,19 @@ public class ImagemServiceTest {
     when(response.body()).thenReturn("{\"Key\": \"path/key\", \"Id\": \"id123\"}");
     when(httpClient.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class))).thenReturn(response);
     when(imagemRepository.save(any(Imagem.class))).thenAnswer(invocation -> invocation.getArgument(0));
-    when(imagemRepository.findByIdImagem(anyString())).thenReturn(Optional.empty());
+    when(imagemRepository.findByIdImagemSupabase(anyString())).thenReturn(Optional.empty());
 
     Imagem result = imagemService.uploadImage(bytes, userEmail, type, idType);
     verify(workshopService).atualizarImagemWorkshop(any(Imagem.class), eq(new java.math.BigInteger(idType)));
     verify(usuarioService, never()).atualizarImagemPerfil(anyString(), any(Imagem.class));
-    verify(postService, never()).atualizarImagemPerfil(any(), anyInt(), any());
+    verify(postService, never()).adicionaAtualizarImagemPost(any(), anyInt(), any());
     assertNotNull(result);
   }
 
   @Test
   void updateImagem_success() throws Exception {
     BigInteger id = BigInteger.ONE;
-    Imagem img = new Imagem(id, "name", SUPABASE + "/assets/outro/name", "id123", "path/key");
+    Imagem img = new Imagem(id, "name", SUPABASE + "/assets/outro/name", "id123", "path/key", ImagemTipo.USUARIO);
     byte[] bytes = new byte[]{1, 2, 3};
     when(imagemRepository.findById(id)).thenReturn(Optional.of(img));
     HttpResponse<String> response = mock(HttpResponse.class);
@@ -214,7 +214,7 @@ public class ImagemServiceTest {
   @Test
   void updateImagem_httpError_throwsException() throws Exception {
     BigInteger id = BigInteger.ONE;
-    Imagem img = new Imagem(id, "name", SUPABASE + "/assets/outro/name", "id123", "path/key");
+    Imagem img = new Imagem(id, "name", SUPABASE + "/assets/outro/name", "id123", "path/key", ImagemTipo.USUARIO);
     byte[] bytes = new byte[]{1, 2, 3};
     when(imagemRepository.findById(id)).thenReturn(Optional.of(img));
     HttpResponse<String> response = mock(HttpResponse.class);
@@ -228,7 +228,7 @@ public class ImagemServiceTest {
   @Test
   void deleteImage_httpError_throwsException() throws Exception {
     BigInteger id = BigInteger.ONE;
-    Imagem img = new Imagem(id, "name", SUPABASE + "/assets/outro/name", "id123", "path/key");
+    Imagem img = new Imagem(id, "name", SUPABASE + "/assets/outro/name", "id123", "path/key", ImagemTipo.USUARIO);
     when(imagemRepository.findById(id)).thenReturn(Optional.of(img));
     HttpResponse<String> response = mock(HttpResponse.class);
     when(response.statusCode()).thenReturn(500);
@@ -241,7 +241,7 @@ public class ImagemServiceTest {
   @Test
   void deleteImage_success_deletesFromRepository() throws Exception {
     BigInteger id = BigInteger.ONE;
-    Imagem img = new Imagem(id, "name", SUPABASE + "/assets/outro/name", "id123", "path/key");
+    Imagem img = new Imagem(id, "name", SUPABASE + "/assets/outro/name", "id123", "path/key", ImagemTipo.USUARIO);
     when(imagemRepository.findById(id)).thenReturn(Optional.of(img));
     HttpResponse<String> response = mock(HttpResponse.class);
     when(response.statusCode()).thenReturn(200);

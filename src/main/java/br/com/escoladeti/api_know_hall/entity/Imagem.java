@@ -1,5 +1,6 @@
 package br.com.escoladeti.api_know_hall.entity;
 
+import br.com.escoladeti.api_know_hall.enums.ImagemTipo;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -30,5 +31,8 @@ public class Imagem {
 
   @Column(name = "path", nullable = false)
   private String path;
+
+  @Column(name = "type", nullable = false)
+  private ImagemTipo type;
 
 }

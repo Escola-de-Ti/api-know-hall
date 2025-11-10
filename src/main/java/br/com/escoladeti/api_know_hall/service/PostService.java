@@ -375,10 +375,19 @@ public class PostService {
   }
 
   @Transactional
-  public void atualizarImagemPerfil(Imagem imagem, Integer ordemImagem, BigInteger postId) {
+  public void adicionaAtualizarImagemPost(Imagem imagem, Integer ordemImagem, BigInteger postId) {
     Post post = postRepository.findById(postId)
       .orElseThrow(() -> new EntityNotFoundException("Post não encontrado"));
     post.addImagem(imagem, ordemImagem);
+    postRepository.save(post);
+  }
+
+  @Transactional
+  public void removerImagemPost(BigInteger postId, BigInteger imagemId) {
+    Post post = postRepository.findById(postId)
+      .orElseThrow(() -> new EntityNotFoundException("Post não encontrado"));
+
+    post.getImagens().removeIf(imgPost -> imgPost.getImagem().getId().equals(imagemId));
     postRepository.save(post);
   }
 }

@@ -20,7 +20,11 @@ public class ImagemController {
   }
 
   @PostMapping("/upload")
-  public ResponseEntity<Imagem> upload(@RequestBody byte[] imagem, @RequestParam("type") ImagemTipo type, @RequestParam(value = "id_type", required = false) String idType, Principal principal) {
+  public ResponseEntity<Imagem> upload(
+    @RequestBody byte[] imagem,
+    @RequestParam("type") ImagemTipo type,
+    @RequestParam(value = "id_type", required = false) String idType,
+    Principal principal) {
     Imagem url = imagemService.uploadImage(imagem, principal.getName(), type, idType);
     return ResponseEntity.ok(url);
   }

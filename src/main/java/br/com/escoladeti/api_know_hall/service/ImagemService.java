@@ -3,12 +3,15 @@ package br.com.escoladeti.api_know_hall.service;
 
 import br.com.escoladeti.api_know_hall.dto.ImageResponseDTO;
 import br.com.escoladeti.api_know_hall.entity.Imagem;
+import br.com.escoladeti.api_know_hall.entity.ImagemPost;
 import br.com.escoladeti.api_know_hall.enums.ImagemTipo;
+import br.com.escoladeti.api_know_hall.repository.ImagemPostRepository;
 import br.com.escoladeti.api_know_hall.repository.ImagemRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -31,6 +34,9 @@ public class ImagemService {
 
   @Autowired
   private ImagemRepository imagemRepository;
+
+  @Autowired
+  private ImagemPostRepository imagemPostRepository;
 
   @Autowired
   private UsuarioService usuarioService;
@@ -83,8 +89,10 @@ public class ImagemService {
       imagem.setUrl(String.valueOf(uri));
       imagem.setPath(imageResponse.key());
       imagem.setIdImagemSupabase(imageResponse.id());
+      imagem.setType(type);
 
-      imagemRepository.findByIdImagem(imagem.getIdImagemSupabase()).ifPresent(existingImage -> {
+
+      imagemRepository.findByIdImagemSupabase(imagem.getIdImagemSupabase()).ifPresent(existingImage -> {
         imagem.setId(existingImage.getId());
       });
 
@@ -94,7 +102,7 @@ public class ImagemService {
         case USUARIO -> usuarioService.atualizarImagemPerfil(userEmail, imagem);
         case POST -> {
           BigInteger postId = new BigInteger(idType);
-          postService.atualizarImagemPerfil(imagem, 0, postId);
+          postService.adicionaAtualizarImagemPost(imagem, 0, postId);
         }
         case WORKSHOP -> {
           BigInteger workshopId = new BigInteger(idType);
@@ -136,11 +144,13 @@ public class ImagemService {
     }
   }
 
+  @Transactional
   public void deleteImage(BigInteger idImagem) {
     try {
       Imagem imagem = imagemRepository.findById(idImagem)
         .orElseThrow(() -> new IllegalStateException("Imagem não encontrada com id: " + idImagem));
-      URI uri = URI.create(imagem.getUrl());
+
+      URI uri = URI.create(supabaseUrl + imagem.getPath().replace("files", ""));
 
       HttpRequest request = HttpRequest.newBuilder()
         .uri(uri)
@@ -153,6 +163,11 @@ public class ImagemService {
 
       if (response.statusCode() != 200) {
         throw new IllegalStateException("Falha ao deletar imagem do Supabase. Status: " + response.statusCode() + " Body: " + response.body());
+      }
+
+      switch (imagem.getType()) {
+        case POST -> imagemPostRepository.deleteByImagemId(idImagem);
+        case WORKSHOP -> workshopService.removerImagemWorkshop(idImagem);
       }
 
       imagemRepository.deleteById(imagem.getId());

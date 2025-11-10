@@ -111,6 +111,9 @@
       <column name="path" type="VARCHAR(255)">
         <constraints nullable="false"/>
       </column>
+      <column name="type" type="VARCHAR(255)">
+        <constraints nullable="false"/>
+      </column>
     </createTable>
     <comment>Criação da tabela IMAGEM</comment>
   </changeSet>

@@ -6,11 +6,7 @@ import br.com.escoladeti.api_know_hall.entity.Post;
 import br.com.escoladeti.api_know_hall.entity.Tag;
 import br.com.escoladeti.api_know_hall.entity.Usuario;
 import br.com.escoladeti.api_know_hall.entity.Imagem;
-import br.com.escoladeti.api_know_hall.enums.OrdenacaoDirecao;
-import br.com.escoladeti.api_know_hall.enums.OrdenacaoTipo;
-import br.com.escoladeti.api_know_hall.enums.StatusUsuario;
-import br.com.escoladeti.api_know_hall.enums.TagOperador;
-import br.com.escoladeti.api_know_hall.enums.TipoUsuario;
+import br.com.escoladeti.api_know_hall.enums.*;
 import br.com.escoladeti.api_know_hall.projection.comentario.ComentarioProjection;
 import br.com.escoladeti.api_know_hall.projection.post.PostBuscaProjection;
 import br.com.escoladeti.api_know_hall.projection.post.PostFeedProjection;
@@ -866,16 +862,16 @@ class PostServiceTest {
   }
 
   @Test
-  void atualizarImagemPerfil_sucesso() {
+  void adicionaAtualizarImagemPost_sucesso() {
     BigInteger postId = BigInteger.ONE;
-    Imagem imagem = new Imagem(postId, "img.png", "url", "idImg", "path");
+    Imagem imagem = new Imagem(postId, "img.png", "url", "idImg", "path", ImagemTipo.POST);
     Post post = new Post();
     post.setId(postId);
     post.setImagens(new java.util.ArrayList<>());
     when(postRepository.findById(postId)).thenReturn(Optional.of(post));
     when(postRepository.save(any(Post.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-    assertThatCode(() -> postService.atualizarImagemPerfil(imagem, 0, postId)).doesNotThrowAnyException();
+    assertThatCode(() -> postService.adicionaAtualizarImagemPost(imagem, 0, postId)).doesNotThrowAnyException();
 
     verify(postRepository).save(post);
     assertThat(post.getImagens()).isNotEmpty();
@@ -883,11 +879,11 @@ class PostServiceTest {
   }
 
   @Test
-  void atualizarImagemPerfil_postNaoEncontrado_lancaExcecao() {
+  void adicionaAtualizarImagemPost_postNaoEncontrado_lancaExcecao() {
     BigInteger postId = BigInteger.TWO;
-    Imagem imagem = new Imagem(postId, "img.png", "url", "idImg", "path");
+    Imagem imagem = new Imagem(postId, "img.png", "url", "idImg", "path", ImagemTipo.POST);
     when(postRepository.findById(postId)).thenReturn(Optional.empty());
-    assertThatThrownBy(() -> postService.atualizarImagemPerfil(imagem, 0, postId))
+    assertThatThrownBy(() -> postService.adicionaAtualizarImagemPost(imagem, 0, postId))
       .isInstanceOf(EntityNotFoundException.class)
       .hasMessageContaining("Post não encontrado");
     verify(postRepository, never()).save(any(Post.class));

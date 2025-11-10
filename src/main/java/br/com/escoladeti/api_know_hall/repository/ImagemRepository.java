@@ -11,6 +11,6 @@ import java.util.Optional;
 @Repository
 public interface ImagemRepository extends JpaRepository<Imagem, BigInteger> {
 
-  Optional<Imagem> findByIdImagem(String id_imagem);
+  Optional<Imagem> findByIdImagemSupabase(String id_imagem_supabase);
 
 }

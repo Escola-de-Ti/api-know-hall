@@ -43,7 +43,7 @@ public class ImagemControllerTest {
     byte[] imageBytes = new byte[]{1, 2, 3};
     ImagemTipo type = ImagemTipo.USUARIO;
     String principalName = "user123";
-    Imagem imagem = new Imagem(BigInteger.ONE, principalName, "url", "idImagem", "path");
+    Imagem imagem = new Imagem(BigInteger.ONE, principalName, "url", "idImagem", "path", type);
     when(imagemService.uploadImage(eq(imageBytes), eq(principalName), eq(type), eq(""))).thenReturn(imagem);
 
     mockMvc.perform(post("/api/imagem/upload")

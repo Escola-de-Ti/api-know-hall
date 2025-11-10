@@ -234,4 +234,13 @@ public class WorkshopService {
     workshopRepository.save(workshop);
   }
 
+  @Transactional
+  public void removerImagemWorkshop(BigInteger imagemId) {
+    descricaoWorkshopRepository.findByImagemWorkshopId(imagemId)
+      .ifPresent(descricao -> {
+        descricao.setImagemWorkshop(null);
+        descricaoWorkshopRepository.save(descricao);
+      });
+  }
+
 }
