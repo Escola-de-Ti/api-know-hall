@@ -52,4 +52,7 @@ public class Post {
 
   @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
   private List<Comentario> comentarios = new ArrayList<>();
+
+  @Column(name = "maior_qntd_voto")
+  private Long maiorQntdVoto;
 }

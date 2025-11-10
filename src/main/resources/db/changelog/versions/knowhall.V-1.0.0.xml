@@ -195,6 +195,139 @@
     </rollback>
   </changeSet>
 
+  <changeSet id="KH-32" author="GABRIEL MARASSI">
+    <preConditions onFail="MARK_RAN">
+      <and>
+        <tableExists tableName="COMENTARIO"/>
+        <not>
+          <columnExists tableName="COMENTARIO" columnName="resposta_destaque"/>
+        </not>
+      </and>
+    </preConditions>
+    <addColumn tableName="COMENTARIO">
+      <column name="resposta_destaque" type="BOOLEAN" defaultValueBoolean="false">
+        <constraints nullable="false"/>
+      </column>
+    </addColumn>
+  </changeSet>
+
+  <changeSet id="KH-34" author="GABRIEL MARASSI">
+    <preConditions onFail="MARK_RAN">
+      <and>
+        <tableExists tableName="COMENTARIO"/>
+        <not>
+          <columnExists tableName="COMENTARIO" columnName="maior_qntd_voto"/>
+        </not>
+      </and>
+    </preConditions>
+
+    <addColumn tableName="COMENTARIO">
+      <column name="maior_qntd_voto" type="INTEGER" defaultValueNumeric="0">
+        <constraints nullable="false"/>
+      </column>
+    </addColumn>
+
+    <rollback>
+      <dropColumn tableName="COMENTARIO" columnName="maior_qntd_voto"/>
+    </rollback>
+  </changeSet>
+
+  <changeSet id="KH-35" author="GABRIEL MARASSI">
+    <preConditions onFail="MARK_RAN">
+      <and>
+        <tableExists tableName="POST"/>
+        <not>
+          <columnExists tableName="POST" columnName="maior_qntd_voto"/>
+        </not>
+      </and>
+    </preConditions>
+
+    <addColumn tableName="POST">
+      <column name="maior_qntd_voto" type="INTEGER" defaultValueNumeric="0">
+        <constraints nullable="false"/>
+      </column>
+    </addColumn>
+
+    <rollback>
+      <dropColumn tableName="POST" columnName="maior_qntd_voto"/>
+    </rollback>
+  </changeSet>
+
+  <changeSet id="KH-38" author="GABRIEL MARASSI">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <tableExists tableName="HISTORICO_TRANSACAO"/>
+      </not>
+    </preConditions>
+
+    <createTable tableName="HISTORICO_TRANSACAO">
+      <column name="id" type="BIGINT" autoIncrement="true">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+
+      <column name="usuario_id" type="BIGINT">
+        <constraints nullable="false"/>
+      </column>
+
+      <column name="quantidade" type="BIGINT">
+        <constraints nullable="false"/>
+      </column>
+
+      <column name="motivo" type="VARCHAR(50)">
+        <constraints nullable="false"/>
+      </column>
+
+      <column name="descricao" type="VARCHAR(500)"/>
+
+      <column name="data_transacao" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+        <constraints nullable="false"/>
+      </column>
+    </createTable>
+  </changeSet>
+
+  <changeSet id="KH-39" author="GABRIEL MARASSI">
+    <preConditions onFail="MARK_RAN">
+      <and>
+        <tableExists tableName="HISTORICO_TRANSACAO"/>
+        <tableExists tableName="USUARIO"/>
+        <not>
+          <foreignKeyConstraintExists foreignKeyName="fk_historico_transacao_usuario"/>
+        </not>
+      </and>
+    </preConditions>
+
+    <addForeignKeyConstraint
+      baseTableName="HISTORICO_TRANSACAO"
+      baseColumnNames="usuario_id"
+      constraintName="fk_historico_transacao_usuario"
+      referencedTableName="USUARIO"
+      referencedColumnNames="id"
+      onDelete="CASCADE"/>
+  </changeSet>
+
+  <changeSet id="KH-40" author="GABRIEL MARASSI">
+    <preConditions onFail="MARK_RAN">
+      <tableExists tableName="HISTORICO_TRANSACAO"/>
+    </preConditions>
+
+    <createIndex tableName="HISTORICO_TRANSACAO" indexName="idx_historico_usuario_id">
+      <column name="usuario_id"/>
+    </createIndex>
+
+    <createIndex tableName="HISTORICO_TRANSACAO" indexName="idx_historico_data_transacao">
+      <column name="data_transacao"/>
+    </createIndex>
+
+    <createIndex tableName="HISTORICO_TRANSACAO" indexName="idx_historico_motivo">
+      <column name="motivo"/>
+    </createIndex>
+
+    <createIndex tableName="HISTORICO_TRANSACAO" indexName="idx_historico_usuario_data">
+      <column name="usuario_id"/>
+      <column name="data_transacao"/>
+    </createIndex>
+  </changeSet>
+
   <changeSet id="KH-41" author="GABRIEL MARASSI">
     <preConditions onFail="MARK_RAN">
       <and>
