@@ -8,7 +8,10 @@ import br.com.escoladeti.api_know_hall.enums.StatusInscricao;
 import br.com.escoladeti.api_know_hall.enums.StatusUsuario;
 import br.com.escoladeti.api_know_hall.enums.TipoUsuario;
 import br.com.escoladeti.api_know_hall.enums.workshop.StatusWorkshop;
+import br.com.escoladeti.api_know_hall.exception.DuplicateResourceException;
 import br.com.escoladeti.api_know_hall.exception.TokenInsuficienteException;
+import br.com.escoladeti.api_know_hall.exception.UsuarioInativoException;
+import br.com.escoladeti.api_know_hall.exception.ValidationException;
 import br.com.escoladeti.api_know_hall.repository.InscricaoRepository;
 import br.com.escoladeti.api_know_hall.repository.UsuarioRepository;
 import br.com.escoladeti.api_know_hall.repository.WorkshopRepository;
@@ -26,6 +29,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -82,6 +86,8 @@ class InscricaoServiceTest {
     workshop.setInstrutor(instrutor);
     workshop.setStatus(StatusWorkshop.ABERTO);
     workshop.setCusto(10);
+    workshop.setDataInicio(Timestamp.from(Instant.now().plus(7, ChronoUnit.DAYS))); // Workshop começa em 7 dias
+    workshop.setDataTermino(Timestamp.from(Instant.now().plus(7, ChronoUnit.DAYS).plus(4, ChronoUnit.HOURS)));
 
     // Setup Inscrição
     inscricao = new Inscricao();
@@ -165,7 +171,7 @@ class InscricaoServiceTest {
 
       // Act & Assert
       assertThatThrownBy(() -> inscricaoService.inscrever(usuario.getEmail(), workshop.getId()))
-        .isInstanceOf(RuntimeException.class)
+        .isInstanceOf(DuplicateResourceException.class)
         .hasMessage("Usuário já está inscrito neste workshop.");
 
       verify(inscricaoRepository, never()).save(any());
@@ -181,7 +187,7 @@ class InscricaoServiceTest {
 
       // Act & Assert
       assertThatThrownBy(() -> inscricaoService.inscrever(instrutor.getEmail(), workshop.getId()))
-        .isInstanceOf(RuntimeException.class)
+        .isInstanceOf(ValidationException.class)
         .hasMessage("Instrutor não pode se inscrever em seu próprio workshop.");
 
       verify(inscricaoRepository, never()).save(any());
@@ -218,8 +224,43 @@ class InscricaoServiceTest {
 
       // Act & Assert
       assertThatThrownBy(() -> inscricaoService.inscrever(usuario.getEmail(), workshop.getId()))
-        .isInstanceOf(RuntimeException.class)
+        .isInstanceOf(ValidationException.class)
         .hasMessage("Inscrições só podem ser feitas em workshops com status ABERTO.");
+
+      verify(inscricaoRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção quando usuário está inativo")
+    void deveLancarExcecaoQuandoUsuarioInativo() {
+      // Arrange
+      usuario.setStatusUsuario(StatusUsuario.INATIVO);
+
+      when(usuarioRepository.findByEmail(usuario.getEmail())).thenReturn(Optional.of(usuario));
+      when(workshopRepository.findById(workshop.getId())).thenReturn(Optional.of(workshop));
+
+      // Act & Assert
+      assertThatThrownBy(() -> inscricaoService.inscrever(usuario.getEmail(), workshop.getId()))
+        .isInstanceOf(UsuarioInativoException.class)
+        .hasMessage("Apenas usuários ativos podem se inscrever em workshops.");
+
+      verify(inscricaoRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção quando workshop já começou")
+    void deveLancarExcecaoQuandoWorkshopJaComecou() {
+      // Arrange
+      workshop.setDataInicio(Timestamp.from(Instant.now().minus(1, ChronoUnit.HOURS))); // Workshop começou há 1 hora
+
+      when(usuarioRepository.findByEmail(usuario.getEmail())).thenReturn(Optional.of(usuario));
+      when(workshopRepository.findById(workshop.getId())).thenReturn(Optional.of(workshop));
+      when(inscricaoRepository.existsByUsuarioIdAndWorkshopId(usuario.getId(), workshop.getId())).thenReturn(false);
+
+      // Act & Assert
+      assertThatThrownBy(() -> inscricaoService.inscrever(usuario.getEmail(), workshop.getId()))
+        .isInstanceOf(ValidationException.class)
+        .hasMessage("Não é possível se inscrever em um workshop que já começou.");
 
       verify(inscricaoRepository, never()).save(any());
     }
@@ -287,7 +328,7 @@ class InscricaoServiceTest {
 
       // Act & Assert
       assertThatThrownBy(() -> inscricaoService.cancelarInscricao(usuario.getEmail(), workshop.getId()))
-        .isInstanceOf(RuntimeException.class)
+        .isInstanceOf(EntityNotFoundException.class)
         .hasMessage("Inscrição não encontrada para este usuário nesse workshop.");
 
       verify(inscricaoRepository, never()).save(any());
@@ -306,8 +347,27 @@ class InscricaoServiceTest {
 
       // Act & Assert
       assertThatThrownBy(() -> inscricaoService.cancelarInscricao(usuario.getEmail(), workshop.getId()))
-        .isInstanceOf(RuntimeException.class)
+        .isInstanceOf(ValidationException.class)
         .hasMessage("A inscrição não pode ser cancelada no status atual.");
+
+      verify(inscricaoRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção quando tentar cancelar inscrição de workshop que já começou")
+    void deveLancarExcecaoQuandoTentarCancelarWorkshopQueJaComecou() {
+      // Arrange
+      workshop.setDataInicio(Timestamp.from(Instant.now().minus(1, ChronoUnit.HOURS))); // Workshop começou há 1 hora
+
+      when(usuarioRepository.findByEmail(usuario.getEmail())).thenReturn(Optional.of(usuario));
+      when(workshopRepository.findById(workshop.getId())).thenReturn(Optional.of(workshop));
+      when(inscricaoRepository.findByUsuarioIdAndWorkshopId(usuario.getId(), workshop.getId()))
+        .thenReturn(Optional.of(inscricao));
+
+      // Act & Assert
+      assertThatThrownBy(() -> inscricaoService.cancelarInscricao(usuario.getEmail(), workshop.getId()))
+        .isInstanceOf(ValidationException.class)
+        .hasMessage("Não é possível cancelar inscrição em um workshop que já começou.");
 
       verify(inscricaoRepository, never()).save(any());
     }
@@ -381,7 +441,7 @@ class InscricaoServiceTest {
 
       // Act & Assert
       assertThatThrownBy(() -> inscricaoService.buscarInscricao(usuario.getEmail(), workshop.getId()))
-        .isInstanceOf(RuntimeException.class)
+        .isInstanceOf(EntityNotFoundException.class)
         .hasMessage("Inscrição não encontrada para este usuário nesse workshop.");
 
       verify(inscricaoRepository).findByUsuarioIdAndWorkshopId(usuario.getId(), workshop.getId());
