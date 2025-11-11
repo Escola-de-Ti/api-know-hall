@@ -87,7 +87,7 @@ public class InscricaoService {
 
 
     String descricaoInscricaoAluno = String.format(
-      "Usuario" + usuario.getId() + " se inscreveu no workshop" + workshop.getId()
+      "Usuario " + usuario.getId() + " se inscreveu no workshop" + workshop.getId()
     );
 
 
@@ -102,7 +102,7 @@ public class InscricaoService {
 
 
     String descricaoInscricaoInstrutor = String.format(
-      "Usuario" + usuario.getId() + " se inscreveu no workshop" + workshop.getId()
+      "Usuario " + usuario.getId() + " se inscreveu no workshop" + workshop.getId()
     );
     Usuario instrutor = workshop.getInstrutor();
     instrutor.setQntdToken(instrutor.getQntdToken() + workshop.getCusto());

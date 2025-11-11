@@ -89,6 +89,7 @@ class WorkshopServiceTest {
     workshopCreateDTO.setDataInicio(dataInicio);
     workshopCreateDTO.setDataTermino(dataTermino);
     workshopCreateDTO.setDescricao(descricaoDTO);
+    workshopCreateDTO.setCusto(100);
 
     // Setup Workshop
     workshop = new Workshop();
