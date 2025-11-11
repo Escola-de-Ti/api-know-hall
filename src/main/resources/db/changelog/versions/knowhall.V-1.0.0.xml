@@ -349,4 +349,28 @@
     </rollback>
   </changeSet>
 
+  <changeSet id="37" author="willyan">
+    <addColumn tableName="workshop">
+      <column name="custo" type="INT" defaultValueNumeric="0">
+        <constraints nullable="false"/>
+      </column>
+    </addColumn>
+  </changeSet>
+
+  <changeSet id="KH-42" author="GABRIEL MARASSI">
+    <preConditions onFail="MARK_RAN">
+      <and>
+        <tableExists tableName="WORKSHOP"/>
+        <not>
+          <columnExists tableName="WORKSHOP" columnName="capacidade"/>
+        </not>
+      </and>
+    </preConditions>
+    <addColumn tableName="WORKSHOP">
+      <column name="capacidade" type="INT" defaultValue="0">
+        <constraints nullable="false"/>
+      </column>
+    </addColumn>
+  </changeSet>
+
 </databaseChangeLog>
