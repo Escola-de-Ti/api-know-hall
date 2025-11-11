@@ -38,8 +38,8 @@ public class PostService {
   private final ComentarioRepository comentarioRepository;
 
   @Transactional
-  public PostResponseDTO criarPost(PostCreateDTO dto) {
-    Usuario usuario = usuarioRepository.findById(dto.usuarioId())
+  public PostResponseDTO criarPost(PostCreateDTO dto, String emailUsuario) {
+    Usuario usuario = usuarioRepository.findByEmail(emailUsuario)
       .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
 
     Post post = new Post();
@@ -47,6 +47,7 @@ public class PostService {
     post.setTitulo(dto.titulo());
     post.setDescricao(dto.descricao());
     post.setTotalUpVotes(0L);
+    post.setMaiorQntdVoto(0L);
 
     if (dto.tagIds() != null && !dto.tagIds().isEmpty()) {
       List<Tag> tags = tagsRepository.findAllById(dto.tagIds());
@@ -139,7 +140,6 @@ public class PostService {
     String dataInicio = request.dataInicio() != null ? request.dataInicio().toString() : null;
     String dataFim = request.dataFim() != null ? request.dataFim().toString() : null;
 
-    // 1. Buscar posts (query principal)
     List<PostFeedProjection> results = postRepository.findFeedPosts(
       usuarioIdLong,
       request.lastScore(),
@@ -219,7 +219,8 @@ public class PostService {
       tags,
       projection.getDataCriacao(),
       projection.getRelevanceScore(),
-      projection.getTagsEmComum()
+      projection.getTagsEmComum(),
+      projection.getJaVotou()
     );
   }
 
@@ -249,7 +250,7 @@ public class PostService {
       request.lastValue(),
       lastPostIdLong,
       fetchSize,
-      termo  // ✅ NOVO PARÂMETRO
+      termo
     );
 
     boolean hasMore = results.size() > request.pageSize();

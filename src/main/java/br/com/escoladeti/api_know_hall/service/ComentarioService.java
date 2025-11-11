@@ -43,6 +43,7 @@ public class ComentarioService {
     comentario.setTexto(dto.texto());
     comentario.setTotalUpVotes(0L);
     comentario.setTotalSuperVotes(0L);
+    comentario.setMaiorQntdVoto(0L);
 
     if (dto.comentarioPaiId() != null) {
       Comentario comentarioPai = comentarioRepository.findById(dto.comentarioPaiId())
