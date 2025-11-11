@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import java.math.BigInteger;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ComentarioRepository extends JpaRepository<Comentario, BigInteger> {
@@ -82,4 +83,14 @@ public interface ComentarioRepository extends JpaRepository<Comentario, BigInteg
     @Param("lastComentarioId") BigInteger lastComentarioId,
     @Param("pageSize") Integer pageSize
   );
+
+  long countByPostIdAndRespostaDestaque(BigInteger postId, Boolean respostaDestaque);
+
+  @Query("SELECT c FROM Comentario c " +
+    "JOIN FETCH c.usuario " +
+    "JOIN FETCH c.post p " +
+    "JOIN FETCH p.usuario " +
+    "WHERE c.id = :id")
+  Optional<Comentario> findByIdWithRelations(@Param("id") BigInteger id);
+
 }

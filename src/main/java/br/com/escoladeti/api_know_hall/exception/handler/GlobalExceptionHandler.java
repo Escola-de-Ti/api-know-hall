@@ -1,8 +1,7 @@
 package br.com.escoladeti.api_know_hall.exception.handler;
 
 import br.com.escoladeti.api_know_hall.dto.ErrorResponse;
-import br.com.escoladeti.api_know_hall.exception.PalavraProibidaException;
-import br.com.escoladeti.api_know_hall.exception.UsuarioInativoException;
+import br.com.escoladeti.api_know_hall.exception.*;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -91,5 +90,35 @@ public class GlobalExceptionHandler {
       ex.getName(), ex.getValue());
     ErrorResponse error = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), message, LocalDateTime.now());
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+  }
+
+  @ExceptionHandler(ValidationException.class)
+  public ResponseEntity<ErrorResponse> handleValidationException(ValidationException ex) {
+    ErrorResponse error = new ErrorResponse(
+      HttpStatus.BAD_REQUEST.value(),
+      ex.getMessage(),
+      LocalDateTime.now()
+    );
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+  }
+
+  @ExceptionHandler(DuplicateResourceException.class)
+  public ResponseEntity<ErrorResponse> handleDuplicateResource(DuplicateResourceException ex) {
+    ErrorResponse error = new ErrorResponse(
+      HttpStatus.CONFLICT.value(),
+      ex.getMessage(),
+      LocalDateTime.now()
+    );
+    return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
+  }
+
+  @ExceptionHandler(InvalidCredentialsException.class)
+  public ResponseEntity<ErrorResponse> handleInvalidCredentials(InvalidCredentialsException ex) {
+    ErrorResponse error = new ErrorResponse(
+      HttpStatus.UNAUTHORIZED.value(),
+      ex.getMessage(),
+      LocalDateTime.now()
+    );
+    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
   }
 }

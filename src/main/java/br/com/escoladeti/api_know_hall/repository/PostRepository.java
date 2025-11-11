@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.math.BigInteger;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface PostRepository extends JpaRepository<Post, BigInteger> {
@@ -230,4 +231,9 @@ public interface PostRepository extends JpaRepository<Post, BigInteger> {
         ORDER BY pt.post_id, t.name
         """, nativeQuery = true)
   List<PostTagProjection> findTagsByPostIds(@Param("postIds") List<BigInteger> postIds);
+
+  @Query("SELECT p FROM Post p " +
+    "JOIN FETCH p.usuario " +
+    "WHERE p.id = :id")
+  Optional<Post> findByIdWithUsuario(@Param("id") BigInteger id);
 }

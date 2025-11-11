@@ -286,7 +286,6 @@ public class PostService {
     return new PostBuscaResponseDTO(posts, hasMore, lastPostId, lastValue);
   }
 
-  // ✅ CORREÇÃO: Método atualizado para gerar string separada por vírgulas
   private String convertTagIdsToCommaSeparatedString(List<BigInteger> tagIds) {
     if (tagIds == null || tagIds.isEmpty()) {
       return null;

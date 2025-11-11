@@ -2,14 +2,8 @@
 <databaseChangeLog
   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
-  xmlns:pro="http://www.liquibase.org/xml/ns/pro"
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
-    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
-    http://www.liquibase.org/xml/ns/dbchangelog-ext
-    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
-    http://www.liquibase.org/xml/ns/pro
-    http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
   <changeSet id="KH-3" author="Gabriel Marassi">
     <preConditions onFail="MARK_RAN">
@@ -91,7 +85,7 @@
     <comment>Criação da tabela de relacionamento POST_TAGS</comment>
   </changeSet>
 
-  <changeSet id="KH-25" author="Willyan Tomaz">
+    <changeSet id="KH-25" author="Willyan Tomaz">
     <preConditions onFail="MARK_RAN">
       <not>
         <tableExists tableName="IMAGEM"/>
@@ -138,6 +132,224 @@
     <createIndex tableName="USUARIO" indexName="idx_usuario_id_imagem_perfil">
       <column name="id_imagem_perfil"/>
     </createIndex>
+  </changeSet>
+
+  <changeSet id="KH-30" author="GABRIEL MARASSI">
+    <preConditions onFail="MARK_RAN">
+      <and>
+        <tableExists tableName="USUARIO"/>
+        <not>
+          <columnExists tableName="USUARIO" columnName="qntd_token"/>
+        </not>
+        <not>
+          <columnExists tableName="USUARIO" columnName="qntd_xp"/>
+        </not>
+      </and>
+    </preConditions>
+
+    <addColumn tableName="USUARIO">
+      <column name="qntd_token" type="INTEGER" defaultValueNumeric="0">
+        <constraints nullable="false"/>
+      </column>
+      <column name="qntd_xp" type="INTEGER" defaultValueNumeric="0">
+        <constraints nullable="false"/>
+      </column>
+    </addColumn>
+
+    <createIndex tableName="USUARIO" indexName="idx_usuario_qntd_token">
+      <column name="qntd_token"/>
+    </createIndex>
+
+    <createIndex tableName="USUARIO" indexName="idx_usuario_qntd_xp">
+      <column name="qntd_xp"/>
+    </createIndex>
+
+    <rollback>
+      <dropIndex tableName="USUARIO" indexName="idx_usuario_qntd_token"/>
+      <dropIndex tableName="USUARIO" indexName="idx_usuario_qntd_xp"/>
+      <dropColumn tableName="USUARIO" columnName="qntd_token"/>
+      <dropColumn tableName="USUARIO" columnName="qntd_xp"/>
+    </rollback>
+  </changeSet>
+
+  <changeSet id="KH-31" author="GABRIEL MARASSI">
+    <preConditions onFail="MARK_RAN">
+      <and>
+        <tableExists tableName="USUARIO"/>
+        <columnExists tableName="USUARIO" columnName="sobrenome"/>
+        <not>
+          <columnExists tableName="USUARIO" columnName="biografia"/>
+        </not>
+      </and>
+    </preConditions>
+
+    <renameColumn
+      tableName="USUARIO"
+      oldColumnName="sobrenome"
+      newColumnName="biografia"
+      columnDataType="VARCHAR(500)"/>
+
+    <rollback>
+      <renameColumn
+        tableName="USUARIO"
+        oldColumnName="biografia"
+        newColumnName="sobrenome"
+        columnDataType="VARCHAR(500)"/>
+    </rollback>
+  </changeSet>
+
+  <changeSet id="KH-32" author="GABRIEL MARASSI">
+    <preConditions onFail="MARK_RAN">
+      <and>
+        <tableExists tableName="COMENTARIO"/>
+        <not>
+          <columnExists tableName="COMENTARIO" columnName="resposta_destaque"/>
+        </not>
+      </and>
+    </preConditions>
+    <addColumn tableName="COMENTARIO">
+      <column name="resposta_destaque" type="BOOLEAN" defaultValueBoolean="false">
+        <constraints nullable="false"/>
+      </column>
+    </addColumn>
+  </changeSet>
+
+  <changeSet id="KH-34" author="GABRIEL MARASSI">
+    <preConditions onFail="MARK_RAN">
+      <and>
+        <tableExists tableName="COMENTARIO"/>
+        <not>
+          <columnExists tableName="COMENTARIO" columnName="maior_qntd_voto"/>
+        </not>
+      </and>
+    </preConditions>
+
+    <addColumn tableName="COMENTARIO">
+      <column name="maior_qntd_voto" type="INTEGER" defaultValueNumeric="0">
+        <constraints nullable="false"/>
+      </column>
+    </addColumn>
+
+    <rollback>
+      <dropColumn tableName="COMENTARIO" columnName="maior_qntd_voto"/>
+    </rollback>
+  </changeSet>
+
+  <changeSet id="KH-35" author="GABRIEL MARASSI">
+    <preConditions onFail="MARK_RAN">
+      <and>
+        <tableExists tableName="POST"/>
+        <not>
+          <columnExists tableName="POST" columnName="maior_qntd_voto"/>
+        </not>
+      </and>
+    </preConditions>
+
+    <addColumn tableName="POST">
+      <column name="maior_qntd_voto" type="INTEGER" defaultValueNumeric="0">
+        <constraints nullable="false"/>
+      </column>
+    </addColumn>
+
+    <rollback>
+      <dropColumn tableName="POST" columnName="maior_qntd_voto"/>
+    </rollback>
+  </changeSet>
+
+  <changeSet id="KH-38" author="GABRIEL MARASSI">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <tableExists tableName="HISTORICO_TRANSACAO"/>
+      </not>
+    </preConditions>
+
+    <createTable tableName="HISTORICO_TRANSACAO">
+      <column name="id" type="BIGINT" autoIncrement="true">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+
+      <column name="usuario_id" type="BIGINT">
+        <constraints nullable="false"/>
+      </column>
+
+      <column name="quantidade" type="BIGINT">
+        <constraints nullable="false"/>
+      </column>
+
+      <column name="motivo" type="VARCHAR(50)">
+        <constraints nullable="false"/>
+      </column>
+
+      <column name="descricao" type="VARCHAR(500)"/>
+
+      <column name="data_transacao" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+        <constraints nullable="false"/>
+      </column>
+    </createTable>
+  </changeSet>
+
+  <changeSet id="KH-39" author="GABRIEL MARASSI">
+    <preConditions onFail="MARK_RAN">
+      <and>
+        <tableExists tableName="HISTORICO_TRANSACAO"/>
+        <tableExists tableName="USUARIO"/>
+        <not>
+          <foreignKeyConstraintExists foreignKeyName="fk_historico_transacao_usuario"/>
+        </not>
+      </and>
+    </preConditions>
+
+    <addForeignKeyConstraint
+      baseTableName="HISTORICO_TRANSACAO"
+      baseColumnNames="usuario_id"
+      constraintName="fk_historico_transacao_usuario"
+      referencedTableName="USUARIO"
+      referencedColumnNames="id"
+      onDelete="CASCADE"/>
+  </changeSet>
+
+  <changeSet id="KH-40" author="GABRIEL MARASSI">
+    <preConditions onFail="MARK_RAN">
+      <tableExists tableName="HISTORICO_TRANSACAO"/>
+    </preConditions>
+
+    <createIndex tableName="HISTORICO_TRANSACAO" indexName="idx_historico_usuario_id">
+      <column name="usuario_id"/>
+    </createIndex>
+
+    <createIndex tableName="HISTORICO_TRANSACAO" indexName="idx_historico_data_transacao">
+      <column name="data_transacao"/>
+    </createIndex>
+
+    <createIndex tableName="HISTORICO_TRANSACAO" indexName="idx_historico_motivo">
+      <column name="motivo"/>
+    </createIndex>
+
+    <createIndex tableName="HISTORICO_TRANSACAO" indexName="idx_historico_usuario_data">
+      <column name="usuario_id"/>
+      <column name="data_transacao"/>
+    </createIndex>
+  </changeSet>
+
+  <changeSet id="KH-41" author="GABRIEL MARASSI">
+    <preConditions onFail="MARK_RAN">
+      <and>
+        <tableExists tableName="USUARIO"/>
+        <not>
+          <columnExists tableName="USUARIO" columnName="nivel"/>
+        </not>
+      </and>
+    </preConditions>
+
+    <addColumn tableName="USUARIO">
+      <column name="nivel" type="INTEGER" defaultValueNumeric="1">
+        <constraints nullable="false"/>
+      </column>
+    </addColumn>
+
+    <rollback>
+      <dropColumn tableName="USUARIO" columnName="nivel"/>
+    </rollback>
   </changeSet>
 
   <changeSet id="KH-29" author="Willyan Tomaz">
