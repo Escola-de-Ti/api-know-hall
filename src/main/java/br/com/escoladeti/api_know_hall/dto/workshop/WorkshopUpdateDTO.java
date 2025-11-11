@@ -33,4 +33,8 @@ public class WorkshopUpdateDTO {
 
   @Valid
   private DescricaoWorkshopDTO descricao;
+
+  private Integer capacidade;
+
+  private Integer custo;
 }

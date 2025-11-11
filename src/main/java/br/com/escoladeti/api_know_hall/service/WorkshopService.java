@@ -53,6 +53,8 @@ public class WorkshopService {
     workshop.setInstrutor(instrutor);
     workshop.setDataInicio(dto.getDataInicio());
     workshop.setDataTermino(dto.getDataTermino());
+    workshop.setCusto(dto.getCusto());
+    workshop.setCapacidade(dto.getCapacidade());
 
     workshop.setStatus(determinarStatusInicial(dto.getDataInicio()));
 
@@ -123,6 +125,12 @@ public class WorkshopService {
     }
     if (dto.getLinkMeet() != null) {
       workshop.setLinkMeet(dto.getLinkMeet());
+    }
+    if (dto.getCapacidade() != null) {
+      workshop.setCapacidade(dto.getCapacidade());
+    }
+    if (dto.getCusto() != null) {
+      workshop.setCusto(dto.getCusto());
     }
 
     if (dto.getDataInicio() != null || dto.getDataTermino() != null) {

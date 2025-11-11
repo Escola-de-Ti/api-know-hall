@@ -36,6 +36,10 @@ public class WorkshopResponseDTO {
 
   private DescricaoWorkshopResponseDTO descricao;
 
+  private Integer capacidade;
+
+  private Integer custo;
+
   public static WorkshopResponseDTO fromEntity(Workshop workshop) {
     WorkshopResponseDTO dto = new WorkshopResponseDTO();
     dto.setId(workshop.getId());
@@ -51,6 +55,8 @@ public class WorkshopResponseDTO {
     if (workshop.getDescricao() != null) {
       dto.setDescricao(DescricaoWorkshopResponseDTO.fromEntity(workshop.getDescricao()));
     }
+    dto.setCapacidade(workshop.getCapacidade());
+    dto.setCusto(workshop.getCusto());
 
     return dto;
   }

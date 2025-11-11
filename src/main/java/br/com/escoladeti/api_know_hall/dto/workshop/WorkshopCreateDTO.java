@@ -40,4 +40,10 @@ public class WorkshopCreateDTO {
 
   @Valid
   private DescricaoWorkshopDTO descricao;
+
+  @NotNull
+  private Integer capacidade;
+
+  @NotNull
+  private Integer custo;
 }
