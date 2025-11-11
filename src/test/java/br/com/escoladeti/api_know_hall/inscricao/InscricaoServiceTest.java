@@ -4,6 +4,7 @@ import br.com.escoladeti.api_know_hall.dto.inscricao.InscricaoResponseDTO;
 import br.com.escoladeti.api_know_hall.entity.Inscricao;
 import br.com.escoladeti.api_know_hall.entity.Usuario;
 import br.com.escoladeti.api_know_hall.entity.workshop.Workshop;
+import br.com.escoladeti.api_know_hall.enums.MotivoTransacao;
 import br.com.escoladeti.api_know_hall.enums.StatusInscricao;
 import br.com.escoladeti.api_know_hall.enums.StatusUsuario;
 import br.com.escoladeti.api_know_hall.enums.TipoUsuario;
@@ -15,6 +16,7 @@ import br.com.escoladeti.api_know_hall.exception.ValidationException;
 import br.com.escoladeti.api_know_hall.repository.InscricaoRepository;
 import br.com.escoladeti.api_know_hall.repository.UsuarioRepository;
 import br.com.escoladeti.api_know_hall.repository.WorkshopRepository;
+import br.com.escoladeti.api_know_hall.service.HistoricoTransacaoService;
 import br.com.escoladeti.api_know_hall.service.InscricaoService;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -50,6 +52,9 @@ class InscricaoServiceTest {
 
   @Mock
   private WorkshopRepository workshopRepository;
+
+  @Mock
+  private HistoricoTransacaoService historicoTransacaoService;
 
   @InjectMocks
   private InscricaoService inscricaoService;
@@ -126,6 +131,7 @@ class InscricaoServiceTest {
       verify(inscricaoRepository).existsByUsuarioIdAndWorkshopId(usuario.getId(), workshop.getId());
       verify(inscricaoRepository).save(any(Inscricao.class));
       verify(usuarioRepository, times(2)).save(any(Usuario.class)); // Salva usuário e instrutor
+      verify(historicoTransacaoService, times(2)).registrarTransacao(any(Usuario.class), anyLong(), any(MotivoTransacao.class), anyString());
     }
 
     @Test
@@ -272,7 +278,7 @@ class InscricaoServiceTest {
       Long tokensUsuarioAntes = 50L;
       Long tokensInstrutorAntes = 100L;
       Integer custoWorkshop = 10;
-      
+
       usuario.setQntdToken(tokensUsuarioAntes);
       instrutor.setQntdToken(tokensInstrutorAntes);
       workshop.setCusto(custoWorkshop);
@@ -289,8 +295,20 @@ class InscricaoServiceTest {
       // Assert
       assertThat(usuario.getQntdToken()).isEqualTo(tokensUsuarioAntes - custoWorkshop); // 50 - 10 = 40
       assertThat(instrutor.getQntdToken()).isEqualTo(tokensInstrutorAntes + custoWorkshop); // 100 + 10 = 110
-      
+
       verify(usuarioRepository, times(2)).save(any(Usuario.class));
+      verify(historicoTransacaoService).registrarTransacao(
+        eq(usuario),
+        eq((long) -custoWorkshop),
+        eq(MotivoTransacao.INSCRICAO_WORKSHOP_ALUNO),
+        anyString()
+      );
+      verify(historicoTransacaoService).registrarTransacao(
+        eq(instrutor),
+        eq((long) custoWorkshop),
+        eq(MotivoTransacao.INSCRICAO_WORKSHOP_INSTRUTOR),
+        anyString()
+      );
     }
   }
 
@@ -315,6 +333,7 @@ class InscricaoServiceTest {
       // Assert
       verify(inscricaoRepository).save(any(Inscricao.class));
       verify(usuarioRepository, times(2)).save(any(Usuario.class)); // Salva usuário e instrutor
+      verify(historicoTransacaoService, times(2)).registrarTransacao(any(Usuario.class), anyLong(), any(MotivoTransacao.class), anyString());
     }
 
     @Test
@@ -379,7 +398,7 @@ class InscricaoServiceTest {
       Long tokensUsuarioAntes = 40L;
       Long tokensInstrutorAntes = 110L;
       Integer custoWorkshop = 10;
-      
+
       usuario.setQntdToken(tokensUsuarioAntes);
       instrutor.setQntdToken(tokensInstrutorAntes);
       workshop.setCusto(custoWorkshop);
@@ -397,9 +416,21 @@ class InscricaoServiceTest {
       // Assert
       assertThat(usuario.getQntdToken()).isEqualTo(tokensUsuarioAntes + custoWorkshop); // 40 + 10 = 50
       assertThat(instrutor.getQntdToken()).isEqualTo(tokensInstrutorAntes - custoWorkshop); // 110 - 10 = 100
-      
+
       verify(usuarioRepository, times(2)).save(any(Usuario.class));
       verify(inscricaoRepository).save(any(Inscricao.class));
+      verify(historicoTransacaoService).registrarTransacao(
+        eq(usuario),
+        eq((long) custoWorkshop),
+        eq(MotivoTransacao.CANCELAMENTO_WORKSHOP_ALUNO),
+        anyString()
+      );
+      verify(historicoTransacaoService).registrarTransacao(
+        eq(instrutor),
+        eq((long) -custoWorkshop),
+        eq(MotivoTransacao.CANCELAMENTO_WORKSHOP_INSTRUTOR),
+        anyString()
+      );
     }
   }
 
@@ -559,7 +590,7 @@ class InscricaoServiceTest {
 
       // Act
       InscricaoResponseDTO resultado = inscricaoService.atualizarStatusInscricao(
-        inscricao.getId(), 
+        inscricao.getId(),
         StatusInscricao.CANCELADO
       );
 
@@ -579,7 +610,7 @@ class InscricaoServiceTest {
 
       // Act & Assert
       assertThatThrownBy(() -> inscricaoService.atualizarStatusInscricao(
-        inscricao.getId(), 
+        inscricao.getId(),
         StatusInscricao.CANCELADO
       ))
         .isInstanceOf(RuntimeException.class)
