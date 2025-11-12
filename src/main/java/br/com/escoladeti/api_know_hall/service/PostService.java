@@ -47,6 +47,7 @@ public class PostService {
     post.setTitulo(dto.titulo());
     post.setDescricao(dto.descricao());
     post.setTotalUpVotes(0L);
+    post.setMaiorQntdVoto(0L);
 
     if (dto.tagIds() != null && !dto.tagIds().isEmpty()) {
       List<Tag> tags = tagsRepository.findAllById(dto.tagIds());

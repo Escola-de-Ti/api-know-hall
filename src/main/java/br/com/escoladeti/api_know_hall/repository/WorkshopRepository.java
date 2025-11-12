@@ -71,4 +71,11 @@ public interface WorkshopRepository extends JpaRepository<Workshop, BigInteger> 
         ORDER BY w.id DESC
         """, nativeQuery = true)
   List<Workshop> findByTituloContaining(@Param("termo") String termo);
+
+  @Query(value = """
+        SELECT COUNT(*)
+        FROM workshop w
+        WHERE w.id_instrutor = :usuarioId
+        """, nativeQuery = true)
+  Optional<Integer> countByUsuarioId(@Param("usuarioId") BigInteger usuarioId);
 }

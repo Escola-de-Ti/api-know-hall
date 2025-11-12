@@ -51,4 +51,7 @@ public interface VotoRepository extends JpaRepository<Voto, BigInteger> {
     @Param("usuarioId") BigInteger usuarioId,
     @Param("tipo") String tipo
   );
+
+  @Query(value = "SELECT COUNT(*) FROM votos v WHERE v.usuario_id = :usuarioId AND v.tipo = :tipo", nativeQuery = true)
+  Optional<Integer> countByUsuarioIdAndTipo(@Param("usuarioId") BigInteger usuarioId, @Param("tipo") String tipo);
 }

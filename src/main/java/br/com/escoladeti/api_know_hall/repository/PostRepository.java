@@ -236,4 +236,7 @@ public interface PostRepository extends JpaRepository<Post, BigInteger> {
     "JOIN FETCH p.usuario " +
     "WHERE p.id = :id")
   Optional<Post> findByIdWithUsuario(@Param("id") BigInteger id);
+
+  @Query("SELECT COUNT(*) FROM Post p WHERE p.id = :id")
+  Optional<Integer> findCountPostById(@Param("id") BigInteger id);
 }

@@ -6,8 +6,9 @@ import br.com.escoladeti.api_know_hall.dto.usuario.*;
 import br.com.escoladeti.api_know_hall.entity.Imagem;
 import br.com.escoladeti.api_know_hall.entity.Usuario;
 import br.com.escoladeti.api_know_hall.enums.StatusUsuario;
+import br.com.escoladeti.api_know_hall.enums.TipoVoto;
 import br.com.escoladeti.api_know_hall.exception.*;
-import br.com.escoladeti.api_know_hall.repository.UsuarioRepository;
+import br.com.escoladeti.api_know_hall.repository.*;
 import br.com.escoladeti.api_know_hall.service.utils.PalavrasProibidasService;
 import br.com.escoladeti.api_know_hall.util.*;
 import jakarta.persistence.EntityNotFoundException;
@@ -25,6 +26,18 @@ public class UsuarioService {
 
   @Autowired
   private UsuarioRepository usuarioRepository;
+
+  @Autowired
+  private PostRepository postRepository;
+
+  @Autowired
+  private ComentarioRepository comentarioRepository;
+
+  @Autowired
+  private VotoRepository votoRepository;
+
+  @Autowired
+  private WorkshopRepository workshopRepository;
 
   @Autowired
   private JwtTokenService jwtTokenService;
@@ -249,5 +262,43 @@ public class UsuarioService {
     );
 
     return new RankingResponseDTO(top50, usuarioLogado);
+  }
+
+  public UsuarioDetalhesResponseDTO obterDetalhesUsuario(String email, BigInteger id_usuario) {
+    if (id_usuario == null) {
+      throw new IllegalArgumentException("O ID do usuário não pode ser nulo.");
+    }
+
+    Usuario usuario = usuarioRepository.findById(id_usuario)
+      .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
+
+    Integer qtdPosts = postRepository.findCountPostById(id_usuario).orElseThrow(()
+      -> new EntityNotFoundException("Erro ao obter quantidade de posts do usuário"));
+
+    Integer qtdComentarios = comentarioRepository.countByUsuarioId(id_usuario).orElseThrow(()
+      -> new EntityNotFoundException("Erro ao obter quantidade de comentários do usuário"));
+
+    Integer qtdUpVotes = votoRepository.countByUsuarioIdAndTipo(id_usuario, TipoVoto.UP_VOTE.name()).orElseThrow(()
+      -> new EntityNotFoundException("Erro ao obter quantidade de votos do usuário"));
+
+    Integer qtdSuperVotes = votoRepository.countByUsuarioIdAndTipo(id_usuario, TipoVoto.SUPER_VOTE.name()).orElseThrow(()
+      -> new EntityNotFoundException("Erro ao obter quantidade de super votos do usuário"));
+
+     Integer qtdWorkshops = workshopRepository.countByUsuarioId(id_usuario).orElseThrow(()
+      -> new EntityNotFoundException("Erro ao obter quantidade de workshops do usuário"));
+
+    return new UsuarioDetalhesResponseDTO(
+      usuario.getNome(),
+      usuario.getTags(),
+      usuario.getBiografia(),
+      usuario.getNivel(),
+      usuario.getQntdXp(),
+      usuario.getQntdToken(),
+      qtdPosts,
+      qtdComentarios,
+      qtdUpVotes,
+      qtdSuperVotes,
+      qtdWorkshops
+    );
   }
 }

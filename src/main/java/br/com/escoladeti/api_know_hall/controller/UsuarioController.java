@@ -79,4 +79,9 @@ public class UsuarioController {
     return ResponseEntity.ok(ranking);
   }
 
+  @GetMapping("/detalhes/{usuarioId}")
+  public ResponseEntity<UsuarioDetalhesResponseDTO> getUsuarioDetalhes(Principal principal,@PathVariable BigInteger usuarioId) {
+    UsuarioDetalhesResponseDTO detalhes = usuarioService.obterDetalhesUsuario(principal.getName(), usuarioId);
+    return ResponseEntity.ok(detalhes);
+  }
 }

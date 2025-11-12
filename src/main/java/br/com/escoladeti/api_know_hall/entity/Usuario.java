@@ -98,6 +98,9 @@ public class Usuario {
   @Column(name = "qntd_xp")
   private Long qntdXp;
 
+  @Column(name = "nivel")
+  private Integer nivel;
+
   public void adicionarConquista(ConquistaTier conquistaTier, Integer progressoAtual) {
     UsuarioConquista uc = new UsuarioConquista();
     uc.setUsuario(this);
