@@ -20,9 +20,9 @@ public class InscricaoController {
 
   private final InscricaoService inscricaoService;
 
-  @PostMapping
+  @PostMapping("/workshops/{workshopId}")
   public ResponseEntity<InscricaoResponseDTO> inscrever(
-    @Valid @RequestBody BigInteger workshopId,
+    @RequestParam BigInteger workshopId,
     Principal principal
   ) {
     InscricaoResponseDTO inscricao = inscricaoService.inscrever(principal.getName(), workshopId);
@@ -64,9 +64,9 @@ public class InscricaoController {
   @PatchMapping("/{inscricaoId}")
   public ResponseEntity<InscricaoResponseDTO> atualizarStatus(
     @PathVariable BigInteger inscricaoId,
-    @Valid @RequestBody StatusInscricao novoStatus
+    @Valid @RequestBody StatusInscricao status
   ) {
-    InscricaoResponseDTO inscricao = inscricaoService.atualizarStatusInscricao(inscricaoId, novoStatus);
+    InscricaoResponseDTO inscricao = inscricaoService.atualizarStatusInscricao(inscricaoId, status);
     return ResponseEntity.ok(inscricao);
   }
 }
