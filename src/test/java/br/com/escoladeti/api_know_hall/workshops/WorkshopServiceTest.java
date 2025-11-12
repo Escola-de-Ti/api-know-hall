@@ -186,7 +186,7 @@ class WorkshopServiceTest {
       // Act & Assert
       assertThatThrownBy(() -> workshopService.criarWorkshop(workshopCreateDTO, usuarioComum.getEmail()))
         .isInstanceOf(EntityNotFoundException.class)
-        .hasMessageContaining("Usuário com ID " + usuarioComum.getEmail() + " não encontrado");
+        .hasMessageContaining("Usuário não encontrado");
 
       verify(workshopRepository, never()).save(any(Workshop.class));
     }
@@ -256,7 +256,7 @@ class WorkshopServiceTest {
       // Act & Assert
       assertThatThrownBy(() -> workshopService.buscarPorId(BigInteger.ONE))
         .isInstanceOf(EntityNotFoundException.class)
-        .hasMessageContaining("Workshop com ID 1 não encontrado");
+        .hasMessageContaining("Workshop não encontrado");
     }
 
     @Test
@@ -613,7 +613,7 @@ class WorkshopServiceTest {
       // Act & Assert
       assertThatThrownBy(() -> workshopService.deletarWorkshop(BigInteger.ONE))
         .isInstanceOf(EntityNotFoundException.class)
-        .hasMessageContaining("Workshop com ID 1 não encontrado");
+        .hasMessageContaining("Workshop não encontrado");
 
       verify(workshopRepository, never()).delete(any(Workshop.class));
     }

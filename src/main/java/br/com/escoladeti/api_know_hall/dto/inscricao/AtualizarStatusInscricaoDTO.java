@@ -9,8 +9,9 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class InscricaoUpdateDTO {
+public class AtualizarStatusInscricaoDTO {
 
-    @NotNull(message = "O status é obrigatório")
-    private StatusInscricao status;
+  @NotNull(message = "Status é obrigatório")
+  private StatusInscricao status;
 }
+
