@@ -1,7 +1,7 @@
 package br.com.escoladeti.api_know_hall.controller;
 
+import br.com.escoladeti.api_know_hall.dto.inscricao.AtualizarStatusInscricaoDTO;
 import br.com.escoladeti.api_know_hall.dto.inscricao.InscricaoResponseDTO;
-import br.com.escoladeti.api_know_hall.enums.StatusInscricao;
 import br.com.escoladeti.api_know_hall.service.InscricaoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +22,7 @@ public class InscricaoController {
 
   @PostMapping("/workshops/{workshopId}")
   public ResponseEntity<InscricaoResponseDTO> inscrever(
-    @RequestParam BigInteger workshopId,
+    @PathVariable BigInteger workshopId,
     Principal principal
   ) {
     InscricaoResponseDTO inscricao = inscricaoService.inscrever(principal.getName(), workshopId);
@@ -64,9 +64,9 @@ public class InscricaoController {
   @PatchMapping("/{inscricaoId}")
   public ResponseEntity<InscricaoResponseDTO> atualizarStatus(
     @PathVariable BigInteger inscricaoId,
-    @Valid @RequestBody StatusInscricao status
+    @Valid @RequestBody AtualizarStatusInscricaoDTO request
   ) {
-    InscricaoResponseDTO inscricao = inscricaoService.atualizarStatusInscricao(inscricaoId, status);
+    InscricaoResponseDTO inscricao = inscricaoService.atualizarStatusInscricao(inscricaoId, request.getStatus());
     return ResponseEntity.ok(inscricao);
   }
 }

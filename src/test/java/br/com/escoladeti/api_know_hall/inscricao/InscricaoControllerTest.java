@@ -2,6 +2,7 @@ package br.com.escoladeti.api_know_hall.inscricao;
 
 import br.com.escoladeti.api_know_hall.config.JwtAuthenticationFilter;
 import br.com.escoladeti.api_know_hall.controller.InscricaoController;
+import br.com.escoladeti.api_know_hall.dto.inscricao.AtualizarStatusInscricaoDTO;
 import br.com.escoladeti.api_know_hall.dto.inscricao.InscricaoResponseDTO;
 import br.com.escoladeti.api_know_hall.enums.StatusInscricao;
 import br.com.escoladeti.api_know_hall.service.InscricaoService;
@@ -87,9 +88,7 @@ class InscricaoControllerTest {
         .thenReturn(inscricaoResponse);
 
       // Act & Assert
-      mockMvc.perform(post("/api/inscricoes")
-          .contentType(MediaType.APPLICATION_JSON)
-          .content(objectMapper.writeValueAsString(BigInteger.valueOf(10)))
+      mockMvc.perform(post("/api/inscricoes/workshops/10")
           .principal(() -> "maria@email.com"))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.id", is(100)))
@@ -270,10 +269,12 @@ class InscricaoControllerTest {
         when(inscricaoService.atualizarStatusInscricao(BigInteger.valueOf(100), StatusInscricao.CANCELADO))
           .thenReturn(inscricaoCancelada);
 
+        AtualizarStatusInscricaoDTO request = new AtualizarStatusInscricaoDTO(StatusInscricao.CANCELADO);
+
         // Act & Assert
         mockMvc.perform(patch("/api/inscricoes/100")
             .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(statusInscricao)))
+            .content(objectMapper.writeValueAsString(request)))
           .andExpect(status().isOk())
           .andExpect(jsonPath("$.id", is(100)))
           .andExpect(jsonPath("$.status", is("CANCELADO")));
