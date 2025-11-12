@@ -79,7 +79,7 @@ public class PostController {
     Usuario usuario = postService.findUserByPrincipal(principal.getName());
     FeedRequestDTO request = new FeedRequestDTO(
       usuario.getId(),
-      50,
+      pageSize,
       lastPostId,
       lastScore,
       tagIds,
