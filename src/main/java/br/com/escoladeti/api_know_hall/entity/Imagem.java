@@ -33,6 +33,7 @@ public class Imagem {
   private String path;
 
   @Column(name = "type", nullable = false)
+  @Enumerated(EnumType.STRING)
   private ImagemTipo type;
 
 }

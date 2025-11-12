@@ -101,11 +101,8 @@
       <column name="url" type="VARCHAR(255)">
         <constraints nullable="false"/>
       </column>
-      <column name="id_imagem_supabase" type="VARCHAR(255)"/>
+      <column name="id_imagem" type="VARCHAR(255)"/>
       <column name="path" type="VARCHAR(255)">
-        <constraints nullable="false"/>
-      </column>
-      <column name="type" type="VARCHAR(255)">
         <constraints nullable="false"/>
       </column>
     </createTable>
@@ -429,6 +426,18 @@
 
       <dropColumn tableName="descricao_workshop" columnName="id_imagem_workshop"/>
     </rollback>
+  </changeSet>
+
+  <changeSet id="KH-43" author="Willyan Tomaz">
+    <preConditions onFail="MARK_RAN">
+      <columnExists tableName="IMAGEM" columnName="id_imagem"/>
+    </preConditions>
+    <renameColumn tableName="IMAGEM" oldColumnName="id_imagem" newColumnName="id_imagem_supabase" columnDataType="VARCHAR(255)"/>
+    <addColumn tableName="IMAGEM">
+      <column name="type" type="VARCHAR(255)">
+        <constraints nullable="false"/>
+      </column>
+    </addColumn>
   </changeSet>
 
 
