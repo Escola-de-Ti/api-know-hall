@@ -3,11 +3,15 @@ package br.com.escoladeti.api_know_hall.service;
 
 import br.com.escoladeti.api_know_hall.dto.ImageResponseDTO;
 import br.com.escoladeti.api_know_hall.entity.Imagem;
+import br.com.escoladeti.api_know_hall.entity.ImagemPost;
+import br.com.escoladeti.api_know_hall.enums.ImagemTipo;
+import br.com.escoladeti.api_know_hall.repository.ImagemPostRepository;
 import br.com.escoladeti.api_know_hall.repository.ImagemRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -32,7 +36,16 @@ public class ImagemService {
   private ImagemRepository imagemRepository;
 
   @Autowired
+  private ImagemPostRepository imagemPostRepository;
+
+  @Autowired
   private UsuarioService usuarioService;
+
+  @Autowired
+  private PostService postService;
+
+  @Autowired
+  private WorkshopService workshopService;
 
   public ImagemService(
     @Value("${supabase.url:${SUPABASE_URL:}}") String supabaseUrl,
@@ -51,9 +64,10 @@ public class ImagemService {
 
   }
 
-  public Imagem uploadImage(byte[] imageBytes, String imageName, String type) {
+  public Imagem uploadImage(byte[] imageBytes, String userEmail, ImagemTipo type, String idType) {
     try {
-      URI uri = URI.create(supabaseUrl + "/assets/" + type + "/" + imageName);
+      String imageName = userEmail + idType + java.util.UUID.randomUUID();
+      URI uri = URI.create(supabaseUrl + "/assets/" + type.getTipo() + "/" + imageName);
 
       HttpRequest request = HttpRequest.newBuilder()
         .uri(uri)
@@ -64,25 +78,36 @@ public class ImagemService {
         .build();
 
       HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-      ImageResponseDTO imageResponse = objectMapper.readValue(response.body(), ImageResponseDTO.class);
 
       if (response.statusCode() < 200 || response.statusCode() >= 300) {
         throw new IllegalStateException("Falha ao enviar imagem para Supabase. Status: " + response.statusCode() + " Body: " + response.body());
       }
+      ImageResponseDTO imageResponse = objectMapper.readValue(response.body(), ImageResponseDTO.class);
 
       Imagem imagem = new Imagem();
       imagem.setNome(imageName);
       imagem.setUrl(String.valueOf(uri));
       imagem.setPath(imageResponse.key());
-      imagem.setIdImagem(imageResponse.id());
+      imagem.setIdImagemSupabase(imageResponse.id());
+      imagem.setType(type);
 
-      imagemRepository.findByIdImagem(imagem.getIdImagem()).ifPresent(existingImage -> {
+
+      imagemRepository.findByIdImagemSupabase(imagem.getIdImagemSupabase()).ifPresent(existingImage -> {
         imagem.setId(existingImage.getId());
       });
+
       imagemRepository.save(imagem);
 
-      if (type.equals("perfil")) {
-        usuarioService.atualizarImagemPerfil(imageName, imagem);
+      switch (type) {
+        case USUARIO -> usuarioService.atualizarImagemPerfil(userEmail, imagem);
+        case POST -> {
+          BigInteger postId = new BigInteger(idType);
+          postService.adicionaAtualizarImagemPost(imagem, 0, postId);
+        }
+        case WORKSHOP -> {
+          BigInteger workshopId = new BigInteger(idType);
+          workshopService.atualizarImagemWorkshop(imagem, workshopId);
+        }
       }
       return imagem;
 
@@ -92,11 +117,40 @@ public class ImagemService {
     }
   }
 
+  public void UpdateImagem(BigInteger idImagem, byte[] imageBytes) {
+    try {
+      Imagem existingImage = imagemRepository.findById(idImagem)
+        .orElseThrow(() -> new IllegalStateException("Imagem não encontrada com id: " + idImagem));
+
+      URI uri = URI.create(supabaseUrl + existingImage.getPath().replace("files", ""));
+
+      HttpRequest request = HttpRequest.newBuilder()
+        .uri(uri)
+        .timeout(Duration.ofMinutes(1))
+        .header("Authorization", "Bearer " + token)
+        .header("Content-Type", "image/png")
+        .PUT(HttpRequest.BodyPublishers.ofByteArray(imageBytes))
+        .build();
+
+      HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+      if (response.statusCode() < 200 || response.statusCode() >= 300) {
+        throw new IllegalStateException("Falha ao enviar imagem para Supabase. Status: " + response.statusCode() + " Body: " + response.body());
+      }
+
+    } catch (IOException | InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new IllegalStateException("Erro ao enviar imagem para Supabase", e);
+    }
+  }
+
+  @Transactional
   public void deleteImage(BigInteger idImagem) {
     try {
       Imagem imagem = imagemRepository.findById(idImagem)
         .orElseThrow(() -> new IllegalStateException("Imagem não encontrada com id: " + idImagem));
-      URI uri = URI.create(imagem.getUrl());
+
+      URI uri = URI.create(supabaseUrl + imagem.getPath().replace("files", ""));
 
       HttpRequest request = HttpRequest.newBuilder()
         .uri(uri)
@@ -109,6 +163,11 @@ public class ImagemService {
 
       if (response.statusCode() != 200) {
         throw new IllegalStateException("Falha ao deletar imagem do Supabase. Status: " + response.statusCode() + " Body: " + response.body());
+      }
+
+      switch (imagem.getType()) {
+        case POST -> imagemPostRepository.deleteByImagemId(idImagem);
+        case WORKSHOP -> workshopService.removerImagemWorkshop(idImagem);
       }
 
       imagemRepository.deleteById(imagem.getId());

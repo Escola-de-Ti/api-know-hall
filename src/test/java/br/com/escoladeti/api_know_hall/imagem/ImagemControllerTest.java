@@ -2,10 +2,12 @@ package br.com.escoladeti.api_know_hall.imagem;
 
 import br.com.escoladeti.api_know_hall.controller.ImagemController;
 import br.com.escoladeti.api_know_hall.entity.Imagem;
+import br.com.escoladeti.api_know_hall.enums.ImagemTipo;
 import br.com.escoladeti.api_know_hall.exception.handler.GlobalExceptionHandler;
 import br.com.escoladeti.api_know_hall.service.ImagemService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -39,37 +41,40 @@ public class ImagemControllerTest {
   @Test
   void uploadImage_success_returnsImagem() throws Exception {
     byte[] imageBytes = new byte[]{1, 2, 3};
-    String type = "perfil";
+    ImagemTipo type = ImagemTipo.USUARIO;
     String principalName = "user123";
-    Imagem imagem = new Imagem(BigInteger.ONE, principalName, "url", "idImagem", "path");
-    when(imagemService.uploadImage(eq(imageBytes), eq(principalName), eq(type))).thenReturn(imagem);
+    Imagem imagem = new Imagem(BigInteger.ONE, principalName, "url", "idImagem", "path", type);
+    when(imagemService.uploadImage(eq(imageBytes), eq(principalName), eq(type), eq(""))).thenReturn(imagem);
 
     mockMvc.perform(post("/api/imagem/upload")
         .content(imageBytes)
         .contentType(MediaType.APPLICATION_OCTET_STREAM)
-        .param("type", type)
+        .param("type", type.name())
+        .param("id_type", "")
         .principal(() -> principalName))
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.nome").value(principalName))
       .andExpect(jsonPath("$.url").value("url"))
-      .andExpect(jsonPath("$.idImagem").value("idImagem"))
+      .andExpect(jsonPath("$.idImagemSupabase").value("idImagem"))
       .andExpect(jsonPath("$.path").value("path"));
   }
 
   @Test
   void uploadImage_serviceThrows_returns500() throws Exception {
     byte[] imageBytes = new byte[]{1, 2, 3};
-    String type = "perfil";
+    ImagemTipo type = ImagemTipo.USUARIO;
     String principalName = "user123";
-    when(imagemService.uploadImage(any(), any(), any())).thenThrow(new RuntimeException("erro"));
+    when(imagemService.uploadImage(any(), any(), any(), any())).thenThrow(new RuntimeException("erro"));
 
     mockMvc.perform(post("/api/imagem/upload")
         .content(imageBytes)
         .contentType(MediaType.APPLICATION_OCTET_STREAM)
-        .param("type", type)
+        .param("type", type.name())
+        .param("id_type", "")
         .principal(() -> principalName))
       .andExpect(status().isInternalServerError());
   }
+
 
   @Test
   void deleteImage_success_returnsNoContent() throws Exception {

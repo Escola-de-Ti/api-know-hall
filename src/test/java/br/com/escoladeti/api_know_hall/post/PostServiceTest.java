@@ -5,11 +5,8 @@ import br.com.escoladeti.api_know_hall.dto.post.*;
 import br.com.escoladeti.api_know_hall.entity.Post;
 import br.com.escoladeti.api_know_hall.entity.Tag;
 import br.com.escoladeti.api_know_hall.entity.Usuario;
-import br.com.escoladeti.api_know_hall.enums.OrdenacaoDirecao;
-import br.com.escoladeti.api_know_hall.enums.OrdenacaoTipo;
-import br.com.escoladeti.api_know_hall.enums.StatusUsuario;
-import br.com.escoladeti.api_know_hall.enums.TagOperador;
-import br.com.escoladeti.api_know_hall.enums.TipoUsuario;
+import br.com.escoladeti.api_know_hall.entity.Imagem;
+import br.com.escoladeti.api_know_hall.enums.*;
 import br.com.escoladeti.api_know_hall.projection.comentario.ComentarioProjection;
 import br.com.escoladeti.api_know_hall.projection.post.PostBuscaProjection;
 import br.com.escoladeti.api_know_hall.projection.post.PostFeedProjection;
@@ -818,23 +815,79 @@ class PostServiceTest {
   ) {
     return new ComentarioProjection() {
       @Override
-      public BigInteger getId() { return id; }
+      public BigInteger getId() {
+        return id;
+      }
+
       @Override
-      public BigInteger getPostId() { return BigInteger.ONE; }
+      public BigInteger getPostId() {
+        return BigInteger.ONE;
+      }
+
       @Override
-      public BigInteger getUsuarioId() { return BigInteger.ONE; }
+      public BigInteger getUsuarioId() {
+        return BigInteger.ONE;
+      }
+
       @Override
-      public String getUsuarioNome() { return "João Silva"; }
+      public String getUsuarioNome() {
+        return "João Silva";
+      }
+
       @Override
-      public String getTexto() { return texto; }
+      public String getTexto() {
+        return texto;
+      }
+
       @Override
-      public Long getTotalUpVotes() { return upVotes; }
+      public Long getTotalUpVotes() {
+        return upVotes;
+      }
+
       @Override
-      public Long getTotalSuperVotes() { return superVotes; }
+      public Long getTotalSuperVotes() {
+        return superVotes;
+      }
+
       @Override
-      public BigInteger getComentarioPaiId() { return null; }
+      public BigInteger getComentarioPaiId() {
+        return null;
+      }
+
       @Override
-      public Timestamp getDataCriacao() { return Timestamp.from(Instant.now()); }
+      public Timestamp getDataCriacao() {
+        return Timestamp.from(Instant.now());
+      }
     };
   }
+
+  @Test
+  void adicionaAtualizarImagemPost_sucesso() {
+    BigInteger postId = BigInteger.ONE;
+    Imagem imagem = new Imagem(postId, "img.png", "url", "idImg", "path", ImagemTipo.POST);
+    Post post = new Post();
+    post.setId(postId);
+    post.setImagens(new java.util.ArrayList<>());
+    when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+    when(postRepository.save(any(Post.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+    assertThatCode(() -> postService.adicionaAtualizarImagemPost(imagem, 0, postId)).doesNotThrowAnyException();
+
+    verify(postRepository).save(post);
+    assertThat(post.getImagens()).isNotEmpty();
+    assertThat(post.getImagens().get(0).getImagem()).isEqualTo(imagem);
+  }
+
+  @Test
+  void adicionaAtualizarImagemPost_postNaoEncontrado_lancaExcecao() {
+    BigInteger postId = BigInteger.TWO;
+    Imagem imagem = new Imagem(postId, "img.png", "url", "idImg", "path", ImagemTipo.POST);
+    when(postRepository.findById(postId)).thenReturn(Optional.empty());
+    assertThatThrownBy(() -> postService.adicionaAtualizarImagemPost(imagem, 0, postId))
+      .isInstanceOf(EntityNotFoundException.class)
+      .hasMessageContaining("Post não encontrado");
+    verify(postRepository, never()).save(any(Post.class));
+  }
+
+
 }

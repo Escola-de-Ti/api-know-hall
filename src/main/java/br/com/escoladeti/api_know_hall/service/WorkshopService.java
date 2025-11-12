@@ -2,6 +2,7 @@ package br.com.escoladeti.api_know_hall.service;
 
 import br.com.escoladeti.api_know_hall.dto.workshop.WorkshopCreateDTO;
 import br.com.escoladeti.api_know_hall.dto.workshop.WorkshopUpdateDTO;
+import br.com.escoladeti.api_know_hall.entity.Imagem;
 import br.com.escoladeti.api_know_hall.entity.Usuario;
 import br.com.escoladeti.api_know_hall.entity.workshop.DescricaoWorkshop;
 import br.com.escoladeti.api_know_hall.entity.workshop.Workshop;
@@ -218,4 +219,28 @@ public class WorkshopService {
   public Long contarWorkshopsPorInstrutor(BigInteger instrutorId) {
     return workshopRepository.countByInstrutorId(instrutorId.longValue());
   }
+
+  @Transactional
+  public void atualizarImagemWorkshop(Imagem imagem, BigInteger workshopId) {
+    Workshop workshop = workshopRepository.findById(workshopId)
+      .orElseThrow(() -> new EntityNotFoundException("Workshop não encontrado"));
+
+    DescricaoWorkshop descricaoWorkshop = workshop.getDescricao();
+    if (descricaoWorkshop == null) {
+      throw new EntityNotFoundException("Descrição do workshop não encontrada");
+    }
+
+    descricaoWorkshop.setImagemWorkshop(imagem);
+    workshopRepository.save(workshop);
+  }
+
+  @Transactional
+  public void removerImagemWorkshop(BigInteger imagemId) {
+    descricaoWorkshopRepository.findByImagemWorkshopId(imagemId)
+      .ifPresent(descricao -> {
+        descricao.setImagemWorkshop(null);
+        descricaoWorkshopRepository.save(descricao);
+      });
+  }
+
 }

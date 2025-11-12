@@ -3,6 +3,7 @@ package br.com.escoladeti.api_know_hall.post;
 import br.com.escoladeti.api_know_hall.config.JwtAuthenticationFilter;
 import br.com.escoladeti.api_know_hall.config.SecurityConfig;
 import br.com.escoladeti.api_know_hall.controller.PostController;
+import br.com.escoladeti.api_know_hall.dto.ImagemPostDTO;
 import br.com.escoladeti.api_know_hall.dto.comentario.ComentarioResponseDTO;
 import br.com.escoladeti.api_know_hall.dto.post.*;
 import br.com.escoladeti.api_know_hall.dto.tags.TagResponseDTO;
@@ -70,6 +71,12 @@ class PostControllerTest {
   @BeforeEach
   void setUp() {
     TagResponseDTO tagDTO = new TagResponseDTO(BigInteger.ONE, "React Native");
+    ImagemPostDTO imagemDTO = new ImagemPostDTO(
+      BigInteger.ONE,
+      BigInteger.ONE,
+      "https://exemplo.com/imagem1.jpg",
+      0
+    );
 
     postResponseDTO = new PostResponseDTO(
       BigInteger.ONE,
@@ -79,7 +86,8 @@ class PostControllerTest {
       "Descrição do post",
       10L,
       List.of(tagDTO),
-      Timestamp.from(Instant.now())
+      Timestamp.from(Instant.now()),
+      List.of(imagemDTO)
     );
 
     mockPrincipal = () -> "joao@email.com";
@@ -212,7 +220,7 @@ class PostControllerTest {
     PostUpdateDTO updateDTO = new PostUpdateDTO("Novo Título", null, null);
     PostResponseDTO atualizado = new PostResponseDTO(
       BigInteger.ONE, BigInteger.ONE, "João Silva",
-      "Novo Título", "Descrição", 10L, List.of(), Timestamp.from(Instant.now())
+      "Novo Título", "Descrição", 10L, List.of(), Timestamp.from(Instant.now()), List.of()
     );
 
     // ✅ USE ArgumentMatchers.eq() e .any()

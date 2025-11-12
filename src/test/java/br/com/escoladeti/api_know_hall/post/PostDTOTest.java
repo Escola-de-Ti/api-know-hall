@@ -1,5 +1,6 @@
 package br.com.escoladeti.api_know_hall.post;
 
+import br.com.escoladeti.api_know_hall.dto.ImagemPostDTO;
 import br.com.escoladeti.api_know_hall.dto.post.*;
 import br.com.escoladeti.api_know_hall.dto.tags.TagResponseDTO;
 import br.com.escoladeti.api_know_hall.enums.OrdenacaoDirecao;
@@ -122,6 +123,13 @@ class PostDTOTest {
   @DisplayName("PostResponseDTO - Deve criar DTO de resposta completo")
   void postResponseDTO_deveCriarDTOCompleto() {
     TagResponseDTO tagDTO = new TagResponseDTO(BigInteger.ONE, "React Native");
+    ImagemPostDTO imagemDTO = new ImagemPostDTO(
+      BigInteger.ONE,
+      BigInteger.ONE,
+      "https://exemplo.com/imagem1.jpg",
+      0
+    );
+
     PostResponseDTO dto = new PostResponseDTO(
       BigInteger.ONE,
       BigInteger.TWO,
@@ -130,7 +138,8 @@ class PostDTOTest {
       "Descrição",
       10L,
       List.of(tagDTO),
-      Timestamp.from(Instant.now())
+      Timestamp.from(Instant.now()),
+      List.of(imagemDTO)
     );
 
     assertThat(dto.id()).isEqualTo(BigInteger.ONE);

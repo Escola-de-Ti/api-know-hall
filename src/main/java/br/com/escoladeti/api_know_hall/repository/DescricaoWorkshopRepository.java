@@ -13,18 +13,21 @@ import java.util.Optional;
 public interface DescricaoWorkshopRepository extends JpaRepository<DescricaoWorkshop, BigInteger> {
 
   @Query(value = """
-        SELECT dw.*
-        FROM descricao_workshop dw
-        WHERE dw.id_workshop = :workshopId
-        """, nativeQuery = true)
+    SELECT dw.*
+    FROM descricao_workshop dw
+    WHERE dw.id_workshop = :workshopId
+    """, nativeQuery = true)
   Optional<DescricaoWorkshop> findByWorkshopId(@Param("workshopId") BigInteger workshopId);
 
   @Query(value = """
-        SELECT EXISTS(
-            SELECT 1
-            FROM descricao_workshop dw
-            WHERE dw.id_workshop = :workshopId
-        )
-        """, nativeQuery = true)
+    SELECT EXISTS(
+        SELECT 1
+        FROM descricao_workshop dw
+        WHERE dw.id_workshop = :workshopId
+    )
+    """, nativeQuery = true)
   Boolean existsByWorkshopId(@Param("workshopId") BigInteger workshopId);
+
+  Optional<DescricaoWorkshop> findByImagemWorkshopId(BigInteger imagemId);
+
 }

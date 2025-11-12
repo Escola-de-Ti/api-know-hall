@@ -349,4 +349,96 @@
     </rollback>
   </changeSet>
 
+  <changeSet id="KH-29" author="Willyan Tomaz">
+    <preConditions onFail="MARK_RAN">
+      <and>
+        <tableExists tableName="POST"/>
+        <tableExists tableName="IMAGEM"/>
+        <not>
+          <tableExists tableName="IMAGEM_POST"/>
+        </not>
+      </and>
+    </preConditions>
+
+    <createTable tableName="IMAGEM_POST">
+      <column name="id" type="BIGINT" autoIncrement="true">
+        <constraints primaryKey="true" primaryKeyName="pk_imagem_post"/>
+      </column>
+
+      <column name="post_id" type="BIGINT">
+        <constraints nullable="false"/>
+      </column>
+
+      <column name="imagem_id" type="BIGINT">
+        <constraints nullable="false"/>
+      </column>
+
+      <column name="ordem_imagem" type="INT">
+        <constraints nullable="false"/>
+      </column>
+    </createTable>
+
+    <addForeignKeyConstraint
+      baseTableName="IMAGEM_POST"
+      baseColumnNames="post_id"
+      constraintName="fk_imagem_post_post"
+      referencedTableName="POST"
+      referencedColumnNames="id"
+      onDelete="CASCADE"/>
+
+    <addForeignKeyConstraint
+      baseTableName="IMAGEM_POST"
+      baseColumnNames="imagem_id"
+      constraintName="fk_imagem_post_imagem"
+      referencedTableName="IMAGEM"
+      referencedColumnNames="id"
+      onDelete="CASCADE"/>
+
+    <createIndex tableName="IMAGEM_POST" indexName="idx_imagem_post_post">
+      <column name="post_id"/>
+    </createIndex>
+
+    <createIndex tableName="IMAGEM_POST" indexName="idx_imagem_post_ordem">
+      <column name="ordem_imagem"/>
+    </createIndex>
+  </changeSet>
+
+  <changeSet id="KH-33" author="Willyan Tomaz">
+    <preConditions onFail="MARK_RAN">
+      <tableExists tableName="descricao_workshop"/>
+    </preConditions>
+
+    <addColumn tableName="descricao_workshop">
+      <column name="id_imagem_workshop" type="BIGINT"/>
+    </addColumn>
+
+    <addForeignKeyConstraint
+      baseTableName="descricao_workshop"
+      baseColumnNames="id_imagem_workshop"
+      referencedTableName="imagem"
+      referencedColumnNames="id"
+      constraintName="fk_descricao_workshop_imagem"/>
+
+    <rollback>
+      <dropForeignKeyConstraint
+        baseTableName="descricao_workshop"
+        constraintName="fk_descricao_workshop_imagem"/>
+
+      <dropColumn tableName="descricao_workshop" columnName="id_imagem_workshop"/>
+    </rollback>
+  </changeSet>
+
+  <changeSet id="KH-43" author="Willyan Tomaz">
+    <preConditions onFail="MARK_RAN">
+      <columnExists tableName="IMAGEM" columnName="id_imagem"/>
+    </preConditions>
+    <renameColumn tableName="IMAGEM" oldColumnName="id_imagem" newColumnName="id_imagem_supabase" columnDataType="VARCHAR(255)"/>
+    <addColumn tableName="IMAGEM">
+      <column name="type" type="VARCHAR(255)">
+        <constraints nullable="false"/>
+      </column>
+    </addColumn>
+  </changeSet>
+
+
 </databaseChangeLog>
