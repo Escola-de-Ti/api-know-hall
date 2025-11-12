@@ -76,16 +76,6 @@ public class Usuario {
   )
   private List<Tag> tags = new ArrayList<>();
 
-  public void setIdImagemPerfil(BigInteger idImagemPerfil) {
-    if (idImagemPerfil == null) {
-      this.imagemPerfil = null;
-    } else {
-      Imagem img = new Imagem();
-      img.setId(idImagemPerfil);
-      this.imagemPerfil = img;
-    }
-  }
-
   @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<UsuarioConquista> conquistas = new ArrayList<>();
 
