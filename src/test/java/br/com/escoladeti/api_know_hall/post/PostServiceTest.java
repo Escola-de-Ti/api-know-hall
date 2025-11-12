@@ -49,16 +49,16 @@ class PostServiceTest {
   @Mock
   private TagsRepository tagsRepository;
 
-  @InjectMocks
-  private PostService postService;
   @Mock
   private ComentarioRepository comentarioRepository;
+
+  @InjectMocks
+  private PostService postService;
 
   private Usuario usuario;
   private Post post;
   private Tag tag;
   private PostCreateDTO postCreateDTO;
-  private Principal mockPrincipal;
 
   @BeforeEach
   void setUp() {
@@ -94,20 +94,18 @@ class PostServiceTest {
       "Descrição do post",
       List.of(BigInteger.ONE)
     );
-
-    mockPrincipal = () -> "joao@email.com";
   }
-
-  // ==================== TESTES DE CRIAÇÃO ====================
 
   @Test
   @DisplayName("Deve criar post com sucesso")
   void deveCriarPostComSucesso() {
-    when(usuarioRepository.findById(BigInteger.ONE)).thenReturn(Optional.of(usuario));
+    // ✅ Agora usa findByEmail ao invés de findById
+    when(usuarioRepository.findByEmail("joao@email.com")).thenReturn(Optional.of(usuario));
     when(tagsRepository.findAllById(anyList())).thenReturn(List.of(tag));
     when(postRepository.save(any(Post.class))).thenReturn(post);
 
-    PostResponseDTO resultado = postService.criarPost(postCreateDTO);
+    // ✅ Passa o email como segundo parâmetro
+    PostResponseDTO resultado = postService.criarPost(postCreateDTO, "joao@email.com");
 
     assertThat(resultado).isNotNull();
     assertThat(resultado.id()).isEqualTo(BigInteger.ONE);
@@ -115,7 +113,7 @@ class PostServiceTest {
     assertThat(resultado.usuarioId()).isEqualTo(BigInteger.ONE);
     assertThat(resultado.tags()).hasSize(1);
 
-    verify(usuarioRepository).findById(BigInteger.ONE);
+    verify(usuarioRepository).findByEmail("joao@email.com");
     verify(tagsRepository).findAllById(anyList());
     verify(postRepository).save(any(Post.class));
   }
@@ -123,13 +121,14 @@ class PostServiceTest {
   @Test
   @DisplayName("Deve lançar exceção ao criar post com usuário inexistente")
   void deveLancarExcecaoAoCriarPostComUsuarioInexistente() {
-    when(usuarioRepository.findById(any())).thenReturn(Optional.empty());
+    // ✅ Mock do findByEmail retornando vazio
+    when(usuarioRepository.findByEmail(anyString())).thenReturn(Optional.empty());
 
-    assertThatThrownBy(() -> postService.criarPost(postCreateDTO))
+    assertThatThrownBy(() -> postService.criarPost(postCreateDTO, "email@invalido.com"))
       .isInstanceOf(EntityNotFoundException.class)
       .hasMessage("Usuário não encontrado");
 
-    verify(usuarioRepository).findById(any());
+    verify(usuarioRepository).findByEmail("email@invalido.com");
     verify(postRepository, never()).save(any());
   }
 
@@ -143,10 +142,11 @@ class PostServiceTest {
       null
     );
 
-    when(usuarioRepository.findById(BigInteger.ONE)).thenReturn(Optional.of(usuario));
+    when(usuarioRepository.findByEmail("joao@email.com")).thenReturn(Optional.of(usuario));
     when(postRepository.save(any(Post.class))).thenReturn(post);
 
-    PostResponseDTO resultado = postService.criarPost(dtoSemTags);
+    // ✅ Passa o email
+    PostResponseDTO resultado = postService.criarPost(dtoSemTags, "joao@email.com");
 
     assertThat(resultado).isNotNull();
     verify(tagsRepository, never()).findAllById(anyList());
@@ -437,12 +437,12 @@ class PostServiceTest {
       10,
       null,
       null,
-      null  // ✅ ADICIONAR termo
+      null
     );
 
     PostBuscaProjection projection = createMockBuscaProjection();
     when(postRepository.buscarComFiltros(
-      any(), eq("OR"), any(), any(), any(), eq("VOTOS"), eq("DESC"), any(), any(), anyInt(), any()  // ✅ ADICIONAR any() para termo
+      any(), eq("OR"), any(), any(), any(), eq("VOTOS"), eq("DESC"), any(), any(), anyInt(), any()
     )).thenReturn(List.of(projection));
     when(postRepository.findById(any())).thenReturn(Optional.of(post));
 
@@ -451,7 +451,7 @@ class PostServiceTest {
     assertThat(resultado).isNotNull();
     assertThat(resultado.posts()).hasSize(1);
     verify(postRepository).buscarComFiltros(
-      any(), eq("OR"), any(), any(), any(), eq("VOTOS"), eq("DESC"), any(), any(), anyInt(), any()  // ✅ ADICIONAR any() para termo
+      any(), eq("OR"), any(), any(), any(), eq("VOTOS"), eq("DESC"), any(), any(), anyInt(), any()
     );
   }
 
@@ -468,12 +468,12 @@ class PostServiceTest {
       10,
       null,
       null,
-      null  // ✅ ADICIONAR termo
+      null
     );
 
     PostBuscaProjection projection = createMockBuscaProjection();
     when(postRepository.buscarComFiltros(
-      any(), any(), any(), any(), any(), eq("DATA"), any(), any(), any(), anyInt(), any()  // ✅ ADICIONAR any() para termo
+      any(), any(), any(), any(), any(), eq("DATA"), any(), any(), any(), anyInt(), any()
     )).thenReturn(List.of(projection));
     when(postRepository.findById(any())).thenReturn(Optional.of(post));
 
@@ -531,6 +531,11 @@ class PostServiceTest {
       public Integer getTagsEmComum() {
         return 2;
       }
+
+      @Override
+      public Boolean getJaVotou() {
+        return false;
+      }
     };
   }
 
@@ -586,7 +591,7 @@ class PostServiceTest {
       10,
       null,
       null,
-      "spring boot"  // ✅ TERMO
+      "spring boot"
     );
 
     PostBuscaProjection projection = createMockBuscaProjection();
@@ -862,6 +867,33 @@ class PostServiceTest {
   }
 
   @Test
+  @DisplayName("Deve buscar usuário por email com sucesso")
+  void deveBuscarUsuarioPorEmailComSucesso() {
+    when(usuarioRepository.findByEmail("joao@email.com")).thenReturn(Optional.of(usuario));
+
+    Usuario resultado = postService.findUserByPrincipal("joao@email.com");
+
+    assertThat(resultado).isNotNull();
+    assertThat(resultado.getEmail()).isEqualTo("joao@email.com");
+    assertThat(resultado.getNome()).isEqualTo("João Silva");
+
+    verify(usuarioRepository).findByEmail("joao@email.com");
+  }
+
+  @Test
+  @DisplayName("Deve lançar exceção ao buscar usuário inexistente por email")
+  void deveLancarExcecaoAoBuscarUsuarioInexistentePorEmail() {
+    when(usuarioRepository.findByEmail(anyString())).thenReturn(Optional.empty());
+
+    assertThatThrownBy(() -> postService.findUserByPrincipal("inexistente@email.com"))
+      .isInstanceOf(EntityNotFoundException.class)
+      .hasMessage("Usuário não encontrado");
+
+    verify(usuarioRepository).findByEmail("inexistente@email.com");
+  }
+
+  @Test
+  @DisplayName("Deve adicionar imagem ao post com sucesso")
   void adicionaAtualizarImagemPost_sucesso() {
     BigInteger postId = BigInteger.ONE;
     Imagem imagem = new Imagem(postId, "img.png", "url", "idImg", "path", ImagemTipo.POST);
@@ -879,6 +911,7 @@ class PostServiceTest {
   }
 
   @Test
+  @DisplayName("Deve lançar exceção ao adicionar imagem em post inexistente")
   void adicionaAtualizarImagemPost_postNaoEncontrado_lancaExcecao() {
     BigInteger postId = BigInteger.TWO;
     Imagem imagem = new Imagem(postId, "img.png", "url", "idImg", "path", ImagemTipo.POST);
@@ -888,6 +921,4 @@ class PostServiceTest {
       .hasMessageContaining("Post não encontrado");
     verify(postRepository, never()).save(any(Post.class));
   }
-
-
 }
