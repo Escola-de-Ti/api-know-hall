@@ -33,7 +33,7 @@ public class WorkshopService {
 
     Usuario instrutor = usuarioRepository.findByEmail(emailInstrutor)
       .orElseThrow(() -> new EntityNotFoundException(
-        "Usuário com ID " + emailInstrutor + " não encontrado"
+        "Usuário não encontrado"
       ));
 
     if (instrutor.getTipoUsuario() != TipoUsuario.INSTRUTOR) {
@@ -48,7 +48,6 @@ public class WorkshopService {
       );
     }
 
-    // Validação do custo
     if (dto.getCusto() == null || dto.getCusto() < 0) {
       throw new IllegalArgumentException("Custo do workshop é obrigatório e não pode ser negativo");
     }
@@ -60,7 +59,6 @@ public class WorkshopService {
     workshop.setDataInicio(dto.getDataInicio());
     workshop.setDataTermino(dto.getDataTermino());
 
-    // atribuir custo
     workshop.setCusto(dto.getCusto());
 
     workshop.setStatus(determinarStatusInicial(dto.getDataInicio()));
@@ -94,7 +92,7 @@ public class WorkshopService {
   public Workshop buscarPorId(BigInteger id) {
     return workshopRepository.findById(id)
       .orElseThrow(() -> new EntityNotFoundException(
-        "Workshop com ID " + id + " não encontrado"
+        "Workshop não encontrado"
       ));
   }
 
@@ -129,7 +127,7 @@ public class WorkshopService {
 
     Usuario instrutor = usuarioRepository.findByEmail(emailInstrutor)
       .orElseThrow(() -> new EntityNotFoundException(
-        "Usuário com ID " + emailInstrutor + " não encontrado"
+        "Usuário não encontrado"
       ));
 
     if (!workshop.getInstrutor().getId().equals(instrutor.getId())) {
