@@ -30,10 +30,11 @@ public class WorkshopService {
   private final UsuarioRepository usuarioRepository;
 
   @Transactional
-  public Workshop criarWorkshop(WorkshopCreateDTO dto, String intrutorEmail) {
-    Usuario instrutor = usuarioRepository.findByEmail(intrutorEmail)
+  public Workshop criarWorkshop(WorkshopCreateDTO dto, String emailInstrutor) {
+
+    Usuario instrutor = usuarioRepository.findByEmail(emailInstrutor)
       .orElseThrow(() -> new EntityNotFoundException(
-        "Usuário não encontrado"
+        "Usuário com ID " + emailInstrutor + " não encontrado"
       ));
 
     if (instrutor.getTipoUsuario() != TipoUsuario.INSTRUTOR) {
@@ -48,14 +49,20 @@ public class WorkshopService {
       );
     }
 
+    // Validação do custo
+    if (dto.getCusto() == null || dto.getCusto() < 0) {
+      throw new IllegalArgumentException("Custo do workshop é obrigatório e não pode ser negativo");
+    }
+
     Workshop workshop = new Workshop();
     workshop.setTitulo(dto.getTitulo());
     workshop.setLinkMeet(dto.getLinkMeet());
     workshop.setInstrutor(instrutor);
     workshop.setDataInicio(dto.getDataInicio());
     workshop.setDataTermino(dto.getDataTermino());
-    workshop.setCusto(dto.getCusto());
     workshop.setCapacidade(dto.getCapacidade());
+
+    workshop.setCusto(dto.getCusto());
 
     workshop.setStatus(determinarStatusInicial(dto.getDataInicio()));
 
@@ -118,8 +125,19 @@ public class WorkshopService {
   }
 
   @Transactional
-  public Workshop atualizarWorkshop(BigInteger id, WorkshopUpdateDTO dto) {
+  public Workshop atualizarWorkshop(BigInteger id, WorkshopUpdateDTO dto, String emailInstrutor) {
     Workshop workshop = buscarPorId(id);
+
+    Usuario instrutor = usuarioRepository.findByEmail(emailInstrutor)
+      .orElseThrow(() -> new EntityNotFoundException(
+        "Usuário com ID " + emailInstrutor + " não encontrado"
+      ));
+
+    if (!workshop.getInstrutor().getId().equals(instrutor.getId())) {
+      throw new IllegalArgumentException(
+        "Apenas o instrutor que criou o workshop pode atualizá-lo"
+      );
+    }
 
     if (dto.getTitulo() != null) {
       workshop.setTitulo(dto.getTitulo());
@@ -129,9 +147,6 @@ public class WorkshopService {
     }
     if (dto.getCapacidade() != null) {
       workshop.setCapacidade(dto.getCapacidade());
-    }
-    if (dto.getCusto() != null) {
-      workshop.setCusto(dto.getCusto());
     }
 
     if (dto.getDataInicio() != null || dto.getDataTermino() != null) {
@@ -156,6 +171,13 @@ public class WorkshopService {
         descricao = descricaoWorkshopRepository.save(descricao);
         workshop.setDescricao(descricao);
       }
+    }
+
+    if (dto.getCusto() != null) {
+      if (dto.getCusto() < 0) {
+        throw new IllegalArgumentException("Custo não pode ser negativo");
+      }
+      workshop.setCusto(dto.getCusto());
     }
 
     return workshopRepository.save(workshop);
@@ -189,6 +211,12 @@ public class WorkshopService {
 
 
   private void validarEAtualizarStatus(Workshop workshop, StatusWorkshop novoStatus) {
+    if (workshop.getStatus() == StatusWorkshop.CONCLUIDO && novoStatus != StatusWorkshop.CONCLUIDO) {
+      throw new IllegalArgumentException(
+        "Não é possível reabrir um workshop já concluído"
+      );
+    }
+
     Timestamp agora = Timestamp.from(Instant.now());
 
     if (novoStatus == StatusWorkshop.EM_ANDAMENTO) {
@@ -206,12 +234,6 @@ public class WorkshopService {
           "Apenas workshops EM_ANDAMENTO podem ser concluídos"
         );
       }
-    }
-
-    if (workshop.getStatus() == StatusWorkshop.CONCLUIDO && novoStatus != StatusWorkshop.CONCLUIDO) {
-      throw new IllegalArgumentException(
-        "Não é possível reabrir um workshop já concluído"
-      );
     }
 
     workshop.setStatus(novoStatus);

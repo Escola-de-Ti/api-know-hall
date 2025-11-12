@@ -319,7 +319,7 @@ class HistoricoTransacaoTest {
   @Test
   @DisplayName("Deve validar todos os motivos do enum")
   void deveValidarTodosMotivosDEnum() {
-    assertThat(MotivoTransacao.values()).hasSize(10);
+    assertThat(MotivoTransacao.values()).hasSize(12);
     assertThat(MotivoTransacao.values()).contains(
       MotivoTransacao.UP_VOTE_COMENTARIO,
       MotivoTransacao.SUPER_VOTE,
@@ -329,6 +329,8 @@ class HistoricoTransacaoTest {
       MotivoTransacao.GERADOR_QUALIDADE,
       MotivoTransacao.INSCRICAO_WORKSHOP_ALUNO,
       MotivoTransacao.INSCRICAO_WORKSHOP_INSTRUTOR,
+      MotivoTransacao.CANCELAMENTO_WORKSHOP_ALUNO,
+      MotivoTransacao.CANCELAMENTO_WORKSHOP_INSTRUTOR,
       MotivoTransacao.PUNICAO,
       MotivoTransacao.STREAK_LOGIN
     );
@@ -345,6 +347,8 @@ class HistoricoTransacaoTest {
     assertThat(MotivoTransacao.GERADOR_QUALIDADE.getDescricao()).isEqualTo("Post gerou resposta destaque");
     assertThat(MotivoTransacao.INSCRICAO_WORKSHOP_ALUNO.getDescricao()).isEqualTo("Inscrição em workshop como aluno");
     assertThat(MotivoTransacao.INSCRICAO_WORKSHOP_INSTRUTOR.getDescricao()).isEqualTo("Pagamento recebido por workshop");
+    assertThat(MotivoTransacao.CANCELAMENTO_WORKSHOP_ALUNO.getDescricao()).isEqualTo("Cancelamento de inscrição em workshop como aluno");
+    assertThat(MotivoTransacao.CANCELAMENTO_WORKSHOP_INSTRUTOR.getDescricao()).isEqualTo("Reembolso pago por workshop");
     assertThat(MotivoTransacao.PUNICAO.getDescricao()).isEqualTo("Punição por denúncia aceita");
     assertThat(MotivoTransacao.STREAK_LOGIN.getDescricao()).isEqualTo("Bônus por login consecutivo");
   }

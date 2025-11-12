@@ -9,6 +9,8 @@ public enum MotivoTransacao {
   GERADOR_QUALIDADE("Post gerou resposta destaque"),
   INSCRICAO_WORKSHOP_ALUNO("Inscrição em workshop como aluno"),
   INSCRICAO_WORKSHOP_INSTRUTOR("Pagamento recebido por workshop"),
+  CANCELAMENTO_WORKSHOP_ALUNO("Cancelamento de inscrição em workshop como aluno"),
+  CANCELAMENTO_WORKSHOP_INSTRUTOR("Reembolso pago por workshop"),
   PUNICAO("Punição por denúncia aceita"),
   STREAK_LOGIN("Bônus por login consecutivo");
 

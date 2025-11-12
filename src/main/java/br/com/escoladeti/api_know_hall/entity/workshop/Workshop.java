@@ -56,7 +56,7 @@ public class Workshop {
   @Column(name = "capacidade")
   private Integer capacidade;
 
-  @Column(name = "custo")
+  @Column(name = "custo", nullable = false)
   private Integer custo;
 
   public void setDescricao(DescricaoWorkshop descricao) {

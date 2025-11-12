@@ -3,6 +3,7 @@ package br.com.escoladeti.api_know_hall.dto.workshop;
 import br.com.escoladeti.api_know_hall.enums.workshop.StatusWorkshop;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -34,7 +35,9 @@ public class WorkshopUpdateDTO {
   @Valid
   private DescricaoWorkshopDTO descricao;
 
-  private Integer capacidade;
-
+  // campo opcional para atualizar custo
+  @Min(value = 0, message = "Custo não pode ser negativo")
   private Integer custo;
+
+  private Integer capacidade;
 }

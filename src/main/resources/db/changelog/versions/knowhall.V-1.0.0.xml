@@ -85,7 +85,7 @@
     <comment>Criação da tabela de relacionamento POST_TAGS</comment>
   </changeSet>
 
-    <changeSet id="KH-25" author="Willyan Tomaz">
+  <changeSet id="KH-25" author="Willyan Tomaz">
     <preConditions onFail="MARK_RAN">
       <not>
         <tableExists tableName="IMAGEM"/>
@@ -131,6 +131,61 @@
     </createIndex>
   </changeSet>
 
+  <changeSet id="KH-36" author="Willyan Tomaz">
+    <createTable tableName="inscricao">
+      <column name="id" type="BIGINT" autoIncrement="true">
+        <constraints primaryKey="true" primaryKeyName="pk_inscricao"/>
+      </column>
+
+      <column name="id_usuario" type="BIGINT">
+        <constraints nullable="false"/>
+      </column>
+
+      <column name="id_workshop" type="BIGINT">
+        <constraints nullable="false"/>
+      </column>
+
+      <column name="status" type="VARCHAR(50)">
+        <constraints nullable="false"/>
+      </column>
+
+      <column name="data_inscricao" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+        <constraints nullable="false"/>
+      </column>
+    </createTable>
+
+    <addForeignKeyConstraint
+      baseTableName="inscricao"
+      baseColumnNames="id_usuario"
+      referencedTableName="usuario"
+      referencedColumnNames="id"
+      constraintName="fk_inscricao_usuario"/>
+
+    <addForeignKeyConstraint
+      baseTableName="inscricao"
+      baseColumnNames="id_workshop"
+      referencedTableName="workshop"
+      referencedColumnNames="id"
+      constraintName="fk_inscricao_workshop"/>
+
+    <addUniqueConstraint
+      tableName="inscricao"
+      columnNames="id_usuario, id_workshop"
+      constraintName="uk_usuario_workshop_inscricao"/>
+
+    <rollback>
+      <dropTable tableName="inscricao"/>
+    </rollback>
+  </changeSet>
+
+  <changeSet id="37" author="willyan">
+    <addColumn tableName="workshop">
+      <column name="custo" type="INT" defaultValueNumeric="0">
+              <constraints nullable="false"/>
+      </column>
+    </addColumn>
+  </changeSet>
+  
   <changeSet id="KH-30" author="GABRIEL MARASSI">
     <preConditions onFail="MARK_RAN">
       <and>
