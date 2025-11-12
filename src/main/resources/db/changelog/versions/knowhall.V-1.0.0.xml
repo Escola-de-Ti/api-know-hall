@@ -185,7 +185,7 @@
       </column>
     </addColumn>
   </changeSet>
-  
+
   <changeSet id="KH-30" author="GABRIEL MARASSI">
     <preConditions onFail="MARK_RAN">
       <and>
@@ -490,14 +490,6 @@
     <renameColumn tableName="IMAGEM" oldColumnName="id_imagem" newColumnName="id_imagem_supabase" columnDataType="VARCHAR(255)"/>
     <addColumn tableName="IMAGEM">
       <column name="type" type="VARCHAR(255)">
-        <constraints nullable="false"/>
-      </column>
-    </addColumn>
-  </changeSet>
-
-  <changeSet id="37" author="willyan">
-    <addColumn tableName="workshop">
-      <column name="custo" type="INT" defaultValueNumeric="0">
         <constraints nullable="false"/>
       </column>
     </addColumn>

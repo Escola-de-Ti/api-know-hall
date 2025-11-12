@@ -93,7 +93,6 @@ class PostControllerTest {
     mockPrincipal = () -> "joao@email.com";
 
     postCreateDTO = new PostCreateDTO(
-      BigInteger.ONE,
       "Título do Post",
       "Descrição do post",
       List.of(BigInteger.ONE)
