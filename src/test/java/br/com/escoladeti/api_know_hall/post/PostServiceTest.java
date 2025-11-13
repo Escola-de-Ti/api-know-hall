@@ -89,7 +89,6 @@ class PostServiceTest {
 
     // Setup DTO
     postCreateDTO = new PostCreateDTO(
-      BigInteger.ONE,
       "Título do Post",
       "Descrição do post",
       List.of(BigInteger.ONE)
@@ -136,7 +135,6 @@ class PostServiceTest {
   @DisplayName("Deve criar post sem tags")
   void deveCriarPostSemTags() {
     PostCreateDTO dtoSemTags = new PostCreateDTO(
-      BigInteger.ONE,
       "Título",
       "Descrição",
       null

@@ -136,6 +136,7 @@ class WorkshopControllerTest {
       createDTO.setDataTermino(dataTermino);
       createDTO.setDescricao(descricaoDTO);
       createDTO.setCusto(100);
+      createDTO.setCapacidade(12);
 
       when(workshopService.criarWorkshop(any(WorkshopCreateDTO.class), eq(instrutor.getEmail())))
         .thenReturn(workshopAberto);
@@ -165,6 +166,7 @@ class WorkshopControllerTest {
       createDTO.setDataInicio(hoje);
       createDTO.setDataTermino(fim);
       createDTO.setCusto(100);
+      createDTO.setCapacidade(12);
 
       when(workshopService.criarWorkshop(any(WorkshopCreateDTO.class), eq(instrutor.getEmail())))
         .thenReturn(workshopEmAndamento);
@@ -192,6 +194,7 @@ class WorkshopControllerTest {
       createDTO.setDataInicio(passado);
       createDTO.setDataTermino(fim);
       createDTO.setCusto(100);
+      createDTO.setCapacidade(12);
 
       Workshop workshopIniciado = new Workshop();
       workshopIniciado.setId(BigInteger.valueOf(3));
@@ -224,6 +227,7 @@ class WorkshopControllerTest {
       createDTO.setDataInicio(dataInicio);
       createDTO.setDataTermino(dataTermino);
       createDTO.setCusto(100);
+      createDTO.setCapacidade(12);
 
       Workshop workshopSemDesc = new Workshop();
       workshopSemDesc.setId(BigInteger.valueOf(4));
@@ -256,6 +260,7 @@ class WorkshopControllerTest {
       createDTO.setDataInicio(dataInicio);
       createDTO.setDataTermino(dataTermino);
       createDTO.setCusto(100);
+      createDTO.setCapacidade(12);
 
       when(workshopService.criarWorkshop(any(WorkshopCreateDTO.class), eq(instrutor.getEmail())))
         .thenThrow(new IllegalArgumentException("Apenas usuários do tipo INSTRUTOR podem criar workshops"));
@@ -280,6 +285,7 @@ class WorkshopControllerTest {
       createDTO.setDataInicio(dataInicio);
       createDTO.setDataTermino(dataTermino);
       createDTO.setCusto(100);
+      createDTO.setCapacidade(12);
 
       when(workshopService.criarWorkshop(any(WorkshopCreateDTO.class), eq(instrutor.getEmail())))
         .thenThrow(new IllegalArgumentException("Data de término deve ser maior que data de início"));
@@ -360,6 +366,7 @@ class WorkshopControllerTest {
       createDTO.setDataInicio(dataInicio);
       createDTO.setDataTermino(dataTermino);
       createDTO.setCusto(100);
+      createDTO.setCapacidade(12);
 
       when(workshopService.criarWorkshop(any(WorkshopCreateDTO.class), eq(instrutor.getEmail())))
         .thenThrow(new jakarta.persistence.EntityNotFoundException("Usuário com ID 99999 não encontrado"));
