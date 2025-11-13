@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigInteger;
+import java.security.Principal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,9 +26,9 @@ public class WorkshopController {
 
   @PostMapping
   public ResponseEntity<WorkshopResponseDTO> criarWorkshop(
-    @Valid @RequestBody WorkshopCreateDTO dto) {
+    @Valid @RequestBody WorkshopCreateDTO dto, Principal principal) {
 
-    Workshop workshop = workshopService.criarWorkshop(dto);
+    Workshop workshop = workshopService.criarWorkshop(dto, principal.getName());
     WorkshopResponseDTO response = WorkshopResponseDTO.fromEntity(workshop);
 
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -100,9 +101,10 @@ public class WorkshopController {
   @PatchMapping("/{id}")
   public ResponseEntity<WorkshopResponseDTO> atualizarWorkshop(
     @PathVariable BigInteger id,
-    @Valid @RequestBody WorkshopUpdateDTO dto) {
+    @Valid @RequestBody WorkshopUpdateDTO dto,
+    Principal principal) {
 
-    Workshop workshop = workshopService.atualizarWorkshop(id, dto);
+    Workshop workshop = workshopService.atualizarWorkshop(id, dto, principal.getName());
     WorkshopResponseDTO response = WorkshopResponseDTO.fromEntity(workshop);
 
     return ResponseEntity.ok(response);

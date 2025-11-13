@@ -28,7 +28,7 @@ public class DescricaoWorkshop {
   @Column(name = "descricao", columnDefinition = "TEXT")
   private String descricao;
 
-  @OneToOne
+  @OneToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "id_workshop", nullable = false, unique = true)
   private Workshop workshop;
 
