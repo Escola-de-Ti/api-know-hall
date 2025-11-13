@@ -14,68 +14,62 @@ import java.util.Optional;
 public interface WorkshopRepository extends JpaRepository<Workshop, BigInteger> {
 
   @Query(value = """
-        SELECT w.*
-        FROM workshop w
-        WHERE w.id_instrutor = :instrutorId
-        ORDER BY w.id DESC
-        """, nativeQuery = true)
+    SELECT w.*
+    FROM workshop w
+    WHERE w.id_instrutor = :instrutorId
+    ORDER BY w.id DESC
+    """, nativeQuery = true)
   List<Workshop> findByInstrutorId(@Param("instrutorId") Long instrutorId);
 
   @Query(value = """
-        SELECT w.*
-        FROM workshop w
-        WHERE w.status = :status
-        ORDER BY w.id DESC
-        """, nativeQuery = true)
+    SELECT w.*
+    FROM workshop w
+    WHERE w.status = :status
+    ORDER BY w.id DESC
+    """, nativeQuery = true)
   List<Workshop> findByStatus(@Param("status") String status);
 
   @Query(value = """
-        SELECT w.*
-        FROM workshop w
-        LEFT JOIN descricao_workshop dw ON w.id = dw.id_workshop
-        WHERE w.id = :workshopId
-        """, nativeQuery = true)
+    SELECT w.*
+    FROM workshop w
+    LEFT JOIN descricao_workshop dw ON w.id = dw.id_workshop
+    WHERE w.id = :workshopId
+    """, nativeQuery = true)
   Optional<Workshop> findByIdWithDescricao(@Param("workshopId") Long workshopId);
 
   @Query(value = """
-        SELECT w.*
-        FROM workshop w
-        WHERE w.status = 'ABERTO'
-        ORDER BY w.id DESC
-        """, nativeQuery = true)
+    SELECT w.*
+    FROM workshop w
+    WHERE w.status = 'ABERTO'
+    ORDER BY w.id DESC
+    """, nativeQuery = true)
   List<Workshop> findWorkshopsAbertos();
 
   @Query(value = """
-        SELECT COUNT(*)
-        FROM workshop w
-        WHERE w.id_instrutor = :instrutorId
-        """, nativeQuery = true)
+    SELECT COUNT(*)
+    FROM workshop w
+    WHERE w.id_instrutor = :instrutorId
+    """, nativeQuery = true)
   Long countByInstrutorId(@Param("instrutorId") Long instrutorId);
 
   @Query(value = """
-        SELECT w.*
-        FROM workshop w
-        WHERE w.id_instrutor = :instrutorId
-          AND w.status = :status
-        ORDER BY w.id DESC
-        """, nativeQuery = true)
+    SELECT w.*
+    FROM workshop w
+    WHERE w.id_instrutor = :instrutorId
+      AND w.status = :status
+    ORDER BY w.id DESC
+    """, nativeQuery = true)
   List<Workshop> findByInstrutorIdAndStatus(
     @Param("instrutorId") Long instrutorId,
     @Param("status") String status
   );
 
   @Query(value = """
-        SELECT w.*
-        FROM workshop w
-        WHERE LOWER(w.titulo) LIKE LOWER(CONCAT('%', :termo, '%'))
-        ORDER BY w.id DESC
-        """, nativeQuery = true)
+    SELECT w.*
+    FROM workshop w
+    WHERE LOWER(w.titulo) LIKE LOWER(CONCAT('%', :termo, '%'))
+    ORDER BY w.id DESC
+    """, nativeQuery = true)
   List<Workshop> findByTituloContaining(@Param("termo") String termo);
 
-  @Query(value = """
-        SELECT COUNT(*)
-        FROM workshop w
-        WHERE w.id_instrutor = :usuarioId
-        """, nativeQuery = true)
-  Optional<Integer> countByUsuarioId(@Param("usuarioId") BigInteger usuarioId);
 }

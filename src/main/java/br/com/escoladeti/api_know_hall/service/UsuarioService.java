@@ -6,7 +6,6 @@ import br.com.escoladeti.api_know_hall.dto.usuario.*;
 import br.com.escoladeti.api_know_hall.entity.Imagem;
 import br.com.escoladeti.api_know_hall.entity.Usuario;
 import br.com.escoladeti.api_know_hall.enums.StatusUsuario;
-import br.com.escoladeti.api_know_hall.enums.TipoVoto;
 import br.com.escoladeti.api_know_hall.exception.*;
 import br.com.escoladeti.api_know_hall.repository.*;
 import br.com.escoladeti.api_know_hall.service.utils.PalavrasProibidasService;
@@ -272,33 +271,26 @@ public class UsuarioService {
     Usuario usuario = usuarioRepository.findById(id_usuario)
       .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
 
-    Integer qtdPosts = postRepository.findCountPostById(id_usuario).orElseThrow(()
-      -> new EntityNotFoundException("Erro ao obter quantidade de posts do usuário"));
+    var detalhes = usuarioRepository.findDetalhesUsuarioById(id_usuario)
+      .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
 
-    Integer qtdComentarios = comentarioRepository.countByUsuarioId(id_usuario).orElseThrow(()
-      -> new EntityNotFoundException("Erro ao obter quantidade de comentários do usuário"));
+    boolean isProprioUsuario = email != null && email.equals(usuario.getEmail());
 
-    Integer qtdUpVotes = votoRepository.countByUsuarioIdAndTipo(id_usuario, TipoVoto.UP_VOTE.name()).orElseThrow(()
-      -> new EntityNotFoundException("Erro ao obter quantidade de votos do usuário"));
-
-    Integer qtdSuperVotes = votoRepository.countByUsuarioIdAndTipo(id_usuario, TipoVoto.SUPER_VOTE.name()).orElseThrow(()
-      -> new EntityNotFoundException("Erro ao obter quantidade de super votos do usuário"));
-
-     Integer qtdWorkshops = workshopRepository.countByUsuarioId(id_usuario).orElseThrow(()
-      -> new EntityNotFoundException("Erro ao obter quantidade de workshops do usuário"));
+    Long tokens = isProprioUsuario ? detalhes.getTokens() : null;
 
     return new UsuarioDetalhesResponseDTO(
-      usuario.getNome(),
+      detalhes.getNome(),
       usuario.getTags(),
-      usuario.getBiografia(),
-      usuario.getNivel(),
-      usuario.getQntdXp(),
-      usuario.getQntdToken(),
-      qtdPosts,
-      qtdComentarios,
-      qtdUpVotes,
-      qtdSuperVotes,
-      qtdWorkshops
+      detalhes.getBiografia(),
+      detalhes.getNivel(),
+      detalhes.getXp(),
+      tokens,
+      detalhes.getQtdPosts(),
+      detalhes.getQtdComentarios(),
+      detalhes.getQtdUpVotes(),
+      detalhes.getQtdSuperVotes(),
+      detalhes.getQtdWorkshops(),
+      detalhes.getImagemUrl()
     );
   }
 }

@@ -93,7 +93,4 @@ public interface ComentarioRepository extends JpaRepository<Comentario, BigInteg
     "WHERE c.id = :id")
   Optional<Comentario> findByIdWithRelations(@Param("id") BigInteger id);
 
-  @Query("SELECT COUNT(*) FROM Comentario c " +
-    "WHERE c.usuario.id = :usuarioId")
-  Optional<Integer> countByUsuarioId(@Param("usuarioId") BigInteger usuarioId);
 }
