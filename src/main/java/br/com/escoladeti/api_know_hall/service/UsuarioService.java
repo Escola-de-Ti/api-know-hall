@@ -294,4 +294,10 @@ public class UsuarioService {
       detalhes.getImagemUrl()
     );
   }
+
+  public UsuarioResponseDTO obterUsuarioPorToken(String email) {
+    Usuario usuario = usuarioRepository.findByEmail(email)
+      .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
+    return new UsuarioResponseDTO(usuario);
+  }
 }

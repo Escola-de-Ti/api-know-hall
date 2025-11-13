@@ -55,6 +55,13 @@ public class UsuarioController {
     return ResponseEntity.ok(response);
   }
 
+  @GetMapping("/user")
+  public ResponseEntity<UsuarioResponseDTO> getUsuarioByToken(
+    Principal principal) {
+    UsuarioResponseDTO response = usuarioService.obterUsuarioPorToken(principal.getName());
+    return ResponseEntity.ok(response);
+  }
+
   @DeleteMapping("/{id}")
   public ResponseEntity<Void> deleteUsuario(@PathVariable BigInteger id) {
     usuarioService.deleteUsuario(id);
@@ -80,7 +87,7 @@ public class UsuarioController {
   }
 
   @GetMapping("/detalhes/{usuarioId}")
-  public ResponseEntity<UsuarioDetalhesResponseDTO> getUsuarioDetalhes(Principal principal,@PathVariable BigInteger usuarioId) {
+  public ResponseEntity<UsuarioDetalhesResponseDTO> getUsuarioDetalhes(Principal principal, @PathVariable BigInteger usuarioId) {
     UsuarioDetalhesResponseDTO detalhes = usuarioService.obterDetalhesUsuario(principal.getName(), usuarioId);
     return ResponseEntity.ok(detalhes);
   }
