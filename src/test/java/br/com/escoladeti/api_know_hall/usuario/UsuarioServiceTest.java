@@ -28,6 +28,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import br.com.escoladeti.api_know_hall.dto.usuario.RankingResponseDTO;
 import br.com.escoladeti.api_know_hall.dto.usuario.UsuarioRankingDTO;
+
 import static org.mockito.Mockito.mock;
 
 import java.math.BigInteger;
@@ -90,6 +91,7 @@ class UsuarioServiceTest {
     usuario.setTipoUsuario(TipoUsuario.ALUNO);
     usuario.setQntdToken(0L);
     usuario.setQntdXp(0L);
+    usuario.setNivel(1);
 
     usuarioCreateDTO = new UsuarioCreateDTO();
     usuarioCreateDTO.setEmail("test@test.com");
@@ -771,5 +773,189 @@ class UsuarioServiceTest {
     UsuarioRankingDTO dto3 = result.getRankingList().get(2);
     assertEquals(3L, dto3.getPosicao());
     assertEquals("User 3", dto3.getNome());
+  }
+
+  @Test
+  void obterDetalhesUsuario_ProprioUsuario_ShouldReturnTokens() {
+    // Arrange
+    BigInteger userId = BigInteger.valueOf(1);
+    String email = "test@test.com";
+
+    Usuario usuario = new Usuario();
+    usuario.setId(userId);
+    usuario.setEmail(email);
+    usuario.setNome("Test User");
+    usuario.setBiografia("Biografia de teste");
+    usuario.setNivel(5);
+    usuario.setQntdXp(1500L);
+    usuario.setQntdToken(300L);
+    usuario.setTags(Arrays.asList());
+
+    var detalhesProjection = mock(br.com.escoladeti.api_know_hall.projection.usuario.UsuarioDetalhesProjection.class);
+    when(detalhesProjection.getNome()).thenReturn("Test User");
+    when(detalhesProjection.getBiografia()).thenReturn("Biografia de teste");
+    when(detalhesProjection.getNivel()).thenReturn(5);
+    when(detalhesProjection.getXp()).thenReturn(1500L);
+    when(detalhesProjection.getTokens()).thenReturn(300L);
+    when(detalhesProjection.getQtdPosts()).thenReturn(10);
+    when(detalhesProjection.getQtdComentarios()).thenReturn(25);
+    when(detalhesProjection.getQtdUpVotes()).thenReturn(50);
+    when(detalhesProjection.getQtdSuperVotes()).thenReturn(5);
+    when(detalhesProjection.getQtdWorkshops()).thenReturn(2);
+    when(detalhesProjection.getImagemUrl()).thenReturn("https://example.com/imagem.jpg");
+
+    when(usuarioRepository.findById(userId)).thenReturn(Optional.of(usuario));
+    when(usuarioRepository.findDetalhesUsuarioById(userId)).thenReturn(Optional.of(detalhesProjection));
+
+    // Act
+    var result = usuarioService.obterDetalhesUsuario(email, userId);
+
+    // Assert
+    assertNotNull(result);
+    assertEquals("Test User", result.getNome());
+    assertEquals("Biografia de teste", result.getBiografia());
+    assertEquals(5, result.getNivel());
+    assertEquals(1500L, result.getXp());
+    assertEquals(300L, result.getTokens()); // Tokens devem ser retornados para o próprio usuário
+    assertEquals(10, result.getQtdPosts());
+    assertEquals(25, result.getQtdComentarios());
+    assertEquals(50, result.getQtdUpVotes());
+    assertEquals(5, result.getQtdSuperVotes());
+    assertEquals(2, result.getQtdWorkshops());
+    assertEquals("https://example.com/imagem.jpg", result.getImagemUrl());
+
+    verify(usuarioRepository, times(1)).findById(userId);
+    verify(usuarioRepository, times(1)).findDetalhesUsuarioById(userId);
+  }
+
+  @Test
+  void obterDetalhesUsuario_OutroUsuario_ShouldNotReturnTokens() {
+    // Arrange
+    BigInteger userId = BigInteger.valueOf(2);
+    String emailLogado = "logado@test.com";
+
+    Usuario usuario = new Usuario();
+    usuario.setId(userId);
+    usuario.setEmail("outro@test.com"); // Email diferente do logado
+    usuario.setNome("Outro User");
+    usuario.setBiografia("Biografia do outro");
+    usuario.setNivel(3);
+    usuario.setQntdXp(800L);
+    usuario.setQntdToken(150L);
+    usuario.setTags(Arrays.asList());
+
+    var detalhesProjection = mock(br.com.escoladeti.api_know_hall.projection.usuario.UsuarioDetalhesProjection.class);
+    when(detalhesProjection.getNome()).thenReturn("Outro User");
+    when(detalhesProjection.getBiografia()).thenReturn("Biografia do outro");
+    when(detalhesProjection.getNivel()).thenReturn(3);
+    when(detalhesProjection.getXp()).thenReturn(800L);
+    when(detalhesProjection.getQtdPosts()).thenReturn(5);
+    when(detalhesProjection.getQtdComentarios()).thenReturn(12);
+    when(detalhesProjection.getQtdUpVotes()).thenReturn(20);
+    when(detalhesProjection.getQtdSuperVotes()).thenReturn(2);
+    when(detalhesProjection.getQtdWorkshops()).thenReturn(1);
+    when(detalhesProjection.getImagemUrl()).thenReturn("https://example.com/outro.jpg");
+
+    when(usuarioRepository.findById(userId)).thenReturn(Optional.of(usuario));
+    when(usuarioRepository.findDetalhesUsuarioById(userId)).thenReturn(Optional.of(detalhesProjection));
+
+    // Act
+    var result = usuarioService.obterDetalhesUsuario(emailLogado, userId);
+
+    // Assert
+    assertNotNull(result);
+    assertEquals("Outro User", result.getNome());
+    assertEquals("Biografia do outro", result.getBiografia());
+    assertEquals(3, result.getNivel());
+    assertEquals(800L, result.getXp());
+    assertNull(result.getTokens()); // Tokens NÃO devem ser retornados para outro usuário
+    assertEquals(5, result.getQtdPosts());
+    assertEquals(12, result.getQtdComentarios());
+    assertEquals(20, result.getQtdUpVotes());
+    assertEquals(2, result.getQtdSuperVotes());
+    assertEquals(1, result.getQtdWorkshops());
+    assertEquals("https://example.com/outro.jpg", result.getImagemUrl());
+
+    verify(usuarioRepository, times(1)).findById(userId);
+    verify(usuarioRepository, times(1)).findDetalhesUsuarioById(userId);
+  }
+
+  @Test
+  void obterDetalhesUsuario_UsuarioNaoEncontrado_ShouldThrowException() {
+    // Arrange
+    BigInteger userId = BigInteger.valueOf(999);
+    String email = "test@test.com";
+
+    when(usuarioRepository.findById(userId)).thenReturn(Optional.empty());
+
+    // Act & Assert
+    EntityNotFoundException exception = assertThrows(
+      EntityNotFoundException.class,
+      () -> usuarioService.obterDetalhesUsuario(email, userId)
+    );
+
+    assertEquals("Usuário não encontrado", exception.getMessage());
+    verify(usuarioRepository, times(1)).findById(userId);
+    verify(usuarioRepository, never()).findDetalhesUsuarioById(any());
+  }
+
+  @Test
+  void obterDetalhesUsuario_IdNulo_ShouldThrowIllegalArgumentException() {
+    // Arrange
+    String email = "test@test.com";
+
+    // Act & Assert
+    IllegalArgumentException exception = assertThrows(
+      IllegalArgumentException.class,
+      () -> usuarioService.obterDetalhesUsuario(email, null)
+    );
+
+    assertEquals("O ID do usuário não pode ser nulo.", exception.getMessage());
+    verify(usuarioRepository, never()).findById(any());
+    verify(usuarioRepository, never()).findDetalhesUsuarioById(any());
+  }
+
+  @Test
+  void obterDetalhesUsuario_SemImagemPerfil_ShouldReturnNullImagemUrl() {
+    // Arrange
+    BigInteger userId = BigInteger.valueOf(1);
+    String email = "test@test.com";
+
+    Usuario usuario = new Usuario();
+    usuario.setId(userId);
+    usuario.setEmail(email);
+    usuario.setNome("Test User");
+    usuario.setTags(Arrays.asList());
+
+    var detalhesProjection = mock(br.com.escoladeti.api_know_hall.projection.usuario.UsuarioDetalhesProjection.class);
+    when(detalhesProjection.getNome()).thenReturn("Test User");
+    when(detalhesProjection.getBiografia()).thenReturn(null);
+    when(detalhesProjection.getNivel()).thenReturn(1);
+    when(detalhesProjection.getXp()).thenReturn(0L);
+    when(detalhesProjection.getTokens()).thenReturn(0L);
+    when(detalhesProjection.getQtdPosts()).thenReturn(0);
+    when(detalhesProjection.getQtdComentarios()).thenReturn(0);
+    when(detalhesProjection.getQtdUpVotes()).thenReturn(0);
+    when(detalhesProjection.getQtdSuperVotes()).thenReturn(0);
+    when(detalhesProjection.getQtdWorkshops()).thenReturn(0);
+    when(detalhesProjection.getImagemUrl()).thenReturn(null); // Sem imagem
+
+    when(usuarioRepository.findById(userId)).thenReturn(Optional.of(usuario));
+    when(usuarioRepository.findDetalhesUsuarioById(userId)).thenReturn(Optional.of(detalhesProjection));
+
+    // Act
+    var result = usuarioService.obterDetalhesUsuario(email, userId);
+
+    // Assert
+    assertNotNull(result);
+    assertNull(result.getImagemUrl()); // Imagem deve ser null
+    assertEquals(0, result.getQtdPosts());
+    assertEquals(0, result.getQtdComentarios());
+    assertEquals(0, result.getQtdUpVotes());
+    assertEquals(0, result.getQtdSuperVotes());
+    assertEquals(0, result.getQtdWorkshops());
+
+    verify(usuarioRepository, times(1)).findById(userId);
+    verify(usuarioRepository, times(1)).findDetalhesUsuarioById(userId);
   }
 }

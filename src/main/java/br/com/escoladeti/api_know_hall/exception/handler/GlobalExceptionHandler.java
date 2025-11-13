@@ -97,7 +97,7 @@ public class GlobalExceptionHandler {
     ErrorResponse error = new ErrorResponse(HttpStatus.PAYMENT_REQUIRED.value(), ex.getMessage(), LocalDateTime.now());
     return ResponseEntity.status(HttpStatus.PAYMENT_REQUIRED).body(error);
   }
-  
+
   @ExceptionHandler(ValidationException.class)
   public ResponseEntity<ErrorResponse> handleValidationException(ValidationException ex) {
     ErrorResponse error = new ErrorResponse(

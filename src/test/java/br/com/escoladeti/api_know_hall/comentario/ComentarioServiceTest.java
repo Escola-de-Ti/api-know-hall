@@ -485,6 +485,112 @@ class ComentarioServiceTest {
     verify(comentarioRepository, never()).deleteById(any());
   }
 
+  @Test
+  @DisplayName("Deve buscar todos os comentários de um usuário específico com sucesso")
+  void deveBuscarTodosComentariosDeUmUsuarioEspecificoComSucesso() {
+    List<br.com.escoladeti.api_know_hall.projection.comentario.ComentarioUsuarioProjection> projections = List.of(
+      createComentarioUsuarioProjection(BigInteger.ONE, BigInteger.valueOf(10), "Primeiro comentário"),
+      createComentarioUsuarioProjection(BigInteger.TWO, BigInteger.valueOf(20), "Segundo comentário"),
+      createComentarioUsuarioProjection(BigInteger.valueOf(3), BigInteger.valueOf(30), "Terceiro comentário")
+    );
+
+    when(usuarioRepository.existsById(BigInteger.ONE)).thenReturn(true);
+    when(comentarioRepository.findAllComentariosByUsuarioId(BigInteger.ONE)).thenReturn(projections);
+
+    List<br.com.escoladeti.api_know_hall.dto.comentario.ComentarioUsuarioResponseDTO> resultado =
+      comentarioService.buscarTodosComentariosDoUsuario(BigInteger.ONE);
+
+    assertThat(resultado).isNotNull();
+    assertThat(resultado).hasSize(3);
+    assertThat(resultado.get(0).comentarioId()).isEqualTo(BigInteger.ONE);
+    assertThat(resultado.get(0).postId()).isEqualTo(BigInteger.valueOf(10));
+    assertThat(resultado.get(0).texto()).isEqualTo("Primeiro comentário");
+    assertThat(resultado.get(1).comentarioId()).isEqualTo(BigInteger.TWO);
+    assertThat(resultado.get(2).comentarioId()).isEqualTo(BigInteger.valueOf(3));
+
+    verify(usuarioRepository, times(1)).existsById(BigInteger.ONE);
+    verify(comentarioRepository, times(1)).findAllComentariosByUsuarioId(BigInteger.ONE);
+  }
+
+  @Test
+  @DisplayName("Deve retornar lista vazia quando usuário não tem comentários")
+  void deveRetornarListaVaziaQuandoUsuarioNaoTemComentarios() {
+    when(usuarioRepository.existsById(BigInteger.ONE)).thenReturn(true);
+    when(comentarioRepository.findAllComentariosByUsuarioId(BigInteger.ONE)).thenReturn(List.of());
+
+    List<br.com.escoladeti.api_know_hall.dto.comentario.ComentarioUsuarioResponseDTO> resultado =
+      comentarioService.buscarTodosComentariosDoUsuario(BigInteger.ONE);
+
+    assertThat(resultado).isNotNull();
+    assertThat(resultado).isEmpty();
+
+    verify(usuarioRepository, times(1)).existsById(BigInteger.ONE);
+    verify(comentarioRepository, times(1)).findAllComentariosByUsuarioId(BigInteger.ONE);
+  }
+
+  @Test
+  @DisplayName("Deve lançar exceção ao buscar comentários de usuário não encontrado")
+  void deveLancarExcecaoAoBuscarComentariosDeUsuarioNaoEncontrado() {
+    when(usuarioRepository.existsById(BigInteger.valueOf(999))).thenReturn(false);
+
+    assertThatThrownBy(() -> comentarioService.buscarTodosComentariosDoUsuario(BigInteger.valueOf(999)))
+      .isInstanceOf(EntityNotFoundException.class)
+      .hasMessage("Usuário não encontrado");
+
+    verify(comentarioRepository, never()).findAllComentariosByUsuarioId(any());
+  }
+
+  @Test
+  @DisplayName("Deve buscar comentários de usuário com múltiplos posts")
+  void deveBuscarComentariosDeUsuarioComMultiplosPosts() {
+    List<br.com.escoladeti.api_know_hall.projection.comentario.ComentarioUsuarioProjection> projections = List.of(
+      createComentarioUsuarioProjection(BigInteger.valueOf(5), BigInteger.valueOf(1), "Comentário no post 1"),
+      createComentarioUsuarioProjection(BigInteger.valueOf(6), BigInteger.valueOf(2), "Comentário no post 2"),
+      createComentarioUsuarioProjection(BigInteger.valueOf(7), BigInteger.valueOf(1), "Outro comentário no post 1"),
+      createComentarioUsuarioProjection(BigInteger.valueOf(8), BigInteger.valueOf(3), "Comentário no post 3")
+    );
+
+    when(usuarioRepository.existsById(BigInteger.valueOf(5))).thenReturn(true);
+    when(comentarioRepository.findAllComentariosByUsuarioId(BigInteger.valueOf(5))).thenReturn(projections);
+
+    List<br.com.escoladeti.api_know_hall.dto.comentario.ComentarioUsuarioResponseDTO> resultado =
+      comentarioService.buscarTodosComentariosDoUsuario(BigInteger.valueOf(5));
+
+    assertThat(resultado).isNotNull();
+    assertThat(resultado).hasSize(4);
+
+    // Verificar que retorna comentários de diferentes posts
+    assertThat(resultado.get(0).postId()).isEqualTo(BigInteger.valueOf(1));
+    assertThat(resultado.get(1).postId()).isEqualTo(BigInteger.valueOf(2));
+    assertThat(resultado.get(2).postId()).isEqualTo(BigInteger.valueOf(1));
+    assertThat(resultado.get(3).postId()).isEqualTo(BigInteger.valueOf(3));
+
+    verify(comentarioRepository, times(1)).findAllComentariosByUsuarioId(BigInteger.valueOf(5));
+  }
+
+  private br.com.escoladeti.api_know_hall.projection.comentario.ComentarioUsuarioProjection createComentarioUsuarioProjection(
+    BigInteger comentarioId,
+    BigInteger postId,
+    String texto
+  ) {
+    return new br.com.escoladeti.api_know_hall.projection.comentario.ComentarioUsuarioProjection() {
+      @Override
+      public BigInteger getComentarioId() {
+        return comentarioId;
+      }
+
+      @Override
+      public BigInteger getPostId() {
+        return postId;
+      }
+
+      @Override
+      public String getTexto() {
+        return texto;
+      }
+    };
+  }
+
   private ComentarioProjection createComentarioProjection(BigInteger id) {
     return new ComentarioProjection() {
       @Override

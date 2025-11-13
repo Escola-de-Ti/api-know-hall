@@ -223,15 +223,15 @@ public interface PostRepository extends JpaRepository<Post, BigInteger> {
   );
 
   @Query(value = """
-        SELECT
-            pt.post_id as postId,
-            t.id as tagId,
-            t.name as tagName
-        FROM post_tags pt
-        JOIN tags t ON pt.tag_id = t.id
-        WHERE pt.post_id IN :postIds
-        ORDER BY pt.post_id, t.name
-        """, nativeQuery = true)
+    SELECT
+        pt.post_id as postId,
+        t.id as tagId,
+        t.name as tagName
+    FROM post_tags pt
+    JOIN tags t ON pt.tag_id = t.id
+    WHERE pt.post_id IN :postIds
+    ORDER BY pt.post_id, t.name
+    """, nativeQuery = true)
   List<PostTagProjection> findTagsByPostIds(@Param("postIds") List<BigInteger> postIds);
 
   @Query("SELECT p FROM Post p " +

@@ -7,7 +7,7 @@ import br.com.escoladeti.api_know_hall.entity.Imagem;
 import br.com.escoladeti.api_know_hall.entity.Usuario;
 import br.com.escoladeti.api_know_hall.enums.StatusUsuario;
 import br.com.escoladeti.api_know_hall.exception.*;
-import br.com.escoladeti.api_know_hall.repository.UsuarioRepository;
+import br.com.escoladeti.api_know_hall.repository.*;
 import br.com.escoladeti.api_know_hall.service.utils.PalavrasProibidasService;
 import br.com.escoladeti.api_know_hall.util.*;
 import jakarta.persistence.EntityNotFoundException;
@@ -25,6 +25,18 @@ public class UsuarioService {
 
   @Autowired
   private UsuarioRepository usuarioRepository;
+
+  @Autowired
+  private PostRepository postRepository;
+
+  @Autowired
+  private ComentarioRepository comentarioRepository;
+
+  @Autowired
+  private VotoRepository votoRepository;
+
+  @Autowired
+  private WorkshopRepository workshopRepository;
 
   @Autowired
   private JwtTokenService jwtTokenService;
@@ -117,6 +129,7 @@ public class UsuarioService {
     dto.setTelefone2(formatPhone(dto.getTelefone2()));
 
     Usuario newUsuario = new Usuario(dto);
+    newUsuario.setNivel(1);
     return usuarioRepository.save(newUsuario);
   }
 
@@ -249,5 +262,36 @@ public class UsuarioService {
     );
 
     return new RankingResponseDTO(top50, usuarioLogado);
+  }
+
+  public UsuarioDetalhesResponseDTO obterDetalhesUsuario(String email, BigInteger id_usuario) {
+    if (id_usuario == null) {
+      throw new IllegalArgumentException("O ID do usuário não pode ser nulo.");
+    }
+
+    Usuario usuario = usuarioRepository.findById(id_usuario)
+      .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
+
+    var detalhes = usuarioRepository.findDetalhesUsuarioById(id_usuario)
+      .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
+
+    boolean isProprioUsuario = email != null && email.equals(usuario.getEmail());
+
+    Long tokens = isProprioUsuario ? detalhes.getTokens() : null;
+
+    return new UsuarioDetalhesResponseDTO(
+      detalhes.getNome(),
+      usuario.getTags(),
+      detalhes.getBiografia(),
+      detalhes.getNivel(),
+      detalhes.getXp(),
+      tokens,
+      detalhes.getQtdPosts(),
+      detalhes.getQtdComentarios(),
+      detalhes.getQtdUpVotes(),
+      detalhes.getQtdSuperVotes(),
+      detalhes.getQtdWorkshops(),
+      detalhes.getImagemUrl()
+    );
   }
 }

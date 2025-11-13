@@ -333,4 +333,138 @@ class ComentarioControllerTest {
         .principal(mockPrincipal))
       .andExpect(status().isForbidden());
   }
+
+  @Test
+  @DisplayName("Deve buscar todos os comentários de um usuário com sucesso")
+  void deveBuscarTodosComentariosDeUmUsuarioComSucesso() throws Exception {
+    List<br.com.escoladeti.api_know_hall.dto.comentario.ComentarioUsuarioResponseDTO> comentarios = List.of(
+      new br.com.escoladeti.api_know_hall.dto.comentario.ComentarioUsuarioResponseDTO(
+        BigInteger.ONE,
+        BigInteger.valueOf(10),
+        "Primeiro comentário"
+      ),
+      new br.com.escoladeti.api_know_hall.dto.comentario.ComentarioUsuarioResponseDTO(
+        BigInteger.TWO,
+        BigInteger.valueOf(20),
+        "Segundo comentário"
+      ),
+      new br.com.escoladeti.api_know_hall.dto.comentario.ComentarioUsuarioResponseDTO(
+        BigInteger.valueOf(3),
+        BigInteger.valueOf(30),
+        "Terceiro comentário"
+      )
+    );
+
+    when(comentarioService.buscarTodosComentariosDoUsuario(BigInteger.ONE))
+      .thenReturn(comentarios);
+
+    mockMvc.perform(get("/api/comentarios/usuario/1"))
+      .andExpect(status().isOk())
+      .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+      .andExpect(jsonPath("$").isArray())
+      .andExpect(jsonPath("$.length()").value(3))
+      .andExpect(jsonPath("$[0].comentarioId").value(1))
+      .andExpect(jsonPath("$[0].postId").value(10))
+      .andExpect(jsonPath("$[0].texto").value("Primeiro comentário"))
+      .andExpect(jsonPath("$[1].comentarioId").value(2))
+      .andExpect(jsonPath("$[1].postId").value(20))
+      .andExpect(jsonPath("$[1].texto").value("Segundo comentário"))
+      .andExpect(jsonPath("$[2].comentarioId").value(3))
+      .andExpect(jsonPath("$[2].postId").value(30))
+      .andExpect(jsonPath("$[2].texto").value("Terceiro comentário"));
+
+    verify(comentarioService, times(1)).buscarTodosComentariosDoUsuario(BigInteger.ONE);
+  }
+
+  @Test
+  @DisplayName("Deve retornar lista vazia quando usuário não tem comentários")
+  void deveRetornarListaVaziaQuandoUsuarioNaoTemComentarios() throws Exception {
+    when(comentarioService.buscarTodosComentariosDoUsuario(BigInteger.valueOf(5)))
+      .thenReturn(List.of());
+
+    mockMvc.perform(get("/api/comentarios/usuario/5"))
+      .andExpect(status().isOk())
+      .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+      .andExpect(jsonPath("$").isArray())
+      .andExpect(jsonPath("$.length()").value(0));
+
+    verify(comentarioService, times(1)).buscarTodosComentariosDoUsuario(BigInteger.valueOf(5));
+  }
+
+  @Test
+  @DisplayName("Deve retornar 404 quando usuário não existe")
+  void deveRetornar404QuandoUsuarioNaoExiste() throws Exception {
+    when(comentarioService.buscarTodosComentariosDoUsuario(BigInteger.valueOf(999)))
+      .thenThrow(new EntityNotFoundException("Usuário não encontrado"));
+
+    mockMvc.perform(get("/api/comentarios/usuario/999"))
+      .andExpect(status().isNotFound());
+
+    verify(comentarioService, times(1)).buscarTodosComentariosDoUsuario(BigInteger.valueOf(999));
+  }
+
+  @Test
+  @DisplayName("Deve retornar comentários de diferentes posts")
+  void deveRetornarComentariosDeDiferentesPosts() throws Exception {
+    List<br.com.escoladeti.api_know_hall.dto.comentario.ComentarioUsuarioResponseDTO> comentarios = List.of(
+      new br.com.escoladeti.api_know_hall.dto.comentario.ComentarioUsuarioResponseDTO(
+        BigInteger.valueOf(10),
+        BigInteger.ONE,
+        "Comentário no post 1"
+      ),
+      new br.com.escoladeti.api_know_hall.dto.comentario.ComentarioUsuarioResponseDTO(
+        BigInteger.valueOf(11),
+        BigInteger.TWO,
+        "Comentário no post 2"
+      ),
+      new br.com.escoladeti.api_know_hall.dto.comentario.ComentarioUsuarioResponseDTO(
+        BigInteger.valueOf(12),
+        BigInteger.ONE,
+        "Outro comentário no post 1"
+      )
+    );
+
+    when(comentarioService.buscarTodosComentariosDoUsuario(BigInteger.valueOf(3)))
+      .thenReturn(comentarios);
+
+    mockMvc.perform(get("/api/comentarios/usuario/3"))
+      .andExpect(status().isOk())
+      .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+      .andExpect(jsonPath("$").isArray())
+      .andExpect(jsonPath("$.length()").value(3))
+      .andExpect(jsonPath("$[0].postId").value(1))
+      .andExpect(jsonPath("$[1].postId").value(2))
+      .andExpect(jsonPath("$[2].postId").value(1));
+
+    verify(comentarioService, times(1)).buscarTodosComentariosDoUsuario(BigInteger.valueOf(3));
+  }
+
+  @Test
+  @DisplayName("Deve retornar apenas os campos necessários (comentarioId, postId, texto)")
+  void deveRetornarApenasOsCamposNecessarios() throws Exception {
+    List<br.com.escoladeti.api_know_hall.dto.comentario.ComentarioUsuarioResponseDTO> comentarios = List.of(
+      new br.com.escoladeti.api_know_hall.dto.comentario.ComentarioUsuarioResponseDTO(
+        BigInteger.valueOf(100),
+        BigInteger.valueOf(50),
+        "Texto do comentário"
+      )
+    );
+
+    when(comentarioService.buscarTodosComentariosDoUsuario(BigInteger.valueOf(7)))
+      .thenReturn(comentarios);
+
+    mockMvc.perform(get("/api/comentarios/usuario/7"))
+      .andExpect(status().isOk())
+      .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+      .andExpect(jsonPath("$[0].comentarioId").value(100))
+      .andExpect(jsonPath("$[0].postId").value(50))
+      .andExpect(jsonPath("$[0].texto").value("Texto do comentário"))
+      // Verificar que NÃO retorna outros campos
+      .andExpect(jsonPath("$[0].usuarioId").doesNotExist())
+      .andExpect(jsonPath("$[0].usuarioNome").doesNotExist())
+      .andExpect(jsonPath("$[0].totalUpVotes").doesNotExist())
+      .andExpect(jsonPath("$[0].dataCriacao").doesNotExist());
+
+    verify(comentarioService, times(1)).buscarTodosComentariosDoUsuario(BigInteger.valueOf(7));
+  }
 }
