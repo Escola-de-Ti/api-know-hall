@@ -353,6 +353,7 @@ class UsuarioControllerTest {
 
     verify(usuarioService, times(1)).getAllUsuarios();
   }
+
   @Test
   void login_WithValidCredentials_ShouldReturnToken() throws Exception {
     when(usuarioService.login("test@test.com", "Senha@123"))
@@ -424,8 +425,8 @@ class UsuarioControllerTest {
     usuarioCreateDTO.setEmail("emailinvalido");
 
     mockMvc.perform(post("/api/usuarios")
-        .contentType(MediaType.APPLICATION_JSON)
-        .content(objectMapper.writeValueAsString(usuarioCreateDTO)));
+      .contentType(MediaType.APPLICATION_JSON)
+      .content(objectMapper.writeValueAsString(usuarioCreateDTO)));
 
     verify(usuarioService, never()).createUsuario(any(UsuarioCreateDTO.class));
   }
@@ -435,8 +436,8 @@ class UsuarioControllerTest {
     usuarioCreateDTO.setSenha("123");
 
     mockMvc.perform(post("/api/usuarios")
-        .contentType(MediaType.APPLICATION_JSON)
-        .content(objectMapper.writeValueAsString(usuarioCreateDTO)));
+      .contentType(MediaType.APPLICATION_JSON)
+      .content(objectMapper.writeValueAsString(usuarioCreateDTO)));
 
     verify(usuarioService, never()).createUsuario(any(UsuarioCreateDTO.class));
   }
@@ -643,5 +644,193 @@ class UsuarioControllerTest {
       .andExpect(jsonPath("$.usuarioLogado.posicao").value(75));
 
     verify(usuarioService, times(1)).obterRanking(email);
+  }
+
+  @Test
+  void getUsuarioDetalhes_ProprioUsuario_ShouldReturnTokens() throws Exception {
+    String email = "test@test.com";
+    BigInteger usuarioId = BigInteger.valueOf(1);
+
+    UsuarioDetalhesResponseDTO detalhes = new UsuarioDetalhesResponseDTO();
+    detalhes.setNome("Test User");
+    detalhes.setTags(Arrays.asList());
+    detalhes.setBiografia("Desenvolvedor Java");
+    detalhes.setNivel(5);
+    detalhes.setXp(1500L);
+    detalhes.setTokens(300L); // Tokens devem ser retornados para o próprio usuário
+    detalhes.setQtdPosts(10);
+    detalhes.setQtdComentarios(25);
+    detalhes.setQtdUpVotes(50);
+    detalhes.setQtdSuperVotes(5);
+    detalhes.setQtdWorkshops(2);
+    detalhes.setImagemUrl("https://example.com/imagem.jpg");
+
+    when(usuarioService.obterDetalhesUsuario(email, usuarioId)).thenReturn(detalhes);
+
+    mockMvc.perform(get("/api/usuarios/detalhes/{usuarioId}", usuarioId)
+        .principal(() -> email))
+      .andExpect(status().isOk())
+      .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+      .andExpect(jsonPath("$.nome").value("Test User"))
+      .andExpect(jsonPath("$.biografia").value("Desenvolvedor Java"))
+      .andExpect(jsonPath("$.nivel").value(5))
+      .andExpect(jsonPath("$.xp").value(1500))
+      .andExpect(jsonPath("$.tokens").value(300)) // Tokens retornados
+      .andExpect(jsonPath("$.qtdPosts").value(10))
+      .andExpect(jsonPath("$.qtdComentarios").value(25))
+      .andExpect(jsonPath("$.qtdUpVotes").value(50))
+      .andExpect(jsonPath("$.qtdSuperVotes").value(5))
+      .andExpect(jsonPath("$.qtdWorkshops").value(2))
+      .andExpect(jsonPath("$.imagemUrl").value("https://example.com/imagem.jpg"));
+
+    verify(usuarioService, times(1)).obterDetalhesUsuario(email, usuarioId);
+  }
+
+  @Test
+  void getUsuarioDetalhes_OutroUsuario_ShouldNotReturnTokens() throws Exception {
+    String email = "logado@test.com";
+    BigInteger usuarioId = BigInteger.valueOf(2);
+
+    UsuarioDetalhesResponseDTO detalhes = new UsuarioDetalhesResponseDTO();
+    detalhes.setNome("Outro User");
+    detalhes.setTags(Arrays.asList());
+    detalhes.setBiografia("Designer UX");
+    detalhes.setNivel(3);
+    detalhes.setXp(800L);
+    detalhes.setTokens(null); // Tokens NÃO devem ser retornados para outro usuário
+    detalhes.setQtdPosts(5);
+    detalhes.setQtdComentarios(12);
+    detalhes.setQtdUpVotes(20);
+    detalhes.setQtdSuperVotes(2);
+    detalhes.setQtdWorkshops(1);
+    detalhes.setImagemUrl("https://example.com/outro.jpg");
+
+    when(usuarioService.obterDetalhesUsuario(email, usuarioId)).thenReturn(detalhes);
+
+    mockMvc.perform(get("/api/usuarios/detalhes/{usuarioId}", usuarioId)
+        .principal(() -> email))
+      .andExpect(status().isOk())
+      .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+      .andExpect(jsonPath("$.nome").value("Outro User"))
+      .andExpect(jsonPath("$.biografia").value("Designer UX"))
+      .andExpect(jsonPath("$.nivel").value(3))
+      .andExpect(jsonPath("$.xp").value(800))
+      .andExpect(jsonPath("$.tokens").doesNotExist()) // Tokens não retornados
+      .andExpect(jsonPath("$.qtdPosts").value(5))
+      .andExpect(jsonPath("$.qtdComentarios").value(12))
+      .andExpect(jsonPath("$.qtdUpVotes").value(20))
+      .andExpect(jsonPath("$.qtdSuperVotes").value(2))
+      .andExpect(jsonPath("$.qtdWorkshops").value(1))
+      .andExpect(jsonPath("$.imagemUrl").value("https://example.com/outro.jpg"));
+
+    verify(usuarioService, times(1)).obterDetalhesUsuario(email, usuarioId);
+  }
+
+  @Test
+  void getUsuarioDetalhes_UsuarioNaoEncontrado_ShouldReturnNotFound() throws Exception {
+    String email = "test@test.com";
+    BigInteger usuarioId = BigInteger.valueOf(999);
+
+    when(usuarioService.obterDetalhesUsuario(email, usuarioId))
+      .thenThrow(new EntityNotFoundException("Usuário não encontrado"));
+
+    mockMvc.perform(get("/api/usuarios/detalhes/{usuarioId}", usuarioId)
+        .principal(() -> email))
+      .andExpect(status().isNotFound())
+      .andExpect(jsonPath("$.status").value(404))
+      .andExpect(jsonPath("$.message").value("Usuário não encontrado"));
+
+    verify(usuarioService, times(1)).obterDetalhesUsuario(email, usuarioId);
+  }
+
+  @Test
+  void getUsuarioDetalhes_SemImagemPerfil_ShouldReturnNullImagemUrl() throws Exception {
+    String email = "test@test.com";
+    BigInteger usuarioId = BigInteger.valueOf(1);
+
+    UsuarioDetalhesResponseDTO detalhes = new UsuarioDetalhesResponseDTO();
+    detalhes.setNome("Test User");
+    detalhes.setTags(Arrays.asList());
+    detalhes.setBiografia(null);
+    detalhes.setNivel(1);
+    detalhes.setXp(0L);
+    detalhes.setTokens(0L);
+    detalhes.setQtdPosts(0);
+    detalhes.setQtdComentarios(0);
+    detalhes.setQtdUpVotes(0);
+    detalhes.setQtdSuperVotes(0);
+    detalhes.setQtdWorkshops(0);
+    detalhes.setImagemUrl(null); // Sem imagem
+
+    when(usuarioService.obterDetalhesUsuario(email, usuarioId)).thenReturn(detalhes);
+
+    mockMvc.perform(get("/api/usuarios/detalhes/{usuarioId}", usuarioId)
+        .principal(() -> email))
+      .andExpect(status().isOk())
+      .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+      .andExpect(jsonPath("$.nome").value("Test User"))
+      .andExpect(jsonPath("$.imagemUrl").doesNotExist()) // Imagem null
+      .andExpect(jsonPath("$.qtdPosts").value(0))
+      .andExpect(jsonPath("$.qtdComentarios").value(0))
+      .andExpect(jsonPath("$.qtdUpVotes").value(0))
+      .andExpect(jsonPath("$.qtdSuperVotes").value(0))
+      .andExpect(jsonPath("$.qtdWorkshops").value(0));
+
+    verify(usuarioService, times(1)).obterDetalhesUsuario(email, usuarioId);
+  }
+
+  @Test
+  void getUsuarioDetalhes_ComTodosContadoresPreenchidos_ShouldReturnAllData() throws Exception {
+    String email = "test@test.com";
+    BigInteger usuarioId = BigInteger.valueOf(1);
+
+    UsuarioDetalhesResponseDTO detalhes = new UsuarioDetalhesResponseDTO();
+    detalhes.setNome("Usuario Ativo");
+    detalhes.setTags(Arrays.asList());
+    detalhes.setBiografia("Entusiasta de tecnologia");
+    detalhes.setNivel(10);
+    detalhes.setXp(5000L);
+    detalhes.setTokens(1000L);
+    detalhes.setQtdPosts(50);
+    detalhes.setQtdComentarios(120);
+    detalhes.setQtdUpVotes(200);
+    detalhes.setQtdSuperVotes(30);
+    detalhes.setQtdWorkshops(8);
+    detalhes.setImagemUrl("https://example.com/ativo.jpg");
+
+    when(usuarioService.obterDetalhesUsuario(email, usuarioId)).thenReturn(detalhes);
+
+    mockMvc.perform(get("/api/usuarios/detalhes/{usuarioId}", usuarioId)
+        .principal(() -> email))
+      .andExpect(status().isOk())
+      .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+      .andExpect(jsonPath("$.nome").value("Usuario Ativo"))
+      .andExpect(jsonPath("$.biografia").value("Entusiasta de tecnologia"))
+      .andExpect(jsonPath("$.nivel").value(10))
+      .andExpect(jsonPath("$.xp").value(5000))
+      .andExpect(jsonPath("$.tokens").value(1000))
+      .andExpect(jsonPath("$.qtdPosts").value(50))
+      .andExpect(jsonPath("$.qtdComentarios").value(120))
+      .andExpect(jsonPath("$.qtdUpVotes").value(200))
+      .andExpect(jsonPath("$.qtdSuperVotes").value(30))
+      .andExpect(jsonPath("$.qtdWorkshops").value(8))
+      .andExpect(jsonPath("$.imagemUrl").value("https://example.com/ativo.jpg"));
+
+    verify(usuarioService, times(1)).obterDetalhesUsuario(email, usuarioId);
+  }
+
+  @Test
+  void getUsuarioDetalhes_WhenServiceThrowsException_ShouldReturnInternalServerError() throws Exception {
+    String email = "test@test.com";
+    BigInteger usuarioId = BigInteger.valueOf(1);
+
+    when(usuarioService.obterDetalhesUsuario(email, usuarioId))
+      .thenThrow(new RuntimeException("Database error"));
+
+    mockMvc.perform(get("/api/usuarios/detalhes/{usuarioId}", usuarioId)
+        .principal(() -> email))
+      .andExpect(status().isInternalServerError());
+
+    verify(usuarioService, times(1)).obterDetalhesUsuario(email, usuarioId);
   }
 }
