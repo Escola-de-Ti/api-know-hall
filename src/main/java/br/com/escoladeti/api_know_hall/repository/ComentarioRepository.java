@@ -93,4 +93,16 @@ public interface ComentarioRepository extends JpaRepository<Comentario, BigInteg
     "WHERE c.id = :id")
   Optional<Comentario> findByIdWithRelations(@Param("id") BigInteger id);
 
+  @Query(value = """
+    SELECT c.id as comentarioId,
+           c.post_id as postId,
+           c.texto as texto
+    FROM comentario c
+    WHERE c.usuario_id = :usuarioId
+    ORDER BY c.data_criacao DESC
+    """, nativeQuery = true)
+  List<br.com.escoladeti.api_know_hall.projection.comentario.ComentarioUsuarioProjection> findAllComentariosByUsuarioId(
+    @Param("usuarioId") BigInteger usuarioId
+  );
+
 }

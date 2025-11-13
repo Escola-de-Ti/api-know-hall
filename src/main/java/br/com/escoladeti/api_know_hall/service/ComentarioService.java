@@ -1,13 +1,11 @@
 package br.com.escoladeti.api_know_hall.service;
 
-import br.com.escoladeti.api_know_hall.dto.comentario.ComentarioCreateDTO;
-import br.com.escoladeti.api_know_hall.dto.comentario.ComentarioListResponseDTO;
-import br.com.escoladeti.api_know_hall.dto.comentario.ComentarioResponseDTO;
-import br.com.escoladeti.api_know_hall.dto.comentario.ComentarioUpdateDTO;
+import br.com.escoladeti.api_know_hall.dto.comentario.*;
 import br.com.escoladeti.api_know_hall.entity.Comentario;
 import br.com.escoladeti.api_know_hall.entity.Post;
 import br.com.escoladeti.api_know_hall.entity.Usuario;
 import br.com.escoladeti.api_know_hall.projection.comentario.ComentarioProjection;
+import br.com.escoladeti.api_know_hall.projection.comentario.ComentarioUsuarioProjection;
 import br.com.escoladeti.api_know_hall.repository.ComentarioRepository;
 import br.com.escoladeti.api_know_hall.repository.PostRepository;
 import br.com.escoladeti.api_know_hall.repository.UsuarioRepository;
@@ -224,5 +222,23 @@ public class ComentarioService {
       projection.getComentarioPaiId(),
       projection.getDataCriacao()
     );
+  }
+
+  @Transactional(readOnly = true)
+  public List<ComentarioUsuarioResponseDTO> buscarTodosComentariosDoUsuario(BigInteger usuarioId) {
+    if (!usuarioRepository.existsById(usuarioId)) {
+      throw new EntityNotFoundException("Usuário não encontrado");
+    }
+
+    List<ComentarioUsuarioProjection> projections =
+      comentarioRepository.findAllComentariosByUsuarioId(usuarioId);
+
+    return projections.stream()
+      .map(p -> new ComentarioUsuarioResponseDTO(
+        p.getComentarioId(),
+        p.getPostId(),
+        p.getTexto()
+      ))
+      .collect(Collectors.toList());
   }
 }

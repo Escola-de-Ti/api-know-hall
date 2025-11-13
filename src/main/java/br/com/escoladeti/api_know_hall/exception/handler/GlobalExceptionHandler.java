@@ -40,7 +40,7 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
-    ErrorResponse error = new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Erro interno no servidor" + ex, LocalDateTime.now());
+    ErrorResponse error = new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Erro interno no servidor", LocalDateTime.now());
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
   }
 
@@ -56,7 +56,7 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(RuntimeException.class)
   public ResponseEntity<ErrorResponse> handleGenericRuntimeException(RuntimeException ex) {
-    ErrorResponse errorResponse = new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Erro interno no servidor" + ex, LocalDateTime.now());
+    ErrorResponse errorResponse = new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Erro interno no servidor", LocalDateTime.now());
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
   }
 
@@ -97,7 +97,7 @@ public class GlobalExceptionHandler {
     ErrorResponse error = new ErrorResponse(HttpStatus.PAYMENT_REQUIRED.value(), ex.getMessage(), LocalDateTime.now());
     return ResponseEntity.status(HttpStatus.PAYMENT_REQUIRED).body(error);
   }
-  
+
   @ExceptionHandler(ValidationException.class)
   public ResponseEntity<ErrorResponse> handleValidationException(ValidationException ex) {
     ErrorResponse error = new ErrorResponse(

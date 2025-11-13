@@ -1,9 +1,6 @@
 package br.com.escoladeti.api_know_hall.controller;
 
-import br.com.escoladeti.api_know_hall.dto.comentario.ComentarioCreateDTO;
-import br.com.escoladeti.api_know_hall.dto.comentario.ComentarioListResponseDTO;
-import br.com.escoladeti.api_know_hall.dto.comentario.ComentarioResponseDTO;
-import br.com.escoladeti.api_know_hall.dto.comentario.ComentarioUpdateDTO;
+import br.com.escoladeti.api_know_hall.dto.comentario.*;
 import br.com.escoladeti.api_know_hall.service.ComentarioService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigInteger;
 import java.security.Principal;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/comentarios")
@@ -89,5 +87,14 @@ public class ComentarioController {
   ) {
     comentarioService.deletarComentario(id, principal);
     return ResponseEntity.noContent().build();
+  }
+
+  @GetMapping("/usuario/{usuarioId}")
+  public ResponseEntity<List<ComentarioUsuarioResponseDTO>> buscarTodosComentariosDoUsuario(
+    @PathVariable BigInteger usuarioId
+  ) {
+    List<ComentarioUsuarioResponseDTO> comentarios =
+      comentarioService.buscarTodosComentariosDoUsuario(usuarioId);
+    return ResponseEntity.ok(comentarios);
   }
 }

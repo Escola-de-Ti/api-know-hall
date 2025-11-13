@@ -91,6 +91,7 @@ class UsuarioServiceTest {
     usuario.setTipoUsuario(TipoUsuario.ALUNO);
     usuario.setQntdToken(0L);
     usuario.setQntdXp(0L);
+    usuario.setNivel(1);
 
     usuarioCreateDTO = new UsuarioCreateDTO();
     usuarioCreateDTO.setEmail("test@test.com");

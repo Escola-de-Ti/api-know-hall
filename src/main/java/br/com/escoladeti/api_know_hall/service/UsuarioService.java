@@ -129,6 +129,7 @@ public class UsuarioService {
     dto.setTelefone2(formatPhone(dto.getTelefone2()));
 
     Usuario newUsuario = new Usuario(dto);
+    newUsuario.setNivel(1);
     return usuarioRepository.save(newUsuario);
   }
 
