@@ -15,6 +15,7 @@ public record PostFeedDTO(
   Long totalUpVotes,
   List<TagResponseDTO> tags,
   Timestamp dataCriacao,
-  Double relevanceScore,  // Score calculado
-  Integer tagsEmComum  // Número de tags em comum
+  Double relevanceScore,
+  Integer tagsEmComum,
+  Boolean jaVotou
 ) {}

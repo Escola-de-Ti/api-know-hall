@@ -59,6 +59,7 @@ public class WorkshopService {
     workshop.setInstrutor(instrutor);
     workshop.setDataInicio(dto.getDataInicio());
     workshop.setDataTermino(dto.getDataTermino());
+    workshop.setCapacidade(dto.getCapacidade());
 
     workshop.setCusto(dto.getCusto());
 
@@ -143,6 +144,9 @@ public class WorkshopService {
     if (dto.getLinkMeet() != null) {
       workshop.setLinkMeet(dto.getLinkMeet());
     }
+    if (dto.getCapacidade() != null) {
+      workshop.setCapacidade(dto.getCapacidade());
+    }
 
     if (dto.getDataInicio() != null || dto.getDataTermino() != null) {
       atualizarDatas(workshop, dto);
@@ -168,7 +172,6 @@ public class WorkshopService {
       }
     }
 
-    // Atualizar custo se fornecido
     if (dto.getCusto() != null) {
       if (dto.getCusto() < 0) {
         throw new IllegalArgumentException("Custo não pode ser negativo");
@@ -207,7 +210,6 @@ public class WorkshopService {
 
 
   private void validarEAtualizarStatus(Workshop workshop, StatusWorkshop novoStatus) {
-    // Primeiro impede reabertura de workshop concluído
     if (workshop.getStatus() == StatusWorkshop.CONCLUIDO && novoStatus != StatusWorkshop.CONCLUIDO) {
       throw new IllegalArgumentException(
         "Não é possível reabrir um workshop já concluído"

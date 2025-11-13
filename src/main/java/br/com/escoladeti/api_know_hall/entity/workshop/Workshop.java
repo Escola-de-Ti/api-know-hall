@@ -53,6 +53,9 @@ public class Workshop {
   @Column(name = "data_termino", nullable = false)
   private Timestamp dataTermino;
 
+  @Column(name = "capacidade")
+  private Integer capacidade;
+
   @Column(name = "custo", nullable = false)
   private Integer custo;
 

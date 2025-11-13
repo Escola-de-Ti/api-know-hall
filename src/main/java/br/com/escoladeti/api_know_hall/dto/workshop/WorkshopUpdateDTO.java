@@ -38,4 +38,6 @@ public class WorkshopUpdateDTO {
   // campo opcional para atualizar custo
   @Min(value = 0, message = "Custo não pode ser negativo")
   private Integer custo;
+
+  private Integer capacidade;
 }

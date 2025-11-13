@@ -40,4 +40,7 @@ public class WorkshopCreateDTO {
   @NotNull(message = "Custo é obrigatório")
   @Min(value = 0, message = "Custo não pode ser negativo")
   private Integer custo;
+
+  @NotNull
+  private Integer capacidade;
 }

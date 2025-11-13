@@ -40,7 +40,6 @@ class PostDTOTest {
   @DisplayName("PostCreateDTO - Deve criar DTO válido")
   void postCreateDTO_deveCriarDTOValido() {
     PostCreateDTO dto = new PostCreateDTO(
-      BigInteger.ONE,
       "Título",
       "Descrição",
       List.of(BigInteger.ONE)
@@ -49,7 +48,6 @@ class PostDTOTest {
     Set<ConstraintViolation<PostCreateDTO>> violations = validator.validate(dto);
 
     assertThat(violations).isEmpty();
-    assertThat(dto.usuarioId()).isEqualTo(BigInteger.ONE);
     assertThat(dto.titulo()).isEqualTo("Título");
   }
 
@@ -57,7 +55,6 @@ class PostDTOTest {
   @DisplayName("PostCreateDTO - Deve falhar com usuarioId nulo")
   void postCreateDTO_deveFalharComUsuarioIdNulo() {
     PostCreateDTO dto = new PostCreateDTO(
-      null,
       "Título",
       "Descrição",
       null
@@ -73,7 +70,6 @@ class PostDTOTest {
   @DisplayName("PostCreateDTO - Deve falhar com título vazio")
   void postCreateDTO_deveFalharComTituloVazio() {
     PostCreateDTO dto = new PostCreateDTO(
-      BigInteger.ONE,
       "",
       "Descrição",
       null
@@ -219,7 +215,7 @@ class PostDTOTest {
   void feedResponseDTO_deveCriarRespostaComPosts() {
     PostFeedDTO feedDTO = new PostFeedDTO(
       BigInteger.ONE, BigInteger.ONE, "João", "Título", "Desc",
-      10L, List.of(), Timestamp.from(Instant.now()), 50.0, 2
+      10L, List.of(), Timestamp.from(Instant.now()), 50.0, 2, true
     );
 
     FeedResponseDTO dto = new FeedResponseDTO(
@@ -359,7 +355,8 @@ class PostDTOTest {
       List.of(),
       Timestamp.from(Instant.now()),
       75.5,
-      3
+      3,
+      false
     );
 
     assertThat(dto.relevanceScore()).isEqualTo(75.5);
