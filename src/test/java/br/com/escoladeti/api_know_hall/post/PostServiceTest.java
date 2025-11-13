@@ -5,11 +5,8 @@ import br.com.escoladeti.api_know_hall.dto.post.*;
 import br.com.escoladeti.api_know_hall.entity.Post;
 import br.com.escoladeti.api_know_hall.entity.Tag;
 import br.com.escoladeti.api_know_hall.entity.Usuario;
-import br.com.escoladeti.api_know_hall.enums.OrdenacaoDirecao;
-import br.com.escoladeti.api_know_hall.enums.OrdenacaoTipo;
-import br.com.escoladeti.api_know_hall.enums.StatusUsuario;
-import br.com.escoladeti.api_know_hall.enums.TagOperador;
-import br.com.escoladeti.api_know_hall.enums.TipoUsuario;
+import br.com.escoladeti.api_know_hall.entity.Imagem;
+import br.com.escoladeti.api_know_hall.enums.*;
 import br.com.escoladeti.api_know_hall.projection.comentario.ComentarioProjection;
 import br.com.escoladeti.api_know_hall.projection.post.PostBuscaProjection;
 import br.com.escoladeti.api_know_hall.projection.post.PostFeedProjection;
@@ -52,16 +49,16 @@ class PostServiceTest {
   @Mock
   private TagsRepository tagsRepository;
 
-  @InjectMocks
-  private PostService postService;
   @Mock
   private ComentarioRepository comentarioRepository;
+
+  @InjectMocks
+  private PostService postService;
 
   private Usuario usuario;
   private Post post;
   private Tag tag;
   private PostCreateDTO postCreateDTO;
-  private Principal mockPrincipal;
 
   @BeforeEach
   void setUp() {
@@ -92,25 +89,22 @@ class PostServiceTest {
 
     // Setup DTO
     postCreateDTO = new PostCreateDTO(
-      BigInteger.ONE,
       "Título do Post",
       "Descrição do post",
       List.of(BigInteger.ONE)
     );
-
-    mockPrincipal = () -> "joao@email.com";
   }
-
-  // ==================== TESTES DE CRIAÇÃO ====================
 
   @Test
   @DisplayName("Deve criar post com sucesso")
   void deveCriarPostComSucesso() {
-    when(usuarioRepository.findById(BigInteger.ONE)).thenReturn(Optional.of(usuario));
+    // ✅ Agora usa findByEmail ao invés de findById
+    when(usuarioRepository.findByEmail("joao@email.com")).thenReturn(Optional.of(usuario));
     when(tagsRepository.findAllById(anyList())).thenReturn(List.of(tag));
     when(postRepository.save(any(Post.class))).thenReturn(post);
 
-    PostResponseDTO resultado = postService.criarPost(postCreateDTO);
+    // ✅ Passa o email como segundo parâmetro
+    PostResponseDTO resultado = postService.criarPost(postCreateDTO, "joao@email.com");
 
     assertThat(resultado).isNotNull();
     assertThat(resultado.id()).isEqualTo(BigInteger.ONE);
@@ -118,7 +112,7 @@ class PostServiceTest {
     assertThat(resultado.usuarioId()).isEqualTo(BigInteger.ONE);
     assertThat(resultado.tags()).hasSize(1);
 
-    verify(usuarioRepository).findById(BigInteger.ONE);
+    verify(usuarioRepository).findByEmail("joao@email.com");
     verify(tagsRepository).findAllById(anyList());
     verify(postRepository).save(any(Post.class));
   }
@@ -126,13 +120,14 @@ class PostServiceTest {
   @Test
   @DisplayName("Deve lançar exceção ao criar post com usuário inexistente")
   void deveLancarExcecaoAoCriarPostComUsuarioInexistente() {
-    when(usuarioRepository.findById(any())).thenReturn(Optional.empty());
+    // ✅ Mock do findByEmail retornando vazio
+    when(usuarioRepository.findByEmail(anyString())).thenReturn(Optional.empty());
 
-    assertThatThrownBy(() -> postService.criarPost(postCreateDTO))
+    assertThatThrownBy(() -> postService.criarPost(postCreateDTO, "email@invalido.com"))
       .isInstanceOf(EntityNotFoundException.class)
       .hasMessage("Usuário não encontrado");
 
-    verify(usuarioRepository).findById(any());
+    verify(usuarioRepository).findByEmail("email@invalido.com");
     verify(postRepository, never()).save(any());
   }
 
@@ -140,16 +135,16 @@ class PostServiceTest {
   @DisplayName("Deve criar post sem tags")
   void deveCriarPostSemTags() {
     PostCreateDTO dtoSemTags = new PostCreateDTO(
-      BigInteger.ONE,
       "Título",
       "Descrição",
       null
     );
 
-    when(usuarioRepository.findById(BigInteger.ONE)).thenReturn(Optional.of(usuario));
+    when(usuarioRepository.findByEmail("joao@email.com")).thenReturn(Optional.of(usuario));
     when(postRepository.save(any(Post.class))).thenReturn(post);
 
-    PostResponseDTO resultado = postService.criarPost(dtoSemTags);
+    // ✅ Passa o email
+    PostResponseDTO resultado = postService.criarPost(dtoSemTags, "joao@email.com");
 
     assertThat(resultado).isNotNull();
     verify(tagsRepository, never()).findAllById(anyList());
@@ -440,12 +435,12 @@ class PostServiceTest {
       10,
       null,
       null,
-      null  // ✅ ADICIONAR termo
+      null
     );
 
     PostBuscaProjection projection = createMockBuscaProjection();
     when(postRepository.buscarComFiltros(
-      any(), eq("OR"), any(), any(), any(), eq("VOTOS"), eq("DESC"), any(), any(), anyInt(), any()  // ✅ ADICIONAR any() para termo
+      any(), eq("OR"), any(), any(), any(), eq("VOTOS"), eq("DESC"), any(), any(), anyInt(), any()
     )).thenReturn(List.of(projection));
     when(postRepository.findById(any())).thenReturn(Optional.of(post));
 
@@ -454,7 +449,7 @@ class PostServiceTest {
     assertThat(resultado).isNotNull();
     assertThat(resultado.posts()).hasSize(1);
     verify(postRepository).buscarComFiltros(
-      any(), eq("OR"), any(), any(), any(), eq("VOTOS"), eq("DESC"), any(), any(), anyInt(), any()  // ✅ ADICIONAR any() para termo
+      any(), eq("OR"), any(), any(), any(), eq("VOTOS"), eq("DESC"), any(), any(), anyInt(), any()
     );
   }
 
@@ -471,12 +466,12 @@ class PostServiceTest {
       10,
       null,
       null,
-      null  // ✅ ADICIONAR termo
+      null
     );
 
     PostBuscaProjection projection = createMockBuscaProjection();
     when(postRepository.buscarComFiltros(
-      any(), any(), any(), any(), any(), eq("DATA"), any(), any(), any(), anyInt(), any()  // ✅ ADICIONAR any() para termo
+      any(), any(), any(), any(), any(), eq("DATA"), any(), any(), any(), anyInt(), any()
     )).thenReturn(List.of(projection));
     when(postRepository.findById(any())).thenReturn(Optional.of(post));
 
@@ -534,6 +529,11 @@ class PostServiceTest {
       public Integer getTagsEmComum() {
         return 2;
       }
+
+      @Override
+      public Boolean getJaVotou() {
+        return false;
+      }
     };
   }
 
@@ -589,7 +589,7 @@ class PostServiceTest {
       10,
       null,
       null,
-      "spring boot"  // ✅ TERMO
+      "spring boot"
     );
 
     PostBuscaProjection projection = createMockBuscaProjection();
@@ -818,23 +818,105 @@ class PostServiceTest {
   ) {
     return new ComentarioProjection() {
       @Override
-      public BigInteger getId() { return id; }
+      public BigInteger getId() {
+        return id;
+      }
+
       @Override
-      public BigInteger getPostId() { return BigInteger.ONE; }
+      public BigInteger getPostId() {
+        return BigInteger.ONE;
+      }
+
       @Override
-      public BigInteger getUsuarioId() { return BigInteger.ONE; }
+      public BigInteger getUsuarioId() {
+        return BigInteger.ONE;
+      }
+
       @Override
-      public String getUsuarioNome() { return "João Silva"; }
+      public String getUsuarioNome() {
+        return "João Silva";
+      }
+
       @Override
-      public String getTexto() { return texto; }
+      public String getTexto() {
+        return texto;
+      }
+
       @Override
-      public Long getTotalUpVotes() { return upVotes; }
+      public Long getTotalUpVotes() {
+        return upVotes;
+      }
+
       @Override
-      public Long getTotalSuperVotes() { return superVotes; }
+      public Long getTotalSuperVotes() {
+        return superVotes;
+      }
+
       @Override
-      public BigInteger getComentarioPaiId() { return null; }
+      public BigInteger getComentarioPaiId() {
+        return null;
+      }
+
       @Override
-      public Timestamp getDataCriacao() { return Timestamp.from(Instant.now()); }
+      public Timestamp getDataCriacao() {
+        return Timestamp.from(Instant.now());
+      }
     };
+  }
+
+  @Test
+  @DisplayName("Deve buscar usuário por email com sucesso")
+  void deveBuscarUsuarioPorEmailComSucesso() {
+    when(usuarioRepository.findByEmail("joao@email.com")).thenReturn(Optional.of(usuario));
+
+    Usuario resultado = postService.findUserByPrincipal("joao@email.com");
+
+    assertThat(resultado).isNotNull();
+    assertThat(resultado.getEmail()).isEqualTo("joao@email.com");
+    assertThat(resultado.getNome()).isEqualTo("João Silva");
+
+    verify(usuarioRepository).findByEmail("joao@email.com");
+  }
+
+  @Test
+  @DisplayName("Deve lançar exceção ao buscar usuário inexistente por email")
+  void deveLancarExcecaoAoBuscarUsuarioInexistentePorEmail() {
+    when(usuarioRepository.findByEmail(anyString())).thenReturn(Optional.empty());
+
+    assertThatThrownBy(() -> postService.findUserByPrincipal("inexistente@email.com"))
+      .isInstanceOf(EntityNotFoundException.class)
+      .hasMessage("Usuário não encontrado");
+
+    verify(usuarioRepository).findByEmail("inexistente@email.com");
+  }
+
+  @Test
+  @DisplayName("Deve adicionar imagem ao post com sucesso")
+  void adicionaAtualizarImagemPost_sucesso() {
+    BigInteger postId = BigInteger.ONE;
+    Imagem imagem = new Imagem(postId, "img.png", "url", "idImg", "path", ImagemTipo.POST);
+    Post post = new Post();
+    post.setId(postId);
+    post.setImagens(new java.util.ArrayList<>());
+    when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+    when(postRepository.save(any(Post.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+    assertThatCode(() -> postService.adicionaAtualizarImagemPost(imagem, 0, postId)).doesNotThrowAnyException();
+
+    verify(postRepository).save(post);
+    assertThat(post.getImagens()).isNotEmpty();
+    assertThat(post.getImagens().get(0).getImagem()).isEqualTo(imagem);
+  }
+
+  @Test
+  @DisplayName("Deve lançar exceção ao adicionar imagem em post inexistente")
+  void adicionaAtualizarImagemPost_postNaoEncontrado_lancaExcecao() {
+    BigInteger postId = BigInteger.TWO;
+    Imagem imagem = new Imagem(postId, "img.png", "url", "idImg", "path", ImagemTipo.POST);
+    when(postRepository.findById(postId)).thenReturn(Optional.empty());
+    assertThatThrownBy(() -> postService.adicionaAtualizarImagemPost(imagem, 0, postId))
+      .isInstanceOf(EntityNotFoundException.class)
+      .hasMessageContaining("Post não encontrado");
+    verify(postRepository, never()).save(any(Post.class));
   }
 }

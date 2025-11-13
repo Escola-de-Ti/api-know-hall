@@ -1,8 +1,10 @@
 package br.com.escoladeti.api_know_hall.service;
 
+import br.com.escoladeti.api_know_hall.dto.ImagemPostDTO;
 import br.com.escoladeti.api_know_hall.dto.comentario.ComentarioResponseDTO;
 import br.com.escoladeti.api_know_hall.dto.post.*;
 import br.com.escoladeti.api_know_hall.dto.tags.TagResponseDTO;
+import br.com.escoladeti.api_know_hall.entity.Imagem;
 import br.com.escoladeti.api_know_hall.entity.Post;
 import br.com.escoladeti.api_know_hall.entity.Tag;
 import br.com.escoladeti.api_know_hall.entity.Usuario;
@@ -38,8 +40,8 @@ public class PostService {
   private final ComentarioRepository comentarioRepository;
 
   @Transactional
-  public PostResponseDTO criarPost(PostCreateDTO dto) {
-    Usuario usuario = usuarioRepository.findById(dto.usuarioId())
+  public PostResponseDTO criarPost(PostCreateDTO dto, String emailUsuario) {
+    Usuario usuario = usuarioRepository.findByEmail(emailUsuario)
       .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
 
     Post post = new Post();
@@ -114,6 +116,10 @@ public class PostService {
       .map(tag -> new TagResponseDTO(tag.getId(), tag.getName()))
       .collect(Collectors.toList());
 
+    List<ImagemPostDTO> imagemDTOs = post.getImagens().stream()
+      .map(ImagemPostDTO::fromEntity)
+      .toList();
+
     return new PostResponseDTO(
       post.getId(),
       post.getUsuario().getId(),
@@ -122,7 +128,8 @@ public class PostService {
       post.getDescricao(),
       post.getTotalUpVotes(),
       tagDTOs,
-      post.getDataCriacao()
+      post.getDataCriacao(),
+      imagemDTOs
     );
   }
 
@@ -140,7 +147,6 @@ public class PostService {
     String dataInicio = request.dataInicio() != null ? request.dataInicio().toString() : null;
     String dataFim = request.dataFim() != null ? request.dataFim().toString() : null;
 
-    // 1. Buscar posts (query principal)
     List<PostFeedProjection> results = postRepository.findFeedPosts(
       usuarioIdLong,
       request.lastScore(),
@@ -220,7 +226,8 @@ public class PostService {
       tags,
       projection.getDataCriacao(),
       projection.getRelevanceScore(),
-      projection.getTagsEmComum()
+      projection.getTagsEmComum(),
+      projection.getJaVotou()
     );
   }
 
@@ -250,7 +257,7 @@ public class PostService {
       request.lastValue(),
       lastPostIdLong,
       fetchSize,
-      termo  // ✅ NOVO PARÂMETRO
+      termo
     );
 
     boolean hasMore = results.size() > request.pageSize();
@@ -365,5 +372,22 @@ public class PostService {
       projection.getComentarioPaiId(),
       projection.getDataCriacao()
     );
+  }
+
+  @Transactional
+  public void adicionaAtualizarImagemPost(Imagem imagem, Integer ordemImagem, BigInteger postId) {
+    Post post = postRepository.findById(postId)
+      .orElseThrow(() -> new EntityNotFoundException("Post não encontrado"));
+    post.addImagem(imagem, ordemImagem);
+    postRepository.save(post);
+  }
+
+  @Transactional
+  public void removerImagemPost(BigInteger postId, BigInteger imagemId) {
+    Post post = postRepository.findById(postId)
+      .orElseThrow(() -> new EntityNotFoundException("Post não encontrado"));
+
+    post.getImagens().removeIf(imgPost -> imgPost.getImagem().getId().equals(imagemId));
+    postRepository.save(post);
   }
 }

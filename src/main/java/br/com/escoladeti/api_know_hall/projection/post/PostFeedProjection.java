@@ -13,4 +13,5 @@ public interface PostFeedProjection {
   Timestamp getDataCriacao();
   Double getRelevanceScore();
   Integer getTagsEmComum();
+  Boolean getJaVotou();
 }

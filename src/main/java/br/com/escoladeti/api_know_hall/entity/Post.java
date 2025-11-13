@@ -55,4 +55,17 @@ public class Post {
 
   @Column(name = "maior_qntd_voto")
   private Long maiorQntdVoto;
+
+  @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+  @OrderBy("ordemImagem ASC")
+  private List<ImagemPost> imagens = new ArrayList<>();
+
+  public void addImagem(Imagem imagem, Integer ordemImagem) {
+    ImagemPost imgPost = new ImagemPost();
+    imgPost.setPost(this);
+    imgPost.setImagem(imagem);
+    imgPost.setOrdemImagem(ordemImagem);
+    this.imagens.add(imgPost);
+  }
+
 }

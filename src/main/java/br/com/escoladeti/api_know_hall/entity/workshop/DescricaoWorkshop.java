@@ -1,5 +1,6 @@
 package br.com.escoladeti.api_know_hall.entity.workshop;
 
+import br.com.escoladeti.api_know_hall.entity.Imagem;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -27,7 +28,12 @@ public class DescricaoWorkshop {
   @Column(name = "descricao", columnDefinition = "TEXT")
   private String descricao;
 
-  @OneToOne
+  @OneToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "id_workshop", nullable = false, unique = true)
   private Workshop workshop;
+
+  @OneToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "id_imagem_workshop", referencedColumnName = "id", foreignKey = @ForeignKey(name = "fk_descricao_workshop_imagem"))
+  private Imagem imagemWorkshop;
+
 }

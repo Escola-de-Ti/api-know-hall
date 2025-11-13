@@ -2,6 +2,7 @@ package br.com.escoladeti.api_know_hall.service;
 
 import br.com.escoladeti.api_know_hall.dto.workshop.WorkshopCreateDTO;
 import br.com.escoladeti.api_know_hall.dto.workshop.WorkshopUpdateDTO;
+import br.com.escoladeti.api_know_hall.entity.Imagem;
 import br.com.escoladeti.api_know_hall.entity.Usuario;
 import br.com.escoladeti.api_know_hall.entity.workshop.DescricaoWorkshop;
 import br.com.escoladeti.api_know_hall.entity.workshop.Workshop;
@@ -29,10 +30,11 @@ public class WorkshopService {
   private final UsuarioRepository usuarioRepository;
 
   @Transactional
-  public Workshop criarWorkshop(WorkshopCreateDTO dto) {
-    Usuario instrutor = usuarioRepository.findById(dto.getInstrutorId())
+  public Workshop criarWorkshop(WorkshopCreateDTO dto, String emailInstrutor) {
+
+    Usuario instrutor = usuarioRepository.findByEmail(emailInstrutor)
       .orElseThrow(() -> new EntityNotFoundException(
-        "Usuário com ID " + dto.getInstrutorId() + " não encontrado"
+        "Usuário não encontrado"
       ));
 
     if (instrutor.getTipoUsuario() != TipoUsuario.INSTRUTOR) {
@@ -47,12 +49,19 @@ public class WorkshopService {
       );
     }
 
+    if (dto.getCusto() == null || dto.getCusto() < 0) {
+      throw new IllegalArgumentException("Custo do workshop é obrigatório e não pode ser negativo");
+    }
+
     Workshop workshop = new Workshop();
     workshop.setTitulo(dto.getTitulo());
     workshop.setLinkMeet(dto.getLinkMeet());
     workshop.setInstrutor(instrutor);
     workshop.setDataInicio(dto.getDataInicio());
     workshop.setDataTermino(dto.getDataTermino());
+    workshop.setCapacidade(dto.getCapacidade());
+
+    workshop.setCusto(dto.getCusto());
 
     workshop.setStatus(determinarStatusInicial(dto.getDataInicio()));
 
@@ -85,7 +94,7 @@ public class WorkshopService {
   public Workshop buscarPorId(BigInteger id) {
     return workshopRepository.findById(id)
       .orElseThrow(() -> new EntityNotFoundException(
-        "Workshop com ID " + id + " não encontrado"
+        "Workshop não encontrado"
       ));
   }
 
@@ -115,14 +124,28 @@ public class WorkshopService {
   }
 
   @Transactional
-  public Workshop atualizarWorkshop(BigInteger id, WorkshopUpdateDTO dto) {
+  public Workshop atualizarWorkshop(BigInteger id, WorkshopUpdateDTO dto, String emailInstrutor) {
     Workshop workshop = buscarPorId(id);
+
+    Usuario instrutor = usuarioRepository.findByEmail(emailInstrutor)
+      .orElseThrow(() -> new EntityNotFoundException(
+        "Usuário não encontrado"
+      ));
+
+    if (!workshop.getInstrutor().getId().equals(instrutor.getId())) {
+      throw new IllegalArgumentException(
+        "Apenas o instrutor que criou o workshop pode atualizá-lo"
+      );
+    }
 
     if (dto.getTitulo() != null) {
       workshop.setTitulo(dto.getTitulo());
     }
     if (dto.getLinkMeet() != null) {
       workshop.setLinkMeet(dto.getLinkMeet());
+    }
+    if (dto.getCapacidade() != null) {
+      workshop.setCapacidade(dto.getCapacidade());
     }
 
     if (dto.getDataInicio() != null || dto.getDataTermino() != null) {
@@ -147,6 +170,13 @@ public class WorkshopService {
         descricao = descricaoWorkshopRepository.save(descricao);
         workshop.setDescricao(descricao);
       }
+    }
+
+    if (dto.getCusto() != null) {
+      if (dto.getCusto() < 0) {
+        throw new IllegalArgumentException("Custo não pode ser negativo");
+      }
+      workshop.setCusto(dto.getCusto());
     }
 
     return workshopRepository.save(workshop);
@@ -180,6 +210,12 @@ public class WorkshopService {
 
 
   private void validarEAtualizarStatus(Workshop workshop, StatusWorkshop novoStatus) {
+    if (workshop.getStatus() == StatusWorkshop.CONCLUIDO && novoStatus != StatusWorkshop.CONCLUIDO) {
+      throw new IllegalArgumentException(
+        "Não é possível reabrir um workshop já concluído"
+      );
+    }
+
     Timestamp agora = Timestamp.from(Instant.now());
 
     if (novoStatus == StatusWorkshop.EM_ANDAMENTO) {
@@ -199,12 +235,6 @@ public class WorkshopService {
       }
     }
 
-    if (workshop.getStatus() == StatusWorkshop.CONCLUIDO && novoStatus != StatusWorkshop.CONCLUIDO) {
-      throw new IllegalArgumentException(
-        "Não é possível reabrir um workshop já concluído"
-      );
-    }
-
     workshop.setStatus(novoStatus);
   }
 
@@ -218,4 +248,28 @@ public class WorkshopService {
   public Long contarWorkshopsPorInstrutor(BigInteger instrutorId) {
     return workshopRepository.countByInstrutorId(instrutorId.longValue());
   }
+
+  @Transactional
+  public void atualizarImagemWorkshop(Imagem imagem, BigInteger workshopId) {
+    Workshop workshop = workshopRepository.findById(workshopId)
+      .orElseThrow(() -> new EntityNotFoundException("Workshop não encontrado"));
+
+    DescricaoWorkshop descricaoWorkshop = workshop.getDescricao();
+    if (descricaoWorkshop == null) {
+      throw new EntityNotFoundException("Descrição do workshop não encontrada");
+    }
+
+    descricaoWorkshop.setImagemWorkshop(imagem);
+    workshopRepository.save(workshop);
+  }
+
+  @Transactional
+  public void removerImagemWorkshop(BigInteger imagemId) {
+    descricaoWorkshopRepository.findByImagemWorkshopId(imagemId)
+      .ifPresent(descricao -> {
+        descricao.setImagemWorkshop(null);
+        descricaoWorkshopRepository.save(descricao);
+      });
+  }
+
 }

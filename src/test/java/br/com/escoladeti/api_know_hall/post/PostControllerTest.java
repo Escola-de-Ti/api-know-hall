@@ -3,6 +3,7 @@ package br.com.escoladeti.api_know_hall.post;
 import br.com.escoladeti.api_know_hall.config.JwtAuthenticationFilter;
 import br.com.escoladeti.api_know_hall.config.SecurityConfig;
 import br.com.escoladeti.api_know_hall.controller.PostController;
+import br.com.escoladeti.api_know_hall.dto.ImagemPostDTO;
 import br.com.escoladeti.api_know_hall.dto.comentario.ComentarioResponseDTO;
 import br.com.escoladeti.api_know_hall.dto.post.*;
 import br.com.escoladeti.api_know_hall.dto.tags.TagResponseDTO;
@@ -70,6 +71,12 @@ class PostControllerTest {
   @BeforeEach
   void setUp() {
     TagResponseDTO tagDTO = new TagResponseDTO(BigInteger.ONE, "React Native");
+    ImagemPostDTO imagemDTO = new ImagemPostDTO(
+      BigInteger.ONE,
+      BigInteger.ONE,
+      "https://exemplo.com/imagem1.jpg",
+      0
+    );
 
     postResponseDTO = new PostResponseDTO(
       BigInteger.ONE,
@@ -79,13 +86,13 @@ class PostControllerTest {
       "Descrição do post",
       10L,
       List.of(tagDTO),
-      Timestamp.from(Instant.now())
+      Timestamp.from(Instant.now()),
+      List.of(imagemDTO)
     );
 
     mockPrincipal = () -> "joao@email.com";
 
     postCreateDTO = new PostCreateDTO(
-      BigInteger.ONE,
       "Título do Post",
       "Descrição do post",
       List.of(BigInteger.ONE)
@@ -98,11 +105,13 @@ class PostControllerTest {
   @WithMockUser
   @DisplayName("POST /api/posts - Deve criar post com sucesso")
   void deveCriarPostComSucesso() throws Exception {
-    // ✅ USE ArgumentMatchers.any()
-    when(postService.criarPost(ArgumentMatchers.any(PostCreateDTO.class))).thenReturn(postResponseDTO);
+    // ✅ Mock do service agora recebe (DTO, email)
+    when(postService.criarPost(ArgumentMatchers.any(PostCreateDTO.class), ArgumentMatchers.anyString()))
+      .thenReturn(postResponseDTO);
 
     mockMvc.perform(post("/api/posts")
         .with(csrf())
+        .principal(mockPrincipal)
         .contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(postCreateDTO)))
       .andDo(print())
@@ -111,29 +120,7 @@ class PostControllerTest {
       .andExpect(jsonPath("$.titulo").value("Título do Post"))
       .andExpect(jsonPath("$.nomeUsuario").value("João Silva"));
 
-    verify(postService, times(1)).criarPost(ArgumentMatchers.any(PostCreateDTO.class));
-  }
-
-  @Test
-  @WithMockUser
-  @DisplayName("POST /api/posts - Deve retornar 400 com usuarioId nulo")
-  void deveRetornar400ComUsuarioIdNulo() throws Exception {
-    String jsonInvalido = """
-      {
-          "usuarioId": null,
-          "titulo": "Título",
-          "descricao": "Descrição"
-      }
-      """;
-
-    mockMvc.perform(post("/api/posts")
-        .with(csrf())
-        .contentType(MediaType.APPLICATION_JSON)
-        .content(jsonInvalido))
-      .andDo(print())
-      .andExpect(status().isBadRequest());
-
-    verify(postService, never()).criarPost(ArgumentMatchers.any());
+    verify(postService, times(1)).criarPost(ArgumentMatchers.any(PostCreateDTO.class), eq("joao@email.com"));
   }
 
   @Test
@@ -142,7 +129,6 @@ class PostControllerTest {
   void deveRetornar400ComTituloVazio() throws Exception {
     String jsonInvalido = """
       {
-          "usuarioId": 1,
           "titulo": "",
           "descricao": "Descrição"
       }
@@ -150,12 +136,13 @@ class PostControllerTest {
 
     mockMvc.perform(post("/api/posts")
         .with(csrf())
+        .principal(mockPrincipal)
         .contentType(MediaType.APPLICATION_JSON)
         .content(jsonInvalido))
       .andDo(print())
       .andExpect(status().isBadRequest());
 
-    verify(postService, never()).criarPost(ArgumentMatchers.any());
+    verify(postService, never()).criarPost(ArgumentMatchers.any(), ArgumentMatchers.anyString());
   }
 
   @Test
@@ -212,10 +199,9 @@ class PostControllerTest {
     PostUpdateDTO updateDTO = new PostUpdateDTO("Novo Título", null, null);
     PostResponseDTO atualizado = new PostResponseDTO(
       BigInteger.ONE, BigInteger.ONE, "João Silva",
-      "Novo Título", "Descrição", 10L, List.of(), Timestamp.from(Instant.now())
+      "Novo Título", "Descrição", 10L, List.of(), Timestamp.from(Instant.now()), List.of()
     );
 
-    // ✅ USE ArgumentMatchers.eq() e .any()
     when(postService.atualizarPost(ArgumentMatchers.eq(BigInteger.ONE), ArgumentMatchers.any(PostUpdateDTO.class)))
       .thenReturn(atualizado);
 
@@ -254,7 +240,7 @@ class PostControllerTest {
   void deveBuscarFeedBasico() throws Exception {
     PostFeedDTO feedDTO = new PostFeedDTO(
       BigInteger.ONE, BigInteger.ONE, "João", "Título", "Desc",
-      10L, List.of(), Timestamp.from(Instant.now()), 50.0, 2
+      10L, List.of(), Timestamp.from(Instant.now()), 50.0, 2, false
     );
     FeedResponseDTO feedResponse = new FeedResponseDTO(
       List.of(feedDTO), false, BigInteger.ONE, 50.0
@@ -268,14 +254,16 @@ class PostControllerTest {
 
     mockMvc.perform(get("/api/posts/feed")
         .principal(mockPrincipal)
-        .param("usuarioId", "1")
         .param("pageSize", "10"))
       .andDo(print())
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.posts", hasSize(1)))
       .andExpect(jsonPath("$.hasMore").value(false));
 
-    verify(postService).getFeed(ArgumentMatchers.any(FeedRequestDTO.class));
+    // ✅ Verificar que o pageSize passado ao service é 10 (do parâmetro)
+    verify(postService).getFeed(ArgumentMatchers.argThat(req ->
+      req.pageSize() == 10
+    ));
   }
 
   @Test
@@ -290,16 +278,58 @@ class PostControllerTest {
 
     mockMvc.perform(get("/api/posts/feed")
         .principal(mockPrincipal)
-        .param("usuarioId", "1")
         .param("tagIds", "1,2")
         .param("tagOperador", "AND"))
       .andDo(print())
       .andExpect(status().isOk());
 
+    // ✅ Verificar que usa o pageSize padrão (20) quando não informado
     verify(postService).getFeed(ArgumentMatchers.argThat(req ->
       req.tagIds() != null &&
         req.tagIds().size() == 2 &&
-        req.tagOperador() == TagOperador.AND
+        req.tagOperador() == TagOperador.AND &&
+        req.pageSize() == 20  // Valor padrão do controller
+    ));
+  }
+
+  @Test
+  @WithMockUser
+  @DisplayName("GET /api/posts/feed - Deve usar pageSize padrão quando não informado")
+  void deveUsarPageSizePadraoNoFeed() throws Exception {
+    Usuario usuario = mock(Usuario.class);
+    when(usuario.getId()).thenReturn(BigInteger.ONE);
+    when(postService.findUserByPrincipal(ArgumentMatchers.anyString())).thenReturn(usuario);
+    when(postService.getFeed(ArgumentMatchers.any(FeedRequestDTO.class)))
+      .thenReturn(new FeedResponseDTO(List.of(), false, null, null));
+
+    mockMvc.perform(get("/api/posts/feed")
+        .principal(mockPrincipal))
+      .andDo(print())
+      .andExpect(status().isOk());
+
+    verify(postService).getFeed(ArgumentMatchers.argThat(req ->
+      req.pageSize() == 20  // Valor padrão
+    ));
+  }
+
+  @Test
+  @WithMockUser
+  @DisplayName("GET /api/posts/feed - Deve respeitar pageSize customizado")
+  void deveRespeitarPageSizeCustomizadoNoFeed() throws Exception {
+    Usuario usuario = mock(Usuario.class);
+    when(usuario.getId()).thenReturn(BigInteger.ONE);
+    when(postService.findUserByPrincipal(ArgumentMatchers.anyString())).thenReturn(usuario);
+    when(postService.getFeed(ArgumentMatchers.any(FeedRequestDTO.class)))
+      .thenReturn(new FeedResponseDTO(List.of(), false, null, null));
+
+    mockMvc.perform(get("/api/posts/feed")
+        .principal(mockPrincipal)
+        .param("pageSize", "50"))
+      .andDo(print())
+      .andExpect(status().isOk());
+
+    verify(postService).getFeed(ArgumentMatchers.argThat(req ->
+      req.pageSize() == 50  // Valor customizado
     ));
   }
 

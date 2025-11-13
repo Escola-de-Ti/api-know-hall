@@ -143,7 +143,8 @@ class PostTest {
       usuario,
       agora,
       new ArrayList<>(),
-      0L
+      0L,
+      new ArrayList<>()
     );
 
     assertThat(novoPost.getId()).isEqualTo(BigInteger.TWO);

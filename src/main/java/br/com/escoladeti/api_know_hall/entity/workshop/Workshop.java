@@ -1,5 +1,6 @@
 package br.com.escoladeti.api_know_hall.entity.workshop;
 
+import br.com.escoladeti.api_know_hall.entity.Imagem;
 import br.com.escoladeti.api_know_hall.entity.Usuario;
 import br.com.escoladeti.api_know_hall.enums.workshop.StatusWorkshop;
 import jakarta.persistence.*;
@@ -51,6 +52,12 @@ public class Workshop {
 
   @Column(name = "data_termino", nullable = false)
   private Timestamp dataTermino;
+
+  @Column(name = "capacidade")
+  private Integer capacidade;
+
+  @Column(name = "custo", nullable = false)
+  private Integer custo;
 
   public void setDescricao(DescricaoWorkshop descricao) {
     if (descricao == null) {

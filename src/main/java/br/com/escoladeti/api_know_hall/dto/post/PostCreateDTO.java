@@ -6,8 +6,6 @@ import java.math.BigInteger;
 import java.util.List;
 
 public record PostCreateDTO(
-  @NotNull(message = "Usuario ID é obrigatório")
-  BigInteger usuarioId,
   @NotBlank(message = "Título é obrigatório")
   String titulo,
   String descricao,
