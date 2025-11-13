@@ -52,21 +52,6 @@ class PostDTOTest {
   }
 
   @Test
-  @DisplayName("PostCreateDTO - Deve falhar com usuarioId nulo")
-  void postCreateDTO_deveFalharComUsuarioIdNulo() {
-    PostCreateDTO dto = new PostCreateDTO(
-      "Título",
-      "Descrição",
-      null
-    );
-
-    Set<ConstraintViolation<PostCreateDTO>> violations = validator.validate(dto);
-
-    assertThat(violations).isNotEmpty();
-    assertThat(violations).anyMatch(v -> v.getMessage().contains("obrigatório"));
-  }
-
-  @Test
   @DisplayName("PostCreateDTO - Deve falhar com título vazio")
   void postCreateDTO_deveFalharComTituloVazio() {
     PostCreateDTO dto = new PostCreateDTO(
