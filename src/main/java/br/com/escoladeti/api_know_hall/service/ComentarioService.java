@@ -62,8 +62,11 @@ public class ComentarioService {
   public ComentarioListResponseDTO buscarComentariosDoPost(
     BigInteger postId,
     BigInteger lastComentarioId,
-    Integer pageSize
+    Integer pageSize,
+    String usuarioEmail
   ) {
+    Usuario usuario = usuarioRepository.findByEmail(usuarioEmail)
+      .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
     if (!postRepository.existsById(postId)) {
       throw new EntityNotFoundException("Post não encontrado");
     }
@@ -73,7 +76,8 @@ public class ComentarioService {
     List<ComentarioProjection> results = comentarioRepository.findComentariosByPostId(
       postId,
       lastComentarioId,
-      fetchSize
+      fetchSize,
+      usuario.getId()
     );
 
     boolean hasMore = results.size() > pageSize;
@@ -95,8 +99,12 @@ public class ComentarioService {
   public ComentarioListResponseDTO buscarRespostasDoComentario(
     BigInteger comentarioPaiId,
     BigInteger lastComentarioId,
-    Integer pageSize
+    Integer pageSize,
+    String usuarioEmail
   ) {
+    Usuario usuario = usuarioRepository.findByEmail(usuarioEmail)
+      .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));;
+
     if (!comentarioRepository.existsById(comentarioPaiId)) {
       throw new EntityNotFoundException("Comentário não encontrado");
     }
@@ -106,7 +114,8 @@ public class ComentarioService {
     List<ComentarioProjection> results = comentarioRepository.findRespostasByComentarioPaiId(
       comentarioPaiId,
       lastComentarioId,
-      fetchSize
+      fetchSize,
+      usuario.getId()
     );
 
     boolean hasMore = results.size() > pageSize;
@@ -206,7 +215,8 @@ public class ComentarioService {
       comentario.getTotalUpVotes(),
       comentario.getTotalSuperVotes(),
       comentario.getComentarioPai() != null ? comentario.getComentarioPai().getId() : null,
-      comentario.getDataCriacao()
+      comentario.getDataCriacao(),
+      false
     );
   }
 
@@ -220,7 +230,8 @@ public class ComentarioService {
       projection.getTotalUpVotes(),
       projection.getTotalSuperVotes(),
       projection.getComentarioPaiId(),
-      projection.getDataCriacao()
+      projection.getDataCriacao(),
+      projection.getJaVotou()
     );
   }
 

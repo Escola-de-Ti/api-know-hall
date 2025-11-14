@@ -123,9 +123,10 @@ public class PostController {
   @GetMapping("/{id}/detalhes")
   public ResponseEntity<PostDetalhesDTO> buscarDetalhesDoPost(
     @PathVariable BigInteger id,
-    @RequestParam(required = false, defaultValue = "10") Integer pageSize
+    @RequestParam(required = false, defaultValue = "10") Integer pageSize,
+    Principal principal
   ) {
-    PostDetalhesDTO detalhes = postService.buscarDetalhesDoPost(id, pageSize);
+    PostDetalhesDTO detalhes = postService.buscarDetalhesDoPost(id, pageSize, principal.getName());
     return ResponseEntity.ok(detalhes);
   }
 }
