@@ -109,7 +109,10 @@ public interface PostRepository extends JpaRepository<Post, BigInteger> {
           CASE WHEN v.id IS NOT NULL THEN true ELSE false END AS jaVotou
       FROM paginated_posts pp
       JOIN usuario u ON pp.usuario_id = u.id
-      LEFT JOIN votos v ON v.post_id = pp.id AND v.usuario_id = :usuarioId
+      LEFT JOIN votos v
+              ON v.post_id = pp.id
+              AND v.usuario_id = :usuarioId
+              AND v.tipo = 'UP_VOTE'
       ORDER BY pp.relevance_score DESC, pp.id DESC
       """, nativeQuery = true)
   List<PostFeedProjection> findFeedPosts(
@@ -238,4 +241,16 @@ public interface PostRepository extends JpaRepository<Post, BigInteger> {
     "JOIN FETCH p.usuario " +
     "WHERE p.id = :id")
   Optional<Post> findByIdWithUsuario(@Param("id") BigInteger id);
+
+  @Query(value =
+    "select " +
+    "case when v.id is not null then true else false end as jaVotou " +
+    "from votos v " +
+    "where v.post_id = :postId " +
+    " and v.comentario_id IS NULL " +
+    " and v.usuario_id = :usuarioId " +
+    " and v.tipo = 'UP_VOTE'",
+    nativeQuery = true)
+  Boolean getJaVotouByPostIdAndUsuarioId(@Param("postId") BigInteger postId,
+                                         @Param("usuarioId") BigInteger usuarioId);
 }

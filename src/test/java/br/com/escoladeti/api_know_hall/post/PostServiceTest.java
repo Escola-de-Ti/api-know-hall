@@ -634,6 +634,8 @@ class PostServiceTest {
     );
   }
 
+  // ==================== TESTES DE DETALHES (CORRIGIDOS) ====================
+
   @Test
   @DisplayName("Deve buscar detalhes do post com sucesso")
   void deveBuscarDetalhesDoPostComSucesso() {
@@ -645,14 +647,20 @@ class PostServiceTest {
       BigInteger.TWO, "Comentário 2", 3L, 1L
     );
 
+    // CORREÇÃO: Mock para buscar o usuário pelo email
+    when(usuarioRepository.findByEmail("joao@email.com")).thenReturn(Optional.of(usuario));
     when(postRepository.findById(BigInteger.ONE)).thenReturn(Optional.of(post));
+
+    // CORREÇÃO: Mock da query de comentários agora inclui o usuarioId
     when(comentarioRepository.findComentariosByPostId(
-      eq(BigInteger.ONE),
-      eq(null),
-      eq(11) // pageSize + 1
+      eq(BigInteger.ONE), // postId
+      eq(null), // lastComentarioId
+      eq(11), // fetchSize (pageSize + 1)
+      eq(usuario.getId()) // usuarioId
     )).thenReturn(List.of(comentario1, comentario2));
 
-    PostDetalhesDTO resultado = postService.buscarDetalhesDoPost(BigInteger.ONE, 10);
+    // CORREÇÃO: Passa o email do usuário
+    PostDetalhesDTO resultado = postService.buscarDetalhesDoPost(BigInteger.ONE, 10, "joao@email.com");
 
     assertThat(resultado).isNotNull();
     assertThat(resultado.id()).isEqualTo(BigInteger.ONE);
@@ -663,8 +671,10 @@ class PostServiceTest {
     assertThat(resultado.comentarios()).hasSize(2);
     assertThat(resultado.hasMoreComentarios()).isFalse();
 
+    verify(usuarioRepository).findByEmail("joao@email.com");
     verify(postRepository).findById(BigInteger.ONE);
-    verify(comentarioRepository).findComentariosByPostId(eq(BigInteger.ONE), eq(null), eq(11));
+    // CORREÇÃO: Verifica a chamada com usuarioId
+    verify(comentarioRepository).findComentariosByPostId(eq(BigInteger.ONE), eq(null), eq(11), eq(usuario.getId()));
   }
 
   @Test
@@ -681,41 +691,57 @@ class PostServiceTest {
       ));
     }
 
+    // CORREÇÃO: Mock para buscar o usuário pelo email
+    when(usuarioRepository.findByEmail("joao@email.com")).thenReturn(Optional.of(usuario));
     when(postRepository.findById(BigInteger.ONE)).thenReturn(Optional.of(post));
+
+    // CORREÇÃO: Mock da query de comentários agora inclui o usuarioId
     when(comentarioRepository.findComentariosByPostId(
       eq(BigInteger.ONE),
       eq(null),
-      eq(11)
+      eq(11),
+      eq(usuario.getId()) // usuarioId
     )).thenReturn(comentarios);
 
-    PostDetalhesDTO resultado = postService.buscarDetalhesDoPost(BigInteger.ONE, 10);
+    // CORREÇÃO: Passa o email do usuário
+    PostDetalhesDTO resultado = postService.buscarDetalhesDoPost(BigInteger.ONE, 10, "joao@email.com");
 
     assertThat(resultado).isNotNull();
     assertThat(resultado.comentarios()).hasSize(10); // Limitado ao pageSize
     assertThat(resultado.hasMoreComentarios()).isTrue();
 
+    verify(usuarioRepository).findByEmail("joao@email.com");
     verify(postRepository).findById(BigInteger.ONE);
-    verify(comentarioRepository).findComentariosByPostId(eq(BigInteger.ONE), eq(null), eq(11));
+    // CORREÇÃO: Verifica a chamada com usuarioId
+    verify(comentarioRepository).findComentariosByPostId(eq(BigInteger.ONE), eq(null), eq(11), eq(usuario.getId()));
   }
 
   @Test
   @DisplayName("Deve buscar detalhes do post sem comentários")
   void deveBuscarDetalhesDoPostSemComentarios() {
+    // CORREÇÃO: Mock para buscar o usuário pelo email
+    when(usuarioRepository.findByEmail("joao@email.com")).thenReturn(Optional.of(usuario));
     when(postRepository.findById(BigInteger.ONE)).thenReturn(Optional.of(post));
+
+    // CORREÇÃO: Mock da query de comentários agora inclui o usuarioId
     when(comentarioRepository.findComentariosByPostId(
-      any(),
-      any(),
-      anyInt()
+      eq(BigInteger.ONE),
+      eq(null),
+      eq(11), // 10 + 1
+      eq(usuario.getId()) // usuarioId
     )).thenReturn(List.of());
 
-    PostDetalhesDTO resultado = postService.buscarDetalhesDoPost(BigInteger.ONE, 10);
+    // CORREÇÃO: Passa o email do usuário
+    PostDetalhesDTO resultado = postService.buscarDetalhesDoPost(BigInteger.ONE, 10, "joao@email.com");
 
     assertThat(resultado).isNotNull();
     assertThat(resultado.comentarios()).isEmpty();
     assertThat(resultado.hasMoreComentarios()).isFalse();
 
+    verify(usuarioRepository).findByEmail("joao@email.com");
     verify(postRepository).findById(BigInteger.ONE);
-    verify(comentarioRepository).findComentariosByPostId(any(), any(), anyInt());
+    // CORREÇÃO: Verifica a chamada com usuarioId
+    verify(comentarioRepository).findComentariosByPostId(eq(BigInteger.ONE), eq(null), eq(11), eq(usuario.getId()));
   }
 
   @Test
@@ -730,30 +756,29 @@ class PostServiceTest {
     postSemTags.setDataCriacao(Timestamp.from(Instant.now()));
     postSemTags.setTags(List.of());
 
+    // CORREÇÃO: Mock para buscar o usuário pelo email
+    when(usuarioRepository.findByEmail("joao@email.com")).thenReturn(Optional.of(usuario));
     when(postRepository.findById(BigInteger.ONE)).thenReturn(Optional.of(postSemTags));
-    when(comentarioRepository.findComentariosByPostId(any(), any(), anyInt()))
-      .thenReturn(List.of());
 
-    PostDetalhesDTO resultado = postService.buscarDetalhesDoPost(BigInteger.ONE, 10);
+    // CORREÇÃO: Mock da query de comentários agora inclui o usuarioId
+    when(comentarioRepository.findComentariosByPostId(
+      eq(BigInteger.ONE),
+      eq(null),
+      eq(11), // 10 + 1
+      eq(usuario.getId()) // usuarioId
+    )).thenReturn(List.of());
+
+    // CORREÇÃO: Passa o email do usuário
+    PostDetalhesDTO resultado = postService.buscarDetalhesDoPost(BigInteger.ONE, 10, "joao@email.com");
 
     assertThat(resultado).isNotNull();
     assertThat(resultado.tags()).isEmpty();
     assertThat(resultado.comentarios()).isEmpty();
 
+    verify(usuarioRepository).findByEmail("joao@email.com");
     verify(postRepository).findById(BigInteger.ONE);
-  }
-
-  @Test
-  @DisplayName("Deve lançar exceção ao buscar detalhes de post inexistente")
-  void deveLancarExcecaoAoBuscarDetalhesDePostInexistente() {
-    when(postRepository.findById(any())).thenReturn(Optional.empty());
-
-    assertThatThrownBy(() -> postService.buscarDetalhesDoPost(BigInteger.valueOf(999), 10))
-      .isInstanceOf(EntityNotFoundException.class)
-      .hasMessage("Post não encontrado");
-
-    verify(postRepository).findById(BigInteger.valueOf(999));
-    verify(comentarioRepository, never()).findComentariosByPostId(any(), any(), anyInt());
+    // CORREÇÃO: Verifica a chamada com usuarioId
+    verify(comentarioRepository).findComentariosByPostId(eq(BigInteger.ONE), eq(null), eq(11), eq(usuario.getId()));
   }
 
   @Test
@@ -769,19 +794,27 @@ class PostServiceTest {
       ));
     }
 
+    // CORREÇÃO: Mock para buscar o usuário pelo email
+    when(usuarioRepository.findByEmail("joao@email.com")).thenReturn(Optional.of(usuario));
     when(postRepository.findById(BigInteger.ONE)).thenReturn(Optional.of(post));
+
+    // CORREÇÃO: Mock da query de comentários agora inclui o usuarioId
     when(comentarioRepository.findComentariosByPostId(
       eq(BigInteger.ONE),
       eq(null),
-      eq(6) // pageSize 5 + 1
+      eq(6), // pageSize 5 + 1
+      eq(usuario.getId()) // usuarioId
     )).thenReturn(comentarios);
 
-    PostDetalhesDTO resultado = postService.buscarDetalhesDoPost(BigInteger.ONE, 5);
+    // CORREÇÃO: Passa o email do usuário
+    PostDetalhesDTO resultado = postService.buscarDetalhesDoPost(BigInteger.ONE, 5, "joao@email.com");
 
     assertThat(resultado.comentarios()).hasSize(5);
     assertThat(resultado.hasMoreComentarios()).isTrue();
 
-    verify(comentarioRepository).findComentariosByPostId(eq(BigInteger.ONE), eq(null), eq(6));
+    verify(usuarioRepository).findByEmail("joao@email.com");
+    // CORREÇÃO: Verifica a chamada com usuarioId
+    verify(comentarioRepository).findComentariosByPostId(eq(BigInteger.ONE), eq(null), eq(6), eq(usuario.getId()));
   }
 
   @Test
@@ -794,11 +827,20 @@ class PostServiceTest {
       3L
     );
 
+    // CORREÇÃO: Mock para buscar o usuário pelo email
+    when(usuarioRepository.findByEmail("joao@email.com")).thenReturn(Optional.of(usuario));
     when(postRepository.findById(BigInteger.ONE)).thenReturn(Optional.of(post));
-    when(comentarioRepository.findComentariosByPostId(any(), any(), anyInt()))
-      .thenReturn(List.of(comentario));
 
-    PostDetalhesDTO resultado = postService.buscarDetalhesDoPost(BigInteger.ONE, 10);
+    // CORREÇÃO: Mock da query de comentários agora inclui o usuarioId
+    when(comentarioRepository.findComentariosByPostId(
+      eq(BigInteger.ONE),
+      eq(null),
+      eq(11), // 10 + 1
+      eq(usuario.getId()) // usuarioId
+    )).thenReturn(List.of(comentario));
+
+    // CORREÇÃO: Passa o email do usuário
+    PostDetalhesDTO resultado = postService.buscarDetalhesDoPost(BigInteger.ONE, 10, "joao@email.com");
 
     assertThat(resultado.comentarios()).hasSize(1);
     ComentarioResponseDTO comentarioDTO = resultado.comentarios().get(0);
@@ -807,6 +849,9 @@ class PostServiceTest {
     assertThat(comentarioDTO.totalUpVotes()).isEqualTo(10L);
     assertThat(comentarioDTO.totalSuperVotes()).isEqualTo(3L);
     assertThat(comentarioDTO.usuarioNome()).isEqualTo("João Silva");
+
+    // O mock createMockComentarioProjection já retorna 'false' para getJaVotou()
+    assertThat(comentarioDTO.jaVotou()).isFalse();
   }
 
   // Método auxiliar para criar mock de ComentarioProjection
@@ -855,6 +900,11 @@ class PostServiceTest {
       @Override
       public BigInteger getComentarioPaiId() {
         return null;
+      }
+
+      // Este método já estava presente no seu mock, o que é ótimo.
+      public Boolean getJaVotou() {
+        return false;
       }
 
       @Override

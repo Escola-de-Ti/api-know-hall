@@ -23,9 +23,11 @@ public interface ComentarioRepository extends JpaRepository<Comentario, BigInteg
            c.total_up_votes as totalUpVotes,
            c.total_super_votes as totalSuperVotes,
            c.comentario_pai_id as comentarioPaiId,
-           c.data_criacao as dataCriacao
+           c.data_criacao as dataCriacao,
+           CASE WHEN v.id IS NOT NULL THEN true ELSE false END AS jaVotou
     FROM comentario c
     INNER JOIN usuario u ON c.usuario_id = u.id
+    LEFT JOIN votos v ON v.comentario_id = c.id AND v.usuario_id = :usuarioId
     WHERE c.post_id = :postId
       AND c.comentario_pai_id IS NULL
       AND (:lastComentarioId IS NULL OR c.id < :lastComentarioId)
@@ -35,7 +37,8 @@ public interface ComentarioRepository extends JpaRepository<Comentario, BigInteg
   List<ComentarioProjection> findComentariosByPostId(
     @Param("postId") BigInteger postId,
     @Param("lastComentarioId") BigInteger lastComentarioId,
-    @Param("pageSize") Integer pageSize
+    @Param("pageSize") Integer pageSize,
+    @Param("usuarioId") BigInteger usuarioId
   );
 
   @Query(value = """
@@ -47,9 +50,11 @@ public interface ComentarioRepository extends JpaRepository<Comentario, BigInteg
            c.total_up_votes as totalUpVotes,
            c.total_super_votes as totalSuperVotes,
            c.comentario_pai_id as comentarioPaiId,
-           c.data_criacao as dataCriacao
+           c.data_criacao as dataCriacao,
+           CASE WHEN v.id IS NOT NULL THEN true ELSE false END AS jaVotou
     FROM comentario c
     INNER JOIN usuario u ON c.usuario_id = u.id
+    LEFT JOIN votos v ON v.comentario_id = c.id AND v.usuario_id = :usuarioId
     WHERE c.comentario_pai_id = :comentarioPaiId
       AND (:lastComentarioId IS NULL OR c.id < :lastComentarioId)
     ORDER BY c.data_criacao ASC, c.id ASC
@@ -58,7 +63,8 @@ public interface ComentarioRepository extends JpaRepository<Comentario, BigInteg
   List<ComentarioProjection> findRespostasByComentarioPaiId(
     @Param("comentarioPaiId") BigInteger comentarioPaiId,
     @Param("lastComentarioId") BigInteger lastComentarioId,
-    @Param("pageSize") Integer pageSize
+    @Param("pageSize") Integer pageSize,
+    @Param("usuarioId") BigInteger usuarioId
   );
 
   @Query(value = """
@@ -70,7 +76,8 @@ public interface ComentarioRepository extends JpaRepository<Comentario, BigInteg
            c.total_up_votes as totalUpVotes,
            c.total_super_votes as totalSuperVotes,
            c.comentario_pai_id as comentarioPaiId,
-           c.data_criacao as dataCriacao
+           c.data_criacao as dataCriacao,
+           false as jaVotou
     FROM comentario c
     INNER JOIN usuario u ON c.usuario_id = u.id
     WHERE c.usuario_id = :usuarioId

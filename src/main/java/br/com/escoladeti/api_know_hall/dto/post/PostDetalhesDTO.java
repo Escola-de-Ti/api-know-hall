@@ -17,5 +17,6 @@ public record PostDetalhesDTO(
   List<TagResponseDTO> tags,
   Timestamp dataCriacao,
   List<ComentarioResponseDTO> comentarios,
-  boolean hasMoreComentarios
+  boolean hasMoreComentarios,
+  Boolean jaVotou
 ) {}

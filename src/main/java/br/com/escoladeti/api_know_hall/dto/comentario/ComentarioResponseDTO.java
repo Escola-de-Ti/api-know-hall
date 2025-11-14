@@ -12,5 +12,6 @@ public record ComentarioResponseDTO(
   Long totalUpVotes,
   Long totalSuperVotes,
   BigInteger comentarioPaiId,
-  Timestamp dataCriacao
+  Timestamp dataCriacao,
+  Boolean jaVotou
 ) {}
