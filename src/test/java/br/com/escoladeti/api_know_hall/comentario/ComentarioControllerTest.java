@@ -74,7 +74,8 @@ class ComentarioControllerTest {
       5L,
       2L,
       null,
-      Timestamp.from(Instant.now())
+      Timestamp.from(Instant.now()),
+      false
     );
 
     comentarioCreate = new ComentarioCreateDTO(
@@ -147,10 +148,12 @@ class ComentarioControllerTest {
     when(comentarioService.buscarComentariosDoPost(
       eq(BigInteger.ONE),
       eq(null),
-      eq(20)
+      eq(20),
+      eq("joao@email.com")
     )).thenReturn(response);
 
     mockMvc.perform(get("/api/comentarios/post/1")
+        .principal(mockPrincipal)
         .param("pageSize", "20"))
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.comentarios").isArray())
@@ -158,7 +161,7 @@ class ComentarioControllerTest {
       .andExpect(jsonPath("$.hasMore").value(false));
 
     verify(comentarioService, times(1))
-      .buscarComentariosDoPost(eq(BigInteger.ONE), eq(null), eq(20));
+      .buscarComentariosDoPost(eq(BigInteger.ONE), eq(null), eq(20), eq("joao@email.com"));
   }
 
   @Test
@@ -173,10 +176,12 @@ class ComentarioControllerTest {
     when(comentarioService.buscarComentariosDoPost(
       eq(BigInteger.ONE),
       eq(BigInteger.TEN),
-      eq(10)
+      eq(10),
+      eq("joao@email.com")
     )).thenReturn(response);
 
     mockMvc.perform(get("/api/comentarios/post/1")
+        .principal(mockPrincipal)
         .param("lastComentarioId", "10")
         .param("pageSize", "10"))
       .andExpect(status().isOk())
@@ -184,7 +189,7 @@ class ComentarioControllerTest {
       .andExpect(jsonPath("$.lastComentarioId").value(1));
 
     verify(comentarioService, times(1))
-      .buscarComentariosDoPost(eq(BigInteger.ONE), eq(BigInteger.TEN), eq(10));
+      .buscarComentariosDoPost(eq(BigInteger.ONE), eq(BigInteger.TEN), eq(10), eq("joao@email.com"));
   }
 
   @Test
@@ -199,7 +204,8 @@ class ComentarioControllerTest {
       3L,
       1L,
       BigInteger.ONE,
-      Timestamp.from(Instant.now())
+      Timestamp.from(Instant.now()),
+      false
     );
 
     ComentarioListResponseDTO response = new ComentarioListResponseDTO(
@@ -211,17 +217,19 @@ class ComentarioControllerTest {
     when(comentarioService.buscarRespostasDoComentario(
       eq(BigInteger.ONE),
       eq(null),
-      eq(10)
+      eq(10),
+      eq("joao@email.com")
     )).thenReturn(response);
 
     mockMvc.perform(get("/api/comentarios/1/respostas")
+        .principal(mockPrincipal)
         .param("pageSize", "10"))
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.comentarios").isArray())
       .andExpect(jsonPath("$.comentarios[0].comentarioPaiId").value(1));
 
     verify(comentarioService, times(1))
-      .buscarRespostasDoComentario(eq(BigInteger.ONE), eq(null), eq(10));
+      .buscarRespostasDoComentario(eq(BigInteger.ONE), eq(null), eq(10), eq("joao@email.com"));
   }
 
   @Test
@@ -262,7 +270,8 @@ class ComentarioControllerTest {
       5L,
       2L,
       null,
-      Timestamp.from(Instant.now())
+      Timestamp.from(Instant.now()),
+      false
     );
 
     when(comentarioService.atualizarComentario(

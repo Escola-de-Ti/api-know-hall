@@ -243,14 +243,20 @@ class ComentarioServiceTest {
       createComentarioProjection(BigInteger.TWO)
     );
 
+    when(usuarioRepository.findByEmail("joao@email.com")).thenReturn(Optional.of(usuario));
     when(postRepository.existsById(BigInteger.ONE)).thenReturn(true);
-    when(comentarioRepository.findComentariosByPostId(eq(BigInteger.ONE), eq(null), eq(21)))
-      .thenReturn(projections);
+    when(comentarioRepository.findComentariosByPostId(
+      eq(BigInteger.ONE),
+      eq(null),
+      eq(21),
+      eq(BigInteger.ONE)
+    )).thenReturn(projections);
 
     ComentarioListResponseDTO resultado = comentarioService.buscarComentariosDoPost(
       BigInteger.ONE,
       null,
-      20
+      20,
+      "joao@email.com"
     );
 
     assertThat(resultado).isNotNull();
@@ -258,7 +264,7 @@ class ComentarioServiceTest {
     assertThat(resultado.hasMore()).isFalse();
 
     verify(comentarioRepository, times(1))
-      .findComentariosByPostId(eq(BigInteger.ONE), eq(null), eq(21));
+      .findComentariosByPostId(eq(BigInteger.ONE), eq(null), eq(21), eq(BigInteger.ONE));
   }
 
   @Test
@@ -270,14 +276,20 @@ class ComentarioServiceTest {
       createComentarioProjection(BigInteger.valueOf(3))
     );
 
+    when(usuarioRepository.findByEmail("joao@email.com")).thenReturn(Optional.of(usuario));
     when(postRepository.existsById(BigInteger.ONE)).thenReturn(true);
-    when(comentarioRepository.findComentariosByPostId(eq(BigInteger.ONE), eq(null), eq(3)))
-      .thenReturn(projections);
+    when(comentarioRepository.findComentariosByPostId(
+      eq(BigInteger.ONE),
+      eq(null),
+      eq(3),
+      eq(BigInteger.ONE)
+    )).thenReturn(projections);
 
     ComentarioListResponseDTO resultado = comentarioService.buscarComentariosDoPost(
       BigInteger.ONE,
       null,
-      2
+      2,
+      "joao@email.com"
     );
 
     assertThat(resultado).isNotNull();
@@ -289,12 +301,14 @@ class ComentarioServiceTest {
   @Test
   @DisplayName("Deve lançar exceção ao buscar comentários de post não encontrado")
   void deveLancarExcecaoAoBuscarComentariosDePostNaoEncontrado() {
+    when(usuarioRepository.findByEmail("joao@email.com")).thenReturn(Optional.of(usuario));
     when(postRepository.existsById(BigInteger.valueOf(999))).thenReturn(false);
 
     assertThatThrownBy(() -> comentarioService.buscarComentariosDoPost(
       BigInteger.valueOf(999),
       null,
-      20
+      20,
+      "joao@email.com"
     ))
       .isInstanceOf(EntityNotFoundException.class)
       .hasMessage("Post não encontrado");
@@ -308,14 +322,20 @@ class ComentarioServiceTest {
       createComentarioProjection(BigInteger.valueOf(3))
     );
 
+    when(usuarioRepository.findByEmail("joao@email.com")).thenReturn(Optional.of(usuario));
     when(comentarioRepository.existsById(BigInteger.ONE)).thenReturn(true);
-    when(comentarioRepository.findRespostasByComentarioPaiId(eq(BigInteger.ONE), eq(null), eq(11)))
-      .thenReturn(projections);
+    when(comentarioRepository.findRespostasByComentarioPaiId(
+      eq(BigInteger.ONE),
+      eq(null),
+      eq(11),
+      eq(BigInteger.ONE)
+    )).thenReturn(projections);
 
     ComentarioListResponseDTO resultado = comentarioService.buscarRespostasDoComentario(
       BigInteger.ONE,
       null,
-      10
+      10,
+      "joao@email.com"
     );
 
     assertThat(resultado).isNotNull();
@@ -323,18 +343,20 @@ class ComentarioServiceTest {
     assertThat(resultado.hasMore()).isFalse();
 
     verify(comentarioRepository, times(1))
-      .findRespostasByComentarioPaiId(eq(BigInteger.ONE), eq(null), eq(11));
+      .findRespostasByComentarioPaiId(eq(BigInteger.ONE), eq(null), eq(11), eq(BigInteger.ONE));
   }
 
   @Test
   @DisplayName("Deve lançar exceção ao buscar respostas de comentário não encontrado")
   void deveLancarExcecaoAoBuscarRespostasDeComentarioNaoEncontrado() {
+    when(usuarioRepository.findByEmail("joao@email.com")).thenReturn(Optional.of(usuario));
     when(comentarioRepository.existsById(BigInteger.valueOf(999))).thenReturn(false);
 
     assertThatThrownBy(() -> comentarioService.buscarRespostasDoComentario(
       BigInteger.valueOf(999),
       null,
-      10
+      10,
+      "joao@email.com"
     ))
       .isInstanceOf(EntityNotFoundException.class)
       .hasMessage("Comentário não encontrado");
@@ -525,6 +547,11 @@ class ComentarioServiceTest {
       @Override
       public BigInteger getComentarioPaiId() {
         return null;
+      }
+
+      @Override
+      public Boolean getJaVotou() {
+        return false;
       }
 
       @Override
