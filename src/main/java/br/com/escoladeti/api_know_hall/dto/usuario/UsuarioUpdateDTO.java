@@ -1,12 +1,12 @@
 package br.com.escoladeti.api_know_hall.dto.usuario;
 
-import br.com.escoladeti.api_know_hall.entity.Tag;
 import br.com.escoladeti.api_know_hall.enums.StatusUsuario;
 import br.com.escoladeti.api_know_hall.enums.TipoUsuario;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
+import java.math.BigInteger;
 import java.util.List;
 
 @Getter
@@ -40,5 +40,5 @@ public class UsuarioUpdateDTO {
 
   private TipoUsuario tipoUsuario;
 
-  private List<Tag> tags;
+  private List<BigInteger> tags;
 }

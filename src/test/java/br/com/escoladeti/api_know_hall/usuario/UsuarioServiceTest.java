@@ -5,6 +5,7 @@ import br.com.escoladeti.api_know_hall.dto.JwtTokenDTO;
 import br.com.escoladeti.api_know_hall.dto.usuario.UsuarioCreateDTO;
 import br.com.escoladeti.api_know_hall.dto.usuario.UsuarioUpdateDTO;
 import br.com.escoladeti.api_know_hall.entity.Imagem;
+import br.com.escoladeti.api_know_hall.entity.Tag;
 import br.com.escoladeti.api_know_hall.entity.Usuario;
 import br.com.escoladeti.api_know_hall.enums.StatusUsuario;
 import br.com.escoladeti.api_know_hall.enums.TipoUsuario;
@@ -13,6 +14,7 @@ import br.com.escoladeti.api_know_hall.exception.InvalidCredentialsException;
 import br.com.escoladeti.api_know_hall.exception.UsuarioInativoException;
 import br.com.escoladeti.api_know_hall.exception.ValidationException;
 import br.com.escoladeti.api_know_hall.projection.usuario.UsuarioRankingProjection;
+import br.com.escoladeti.api_know_hall.repository.TagsRepository;
 import br.com.escoladeti.api_know_hall.repository.UsuarioRepository;
 import br.com.escoladeti.api_know_hall.service.UsuarioService;
 import br.com.escoladeti.api_know_hall.service.utils.PalavrasProibidasService;
@@ -49,6 +51,9 @@ class UsuarioServiceTest {
   private UsuarioRepository usuarioRepository;
 
   @Mock
+  private TagsRepository tagsRepository;
+
+  @Mock
   private JwtTokenService jwtTokenService;
 
   @Mock
@@ -78,6 +83,7 @@ class UsuarioServiceTest {
   private Usuario usuario;
   private UsuarioCreateDTO usuarioCreateDTO;
   private UsuarioUpdateDTO usuarioUpdateDTO;
+  private Tag tag;
 
   @BeforeEach
   void setUp() {
@@ -92,6 +98,10 @@ class UsuarioServiceTest {
     usuario.setQntdToken(0L);
     usuario.setQntdXp(0L);
     usuario.setNivel(1);
+
+    tag = new Tag();
+    tag.setId(BigInteger.ONE);
+    tag.setName("Java");
 
     usuarioCreateDTO = new UsuarioCreateDTO();
     usuarioCreateDTO.setEmail("test@test.com");
@@ -957,5 +967,142 @@ class UsuarioServiceTest {
 
     verify(usuarioRepository, times(1)).findById(userId);
     verify(usuarioRepository, times(1)).findDetalhesUsuarioById(userId);
+  }
+
+  // ==================== TESTES DE VALIDAÇÃO DE TAGS ====================
+
+  @Test
+  void createUsuario_WithValidTags_ShouldReturnCreatedUsuario() {
+    // Arrange
+    usuarioCreateDTO.setTags(Arrays.asList(BigInteger.ONE));
+
+    when(cpfValidator.isValid(anyString())).thenReturn(true);
+    when(emailValidator.isValid(anyString())).thenReturn(true);
+    when(nomeValidator.isValid(anyString())).thenReturn(true);
+    when(senhaValidator.isValid(anyString())).thenReturn(true);
+    when(palavrasProibidasService.contemPalavraProibida(anyString())).thenReturn(false);
+    when(usuarioRepository.findByEmail(anyString())).thenReturn(Optional.empty());
+    when(usuarioRepository.findByCpf(anyString())).thenReturn(Optional.empty());
+    when(passwordEncoder.encode(anyString())).thenReturn("$2a$12$hashedPassword");
+    when(tagsRepository.findAllById(anyList())).thenReturn(Arrays.asList(tag));
+    when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuario);
+
+    // Act
+    Usuario result = usuarioService.createUsuario(usuarioCreateDTO);
+
+    // Assert
+    assertNotNull(result);
+    verify(tagsRepository, times(1)).findAllById(anyList());
+    verify(usuarioRepository, times(1)).save(any(Usuario.class));
+  }
+
+  @Test
+  void createUsuario_WithInvalidTag_ShouldThrowEntityNotFoundException() {
+    // Arrange
+    usuarioCreateDTO.setTags(Arrays.asList(BigInteger.ONE, BigInteger.TWO)); // Solicita 2 tags
+
+    when(cpfValidator.isValid(anyString())).thenReturn(true);
+    when(emailValidator.isValid(anyString())).thenReturn(true);
+    when(nomeValidator.isValid(anyString())).thenReturn(true);
+    when(palavrasProibidasService.contemPalavraProibida(anyString())).thenReturn(false);
+    when(usuarioRepository.findByEmail(anyString())).thenReturn(Optional.empty());
+    when(usuarioRepository.findByCpf(anyString())).thenReturn(Optional.empty());
+    when(senhaValidator.isValid(anyString())).thenReturn(true);
+    when(passwordEncoder.encode(anyString())).thenReturn("$2a$12$hashedPassword");
+    when(tagsRepository.findAllById(anyList())).thenReturn(Arrays.asList(tag)); // Retorna apenas 1 tag
+
+    // Act & Assert
+    EntityNotFoundException exception = assertThrows(
+      EntityNotFoundException.class,
+      () -> usuarioService.createUsuario(usuarioCreateDTO)
+    );
+
+    assertEquals("Uma ou mais tags não foram encontradas", exception.getMessage());
+    verify(tagsRepository, times(1)).findAllById(anyList());
+    verify(usuarioRepository, never()).save(any(Usuario.class));
+  }
+
+  @Test
+  void createUsuario_WithEmptyTagList_ShouldCreateUsuarioWithoutTags() {
+    // Arrange
+    usuarioCreateDTO.setTags(Arrays.asList());
+
+    when(cpfValidator.isValid(anyString())).thenReturn(true);
+    when(emailValidator.isValid(anyString())).thenReturn(true);
+    when(nomeValidator.isValid(anyString())).thenReturn(true);
+    when(senhaValidator.isValid(anyString())).thenReturn(true);
+    when(palavrasProibidasService.contemPalavraProibida(anyString())).thenReturn(false);
+    when(usuarioRepository.findByEmail(anyString())).thenReturn(Optional.empty());
+    when(usuarioRepository.findByCpf(anyString())).thenReturn(Optional.empty());
+    when(passwordEncoder.encode(anyString())).thenReturn("$2a$12$hashedPassword");
+    when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuario);
+
+    // Act
+    Usuario result = usuarioService.createUsuario(usuarioCreateDTO);
+
+    // Assert
+    assertNotNull(result);
+    verify(tagsRepository, never()).findAllById(anyList());
+    verify(usuarioRepository, times(1)).save(any(Usuario.class));
+  }
+
+  @Test
+  void updateUsuario_WithValidTags_ShouldUpdateTags() {
+    // Arrange
+    usuarioUpdateDTO.setTags(Arrays.asList(BigInteger.ONE));
+    usuarioUpdateDTO.setEmail(null);
+    usuarioUpdateDTO.setNome(null);
+
+    when(usuarioRepository.findByEmail("test@test.com")).thenReturn(Optional.of(usuario));
+    when(tagsRepository.findAllById(anyList())).thenReturn(Arrays.asList(tag));
+    when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuario);
+
+    // Act
+    Usuario result = usuarioService.updateUsuario("test@test.com", usuarioUpdateDTO);
+
+    // Assert
+    assertNotNull(result);
+    verify(tagsRepository, times(1)).findAllById(anyList());
+    verify(usuarioRepository, times(1)).save(any(Usuario.class));
+  }
+
+  @Test
+  void updateUsuario_WithInvalidTag_ShouldThrowEntityNotFoundException() {
+    // Arrange
+    usuarioUpdateDTO.setTags(Arrays.asList(BigInteger.ONE, BigInteger.TWO)); // Solicita 2 tags
+    usuarioUpdateDTO.setEmail(null);
+    usuarioUpdateDTO.setNome(null);
+
+    when(usuarioRepository.findByEmail("test@test.com")).thenReturn(Optional.of(usuario));
+    when(tagsRepository.findAllById(anyList())).thenReturn(Arrays.asList(tag)); // Retorna apenas 1 tag
+
+    // Act & Assert
+    EntityNotFoundException exception = assertThrows(
+      EntityNotFoundException.class,
+      () -> usuarioService.updateUsuario("test@test.com", usuarioUpdateDTO)
+    );
+
+    assertEquals("Uma ou mais tags não foram encontradas", exception.getMessage());
+    verify(tagsRepository, times(1)).findAllById(anyList());
+    verify(usuarioRepository, never()).save(any(Usuario.class));
+  }
+
+  @Test
+  void updateUsuario_WithNullTagIds_ShouldNotUpdateTags() {
+    // Arrange
+    usuarioUpdateDTO.setTags(null);
+    usuarioUpdateDTO.setEmail(null);
+    usuarioUpdateDTO.setNome(null);
+
+    when(usuarioRepository.findByEmail("test@test.com")).thenReturn(Optional.of(usuario));
+    when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuario);
+
+    // Act
+    Usuario result = usuarioService.updateUsuario("test@test.com", usuarioUpdateDTO);
+
+    // Assert
+    assertNotNull(result);
+    verify(tagsRepository, never()).findAllById(anyList());
+    verify(usuarioRepository, times(1)).save(any(Usuario.class));
   }
 }

@@ -127,7 +127,7 @@ public class Usuario {
     this.senhaHash = dto.getSenha();
     this.statusUsuario = StatusUsuario.ATIVO;
     this.tipoUsuario = dto.getTipoUsuario();
-    this.tags = dto.getTags();
+    this.tags = new ArrayList<>(); // Será preenchido pelo service
     this.qntdToken = 0L;
     this.qntdXp = 0L;
   }
@@ -142,9 +142,6 @@ public class Usuario {
     if (dto.getSenha() != null) this.senhaHash = dto.getSenha();
     if (dto.getStatusUsuario() != null) this.statusUsuario = dto.getStatusUsuario();
     if (dto.getTipoUsuario() != null) this.tipoUsuario = dto.getTipoUsuario();
-    if (dto.getTags() != null) {
-      this.tags.clear();
-      this.tags.addAll(dto.getTags());
-    }
+    // Tags serão atualizadas pelo service
   }
 }

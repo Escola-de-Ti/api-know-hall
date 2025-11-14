@@ -53,6 +53,11 @@ public class PostService {
 
     if (dto.tagIds() != null && !dto.tagIds().isEmpty()) {
       List<Tag> tags = tagsRepository.findAllById(dto.tagIds());
+
+      if (tags.size() != dto.tagIds().size()) {
+        throw new EntityNotFoundException("Uma ou mais tags não foram encontradas");
+      }
+
       post.setTags(tags);
     } else {
       post.setTags(new ArrayList<>());
@@ -96,6 +101,12 @@ public class PostService {
     }
     if (dto.tagIds() != null) {
       List<Tag> tags = tagsRepository.findAllById(dto.tagIds());
+
+      // Validar se todas as tags foram encontradas
+      if (tags.size() != dto.tagIds().size()) {
+        throw new EntityNotFoundException("Uma ou mais tags não foram encontradas");
+      }
+
       post.setTags(tags);
     }
 

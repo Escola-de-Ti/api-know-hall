@@ -150,6 +150,26 @@ class PostServiceTest {
     verify(tagsRepository, never()).findAllById(anyList());
   }
 
+  @Test
+  @DisplayName("Deve lançar exceção ao criar post com tag inexistente")
+  void deveLancarExcecaoAoCriarPostComTagInexistente() {
+    // Simula que apenas 1 tag foi encontrada quando foram solicitadas 2
+    when(usuarioRepository.findByEmail("joao@email.com")).thenReturn(Optional.of(usuario));
+    when(tagsRepository.findAllById(anyList())).thenReturn(List.of(tag)); // retorna apenas 1 tag
+
+    PostCreateDTO dtoComTagsInvalidas = new PostCreateDTO(
+      "Título",
+      "Descrição",
+      List.of(BigInteger.ONE, BigInteger.TWO) // solicita 2 tags
+    );
+
+    assertThatThrownBy(() -> postService.criarPost(dtoComTagsInvalidas, "joao@email.com"))
+      .isInstanceOf(EntityNotFoundException.class)
+      .hasMessage("Uma ou mais tags não foram encontradas");
+
+    verify(postRepository, never()).save(any());
+  }
+
   // ==================== TESTES DE BUSCA ====================
 
   @Test
@@ -253,6 +273,26 @@ class PostServiceTest {
     assertThatThrownBy(() -> postService.atualizarPost(BigInteger.TEN, updateDTO))
       .isInstanceOf(EntityNotFoundException.class)
       .hasMessage("Post não encontrado");
+
+    verify(postRepository, never()).save(any());
+  }
+
+  @Test
+  @DisplayName("Deve lançar exceção ao atualizar post com tag inexistente")
+  void deveLancarExcecaoAoAtualizarPostComTagInexistente() {
+    // Simula que apenas 1 tag foi encontrada quando foram solicitadas 2
+    when(postRepository.findById(BigInteger.ONE)).thenReturn(Optional.of(post));
+    when(tagsRepository.findAllById(anyList())).thenReturn(List.of(tag)); // retorna apenas 1 tag
+
+    PostUpdateDTO updateDTO = new PostUpdateDTO(
+      null,
+      null,
+      List.of(BigInteger.ONE, BigInteger.TWO) // solicita 2 tags
+    );
+
+    assertThatThrownBy(() -> postService.atualizarPost(BigInteger.ONE, updateDTO))
+      .isInstanceOf(EntityNotFoundException.class)
+      .hasMessage("Uma ou mais tags não foram encontradas");
 
     verify(postRepository, never()).save(any());
   }

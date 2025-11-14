@@ -1,6 +1,5 @@
 package br.com.escoladeti.api_know_hall.dto.usuario;
 
-import br.com.escoladeti.api_know_hall.entity.Tag;
 import br.com.escoladeti.api_know_hall.enums.TipoUsuario;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -11,6 +10,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,5 +50,5 @@ public class UsuarioCreateDTO {
   @NotNull(message = "Tipo de usuário é obrigatório")
   private TipoUsuario tipoUsuario;
 
-  private List<Tag> tags = new ArrayList<>();
+  private List<BigInteger> tags = new ArrayList<>();
 }

@@ -4,6 +4,7 @@ import br.com.escoladeti.api_know_hall.config.JwtTokenService;
 import br.com.escoladeti.api_know_hall.dto.JwtTokenDTO;
 import br.com.escoladeti.api_know_hall.dto.usuario.*;
 import br.com.escoladeti.api_know_hall.entity.Imagem;
+import br.com.escoladeti.api_know_hall.entity.Tag;
 import br.com.escoladeti.api_know_hall.entity.Usuario;
 import br.com.escoladeti.api_know_hall.enums.StatusUsuario;
 import br.com.escoladeti.api_know_hall.exception.*;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -37,6 +39,9 @@ public class UsuarioService {
 
   @Autowired
   private WorkshopRepository workshopRepository;
+
+  @Autowired
+  private TagsRepository tagsRepository;
 
   @Autowired
   private JwtTokenService jwtTokenService;
@@ -130,6 +135,19 @@ public class UsuarioService {
 
     Usuario newUsuario = new Usuario(dto);
     newUsuario.setNivel(1);
+
+    if (dto.getTags() != null && !dto.getTags().isEmpty()) {
+      List<Tag> tags = tagsRepository.findAllById(dto.getTags());
+
+      if (tags.size() != dto.getTags().size()) {
+        throw new EntityNotFoundException("Uma ou mais tags não foram encontradas");
+      }
+
+      newUsuario.setTags(tags);
+    } else {
+      newUsuario.setTags(new ArrayList<>());
+    }
+
     return usuarioRepository.save(newUsuario);
   }
 
@@ -192,6 +210,20 @@ public class UsuarioService {
     dto.setTelefone2(formatPhone(dto.getTelefone2()));
 
     usuario.applyUpdate(dto);
+
+    // Validar e atualizar tags
+    if (dto.getTags() != null) {
+      List<Tag> tags = tagsRepository.findAllById(dto.getTags());
+
+      // Validar se todas as tags foram encontradas
+      if (tags.size() != dto.getTags().size()) {
+        throw new EntityNotFoundException("Uma ou mais tags não foram encontradas");
+      }
+
+      usuario.getTags().clear();
+      usuario.getTags().addAll(tags);
+    }
+
     return usuarioRepository.save(usuario);
   }
 
