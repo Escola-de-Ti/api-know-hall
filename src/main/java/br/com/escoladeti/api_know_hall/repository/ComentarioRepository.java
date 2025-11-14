@@ -103,7 +103,8 @@ public interface ComentarioRepository extends JpaRepository<Comentario, BigInteg
   @Query(value = """
     SELECT c.id as comentarioId,
            c.post_id as postId,
-           c.texto as texto
+           c.texto as texto,
+           c.data_criacao as dataCriacao
     FROM comentario c
     WHERE c.usuario_id = :usuarioId
     ORDER BY c.data_criacao DESC

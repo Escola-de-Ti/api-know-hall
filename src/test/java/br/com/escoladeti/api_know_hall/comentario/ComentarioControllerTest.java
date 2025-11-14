@@ -26,6 +26,7 @@ import java.math.BigInteger;
 import java.security.Principal;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.Date;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -350,17 +351,20 @@ class ComentarioControllerTest {
       new br.com.escoladeti.api_know_hall.dto.comentario.ComentarioUsuarioResponseDTO(
         BigInteger.ONE,
         BigInteger.valueOf(10),
-        "Primeiro comentário"
+        "Primeiro comentário",
+        new Date()
       ),
       new br.com.escoladeti.api_know_hall.dto.comentario.ComentarioUsuarioResponseDTO(
         BigInteger.TWO,
         BigInteger.valueOf(20),
-        "Segundo comentário"
+        "Segundo comentário",
+        new Date()
       ),
       new br.com.escoladeti.api_know_hall.dto.comentario.ComentarioUsuarioResponseDTO(
         BigInteger.valueOf(3),
         BigInteger.valueOf(30),
-        "Terceiro comentário"
+        "Terceiro comentário",
+        new Date()
       )
     );
 
@@ -419,17 +423,20 @@ class ComentarioControllerTest {
       new br.com.escoladeti.api_know_hall.dto.comentario.ComentarioUsuarioResponseDTO(
         BigInteger.valueOf(10),
         BigInteger.ONE,
-        "Comentário no post 1"
+        "Comentário no post 1",
+        new Date()
       ),
       new br.com.escoladeti.api_know_hall.dto.comentario.ComentarioUsuarioResponseDTO(
         BigInteger.valueOf(11),
         BigInteger.TWO,
-        "Comentário no post 2"
+        "Comentário no post 2",
+        new Date()
       ),
       new br.com.escoladeti.api_know_hall.dto.comentario.ComentarioUsuarioResponseDTO(
         BigInteger.valueOf(12),
         BigInteger.ONE,
-        "Outro comentário no post 1"
+        "Outro comentário no post 1",
+        new Date()
       )
     );
 
@@ -449,13 +456,14 @@ class ComentarioControllerTest {
   }
 
   @Test
-  @DisplayName("Deve retornar apenas os campos necessários (comentarioId, postId, texto)")
+  @DisplayName("Deve retornar apenas os campos necessários (comentarioId, postId, texto, dataCriacao)")
   void deveRetornarApenasOsCamposNecessarios() throws Exception {
     List<br.com.escoladeti.api_know_hall.dto.comentario.ComentarioUsuarioResponseDTO> comentarios = List.of(
       new br.com.escoladeti.api_know_hall.dto.comentario.ComentarioUsuarioResponseDTO(
         BigInteger.valueOf(100),
         BigInteger.valueOf(50),
-        "Texto do comentário"
+        "Texto do comentário",
+        new Date()
       )
     );
 
@@ -468,11 +476,11 @@ class ComentarioControllerTest {
       .andExpect(jsonPath("$[0].comentarioId").value(100))
       .andExpect(jsonPath("$[0].postId").value(50))
       .andExpect(jsonPath("$[0].texto").value("Texto do comentário"))
+      .andExpect(jsonPath("$[0].dataCriacao").exists())
       // Verificar que NÃO retorna outros campos
       .andExpect(jsonPath("$[0].usuarioId").doesNotExist())
       .andExpect(jsonPath("$[0].usuarioNome").doesNotExist())
-      .andExpect(jsonPath("$[0].totalUpVotes").doesNotExist())
-      .andExpect(jsonPath("$[0].dataCriacao").doesNotExist());
+      .andExpect(jsonPath("$[0].totalUpVotes").doesNotExist());
 
     verify(comentarioService, times(1)).buscarTodosComentariosDoUsuario(BigInteger.valueOf(7));
   }

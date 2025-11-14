@@ -103,7 +103,8 @@ public class ComentarioService {
     String usuarioEmail
   ) {
     Usuario usuario = usuarioRepository.findByEmail(usuarioEmail)
-      .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));;
+      .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
+    ;
 
     if (!comentarioRepository.existsById(comentarioPaiId)) {
       throw new EntityNotFoundException("Comentário não encontrado");
@@ -248,7 +249,8 @@ public class ComentarioService {
       .map(p -> new ComentarioUsuarioResponseDTO(
         p.getComentarioId(),
         p.getPostId(),
-        p.getTexto()
+        p.getTexto(),
+        p.getDataCriacao()
       ))
       .collect(Collectors.toList());
   }

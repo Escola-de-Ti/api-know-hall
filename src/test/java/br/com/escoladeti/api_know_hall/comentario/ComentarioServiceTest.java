@@ -610,6 +610,11 @@ class ComentarioServiceTest {
       public String getTexto() {
         return texto;
       }
+
+      @Override
+      public Timestamp getDataCriacao() {
+        return Timestamp.from(Instant.now());
+      }
     };
   }
 
