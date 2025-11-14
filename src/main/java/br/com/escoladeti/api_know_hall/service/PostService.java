@@ -321,7 +321,9 @@ public class PostService {
   }
 
   @Transactional(readOnly = true)
-  public PostDetalhesDTO buscarDetalhesDoPost(BigInteger postId, Integer pageSize) {
+  public PostDetalhesDTO buscarDetalhesDoPost(BigInteger postId, Integer pageSize, String usuarioEmail) {
+    Usuario usuario = findUserByPrincipal(usuarioEmail);
+
     Post post = postRepository.findById(postId)
       .orElseThrow(() -> new EntityNotFoundException("Post não encontrado"));
 
@@ -333,7 +335,8 @@ public class PostService {
     List<ComentarioProjection> comentariosResults = comentarioRepository.findComentariosByPostId(
       postId,
       null,
-      fetchSize
+      fetchSize,
+      usuario.getId()
     );
 
     boolean hasMoreComentarios = comentariosResults.size() > pageSize;
@@ -346,6 +349,8 @@ public class PostService {
       .map(this::mapComentarioProjectionToDTO)
       .collect(Collectors.toList());
 
+    Boolean jaVotou = this.postRepository.getJaVotouByPostIdAndUsuarioId(postId, usuario.getId());
+
     return new PostDetalhesDTO(
       post.getId(),
       post.getUsuario().getId(),
@@ -356,7 +361,8 @@ public class PostService {
       tagDTOs,
       post.getDataCriacao(),
       comentarios,
-      hasMoreComentarios
+      hasMoreComentarios,
+      jaVotou
     );
   }
 
@@ -370,7 +376,8 @@ public class PostService {
       projection.getTotalUpVotes(),
       projection.getTotalSuperVotes(),
       projection.getComentarioPaiId(),
-      projection.getDataCriacao()
+      projection.getDataCriacao(),
+      projection.getJaVotou()
     );
   }
 

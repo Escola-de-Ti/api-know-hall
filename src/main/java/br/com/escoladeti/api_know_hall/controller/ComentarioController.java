@@ -34,12 +34,14 @@ public class ComentarioController {
   public ResponseEntity<ComentarioListResponseDTO> buscarComentariosDoPost(
     @PathVariable BigInteger postId,
     @RequestParam(required = false) BigInteger lastComentarioId,
-    @RequestParam(required = false, defaultValue = "20") Integer pageSize
+    @RequestParam(required = false, defaultValue = "20") Integer pageSize,
+    Principal principal
   ) {
     ComentarioListResponseDTO comentarios = comentarioService.buscarComentariosDoPost(
       postId,
       lastComentarioId,
-      pageSize
+      pageSize,
+      principal.getName()
     );
     return ResponseEntity.ok(comentarios);
   }
@@ -48,12 +50,14 @@ public class ComentarioController {
   public ResponseEntity<ComentarioListResponseDTO> buscarRespostasDoComentario(
     @PathVariable BigInteger comentarioPaiId,
     @RequestParam(required = false) BigInteger lastComentarioId,
-    @RequestParam(required = false, defaultValue = "10") Integer pageSize
+    @RequestParam(required = false, defaultValue = "10") Integer pageSize,
+    Principal principal
   ) {
     ComentarioListResponseDTO respostas = comentarioService.buscarRespostasDoComentario(
       comentarioPaiId,
       lastComentarioId,
-      pageSize
+      pageSize,
+      principal.getName()
     );
     return ResponseEntity.ok(respostas);
   }
