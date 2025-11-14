@@ -13,4 +13,5 @@ public interface ComentarioProjection {
   Long getTotalSuperVotes();
   BigInteger getComentarioPaiId();
   Timestamp getDataCriacao();
+  Boolean getJaVotou();
 }
