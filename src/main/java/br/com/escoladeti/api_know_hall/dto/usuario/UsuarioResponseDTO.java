@@ -30,6 +30,7 @@ public class UsuarioResponseDTO {
   private Long qntdToken;
   private Long qntdXp;
   private BigInteger idImagemPerfil;
+  private String urlImagemPerfil;
   private List<String> tags;
 
   public UsuarioResponseDTO(Usuario usuario) {
@@ -47,5 +48,6 @@ public class UsuarioResponseDTO {
     this.tags = usuario.getTags() != null
       ? usuario.getTags().stream().map(Tag::getName).collect(Collectors.toList())
       : List.of();
+    this.urlImagemPerfil = usuario.getImagemPerfil() != null ? usuario.getImagemPerfil().getUrl() : null;
   }
 }
