@@ -338,6 +338,10 @@ public class PostService {
     Post post = postRepository.findById(postId)
       .orElseThrow(() -> new EntityNotFoundException("Post não encontrado"));
 
+    List<ImagemPostDTO> imagemDTOs = post.getImagens().stream()
+      .map(ImagemPostDTO::fromEntity)
+      .toList();
+
     List<TagResponseDTO> tagDTOs = post.getTags().stream()
       .map(tag -> new TagResponseDTO(tag.getId(), tag.getName()))
       .collect(Collectors.toList());
@@ -373,7 +377,8 @@ public class PostService {
       post.getDataCriacao(),
       comentarios,
       hasMoreComentarios,
-      jaVotou
+      jaVotou,
+      imagemDTOs
     );
   }
 

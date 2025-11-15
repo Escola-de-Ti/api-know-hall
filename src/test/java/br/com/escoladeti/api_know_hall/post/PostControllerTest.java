@@ -410,7 +410,8 @@ class PostControllerTest {
       Timestamp.from(Instant.now()),
       List.of(comentario1),
       false,
-      false
+      false,
+      List.of()
     );
 
     when(postService.buscarDetalhesDoPost(eq(BigInteger.ONE), eq(10), eq("joao@email.com")))
@@ -448,7 +449,8 @@ class PostControllerTest {
       Timestamp.from(Instant.now()),
       List.of(),
       false,
-      false
+      false,
+      List.of()
     );
 
     when(postService.buscarDetalhesDoPost(eq(BigInteger.ONE), eq(10), eq("joao@email.com")))
@@ -509,7 +511,8 @@ class PostControllerTest {
       Timestamp.from(Instant.now()),
       comentarios,
       true,
-      true
+      true,
+      List.of()
     );
 
     when(postService.buscarDetalhesDoPost(eq(BigInteger.ONE), eq(2), eq("joao@email.com")))
@@ -541,7 +544,8 @@ class PostControllerTest {
       Timestamp.from(Instant.now()),
       List.of(),
       false,
-      false // CORREÇÃO: jaVotou
+      false,
+      List.of()
     );
 
     when(postService.buscarDetalhesDoPost(eq(BigInteger.ONE), anyInt(), eq("joao@email.com")))
@@ -572,7 +576,8 @@ class PostControllerTest {
       Timestamp.from(Instant.now()),
       List.of(),
       false,
-      false
+      false,
+      List.of()
     );
 
     when(postService.buscarDetalhesDoPost(eq(BigInteger.ONE), eq(20), eq("joao@email.com")))
