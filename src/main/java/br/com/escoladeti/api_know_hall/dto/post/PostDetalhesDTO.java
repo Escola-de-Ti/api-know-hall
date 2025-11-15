@@ -1,5 +1,6 @@
 package br.com.escoladeti.api_know_hall.dto.post;
 
+import br.com.escoladeti.api_know_hall.dto.ImagemPostDTO;
 import br.com.escoladeti.api_know_hall.dto.comentario.ComentarioResponseDTO;
 import br.com.escoladeti.api_know_hall.dto.tags.TagResponseDTO;
 
@@ -18,5 +19,7 @@ public record PostDetalhesDTO(
   Timestamp dataCriacao,
   List<ComentarioResponseDTO> comentarios,
   boolean hasMoreComentarios,
-  Boolean jaVotou
-) {}
+  Boolean jaVotou,
+  List<ImagemPostDTO> urlsImagens
+) {
+}
