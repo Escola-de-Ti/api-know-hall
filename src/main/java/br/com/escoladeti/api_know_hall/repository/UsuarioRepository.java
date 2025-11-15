@@ -22,6 +22,7 @@ public interface UsuarioRepository extends JpaRepository<Usuario, BigInteger> {
   @Query(value = """
     SELECT
         ROW_NUMBER() OVER (ORDER BY u.qntd_xp DESC) as posicao,
+        u.id,
         u.nome,
         u.qntd_xp,
         u.nivel

@@ -446,9 +446,9 @@ class UsuarioControllerTest {
   void obterRanking_WithAuthenticatedUser_ShouldReturnRankingResponse() throws Exception {
     String email = "test@test.com";
 
-    UsuarioRankingDTO usuario1 = new UsuarioRankingDTO(1L, "Usuario Top 1", 5000, 10);
-    UsuarioRankingDTO usuario2 = new UsuarioRankingDTO(2L, "Usuario Top 2", 4500, 9);
-    UsuarioRankingDTO usuario3 = new UsuarioRankingDTO(3L, "Usuario Top 3", 4000, 8);
+    UsuarioRankingDTO usuario1 = new UsuarioRankingDTO(BigInteger.valueOf(1), 1L, "Usuario Top 1", 5000, 10);
+    UsuarioRankingDTO usuario2 = new UsuarioRankingDTO(BigInteger.valueOf(1), 2L, "Usuario Top 2", 4500, 9);
+    UsuarioRankingDTO usuario3 = new UsuarioRankingDTO(BigInteger.valueOf(1), 3L, "Usuario Top 3", 4000, 8);
 
     List<UsuarioRankingDTO> rankingList = Arrays.asList(usuario1, usuario2, usuario3);
 
@@ -529,17 +529,7 @@ class UsuarioControllerTest {
   void obterRanking_WithUserInTop50_ShouldReturnCorrectRanking() throws Exception {
     String email = "test@test.com";
 
-    UsuarioRankingDTO usuario1 = new UsuarioRankingDTO(1L, "Top 1", 10000, 20);
-    UsuarioRankingDTO usuario2 = new UsuarioRankingDTO(2L, "Top 2", 9000, 18);
-    UsuarioRankingDTO usuario3 = new UsuarioRankingDTO(3L, "Top 3", 8000, 17);
-    UsuarioRankingDTO usuario4 = new UsuarioRankingDTO(4L, "Top 4", 7000, 15);
-    UsuarioRankingDTO usuario5 = new UsuarioRankingDTO(5L, "Test User", 6000, 14);
-
-    List<UsuarioRankingDTO> rankingList = Arrays.asList(usuario1, usuario2, usuario3, usuario4, usuario5);
-
-    UsuarioLogadoRankingDTO usuarioLogado = new UsuarioLogadoRankingDTO(5L, 500);
-
-    RankingResponseDTO rankingResponse = new RankingResponseDTO(rankingList, usuarioLogado);
+    RankingResponseDTO rankingResponse = getRankingResponseDTO();
 
     when(usuarioService.obterRanking(email)).thenReturn(rankingResponse);
 
@@ -555,12 +545,27 @@ class UsuarioControllerTest {
     verify(usuarioService, times(1)).obterRanking(email);
   }
 
+  private static RankingResponseDTO getRankingResponseDTO() {
+    UsuarioRankingDTO usuario1 = new UsuarioRankingDTO(BigInteger.valueOf(1), 1L, "Top 1", 10000, 20);
+    UsuarioRankingDTO usuario2 = new UsuarioRankingDTO(BigInteger.valueOf(1), 2L, "Top 2", 9000, 18);
+    UsuarioRankingDTO usuario3 = new UsuarioRankingDTO(BigInteger.valueOf(1), 3L, "Top 3", 8000, 17);
+    UsuarioRankingDTO usuario4 = new UsuarioRankingDTO(BigInteger.valueOf(1), 4L, "Top 4", 7000, 15);
+    UsuarioRankingDTO usuario5 = new UsuarioRankingDTO(BigInteger.valueOf(1), 5L, "Test User", 6000, 14);
+
+    List<UsuarioRankingDTO> rankingList = Arrays.asList(usuario1, usuario2, usuario3, usuario4, usuario5);
+
+    UsuarioLogadoRankingDTO usuarioLogado = new UsuarioLogadoRankingDTO(5L, 500);
+
+    RankingResponseDTO rankingResponse = new RankingResponseDTO(rankingList, usuarioLogado);
+    return rankingResponse;
+  }
+
   @Test
   void obterRanking_WithUserOutsideTop50_ShouldReturnUserPositionAnyway() throws Exception {
     String email = "test@test.com";
 
-    UsuarioRankingDTO usuario1 = new UsuarioRankingDTO(1L, "Top 1", 10000, 20);
-    UsuarioRankingDTO usuario2 = new UsuarioRankingDTO(2L, "Top 2", 9000, 18);
+    UsuarioRankingDTO usuario1 = new UsuarioRankingDTO(BigInteger.valueOf(1), 1L, "Top 1", 10000, 20);
+    UsuarioRankingDTO usuario2 = new UsuarioRankingDTO(BigInteger.valueOf(1), 2L, "Top 2", 9000, 18);
 
     List<UsuarioRankingDTO> rankingList = Arrays.asList(usuario1, usuario2);
 
@@ -584,7 +589,7 @@ class UsuarioControllerTest {
   void obterRanking_WithNoXpInLast30Days_ShouldReturnZeroXp() throws Exception {
     String email = "test@test.com";
 
-    UsuarioRankingDTO usuario1 = new UsuarioRankingDTO(1L, "Top 1", 5000, 10);
+    UsuarioRankingDTO usuario1 = new UsuarioRankingDTO(BigInteger.valueOf(1), 1L, "Top 1", 5000, 10);
     List<UsuarioRankingDTO> rankingList = Arrays.asList(usuario1);
 
     UsuarioLogadoRankingDTO usuarioLogado = new UsuarioLogadoRankingDTO(50L, 0);
@@ -622,6 +627,7 @@ class UsuarioControllerTest {
     List<UsuarioRankingDTO> rankingList = new java.util.ArrayList<>();
     for (int i = 1; i <= 50; i++) {
       rankingList.add(new UsuarioRankingDTO(
+        BigInteger.valueOf(1),
         (long) i,
         "Usuario " + i,
         5000 - (i * 50),
