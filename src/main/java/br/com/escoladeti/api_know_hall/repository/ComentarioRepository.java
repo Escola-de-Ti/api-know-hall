@@ -27,7 +27,7 @@ public interface ComentarioRepository extends JpaRepository<Comentario, BigInteg
            CASE WHEN v.id IS NOT NULL THEN true ELSE false END AS jaVotou
     FROM comentario c
     INNER JOIN usuario u ON c.usuario_id = u.id
-    LEFT JOIN votos v ON v.comentario_id = c.id AND v.usuario_id = :usuarioId
+    LEFT JOIN votos v ON v.comentario_id = c.id AND v.usuario_id = :usuarioId AND v.tipo = 'UP_VOTE'
     WHERE c.post_id = :postId
       AND c.comentario_pai_id IS NULL
       AND (:lastComentarioId IS NULL OR c.id < :lastComentarioId)

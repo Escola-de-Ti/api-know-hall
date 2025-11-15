@@ -89,7 +89,6 @@ public interface PostRepository extends JpaRepository<Post, BigInteger> {
         SELECT *
         FROM post_scores
         WHERE
-            -- Apenas aplica paginação cursor-based se orderBy = RELEVANCE
             (:orderBy != 'RELEVANCE' OR :lastScore IS NULL
                 OR (
                     relevance_score < :lastScore
@@ -102,7 +101,6 @@ public interface PostRepository extends JpaRepository<Post, BigInteger> {
             CASE WHEN :orderBy = 'UPVOTES_ASC' THEN COALESCE(total_up_votes, 0) END ASC,
             CASE WHEN :orderBy = 'DATE_DESC' THEN data_criacao END DESC,
             CASE WHEN :orderBy = 'DATE_ASC' THEN data_criacao END ASC,
-            -- Desempate sempre por ID DESC para manter consistência
             id DESC
         LIMIT :pageSize
     )
