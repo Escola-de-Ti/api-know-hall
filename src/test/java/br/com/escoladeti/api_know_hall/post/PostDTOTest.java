@@ -5,6 +5,7 @@ import br.com.escoladeti.api_know_hall.dto.post.*;
 import br.com.escoladeti.api_know_hall.dto.tags.TagResponseDTO;
 import br.com.escoladeti.api_know_hall.enums.OrdenacaoDirecao;
 import br.com.escoladeti.api_know_hall.enums.OrdenacaoTipo;
+import br.com.escoladeti.api_know_hall.enums.OrderBy;
 import br.com.escoladeti.api_know_hall.enums.TagOperador;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
@@ -145,6 +146,7 @@ class PostDTOTest {
       null,
       null,  // Deve usar default OR
       null,
+      null,
       null
     );
 
@@ -163,6 +165,7 @@ class PostDTOTest {
       null,
       TagOperador.OR,
       null,
+      null,
       null
     );
 
@@ -180,7 +183,8 @@ class PostDTOTest {
       List.of(BigInteger.ONE, BigInteger.TWO),
       TagOperador.AND,
       LocalDate.of(2025, 1, 1),
-      LocalDate.of(2025, 10, 22)
+      LocalDate.of(2025, 10, 22),
+      OrderBy.RELEVANCE
     );
 
     assertThat(dto.usuarioId()).isEqualTo(BigInteger.ONE);

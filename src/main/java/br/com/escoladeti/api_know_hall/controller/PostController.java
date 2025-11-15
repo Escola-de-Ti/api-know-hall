@@ -4,6 +4,7 @@ import br.com.escoladeti.api_know_hall.dto.post.*;
 import br.com.escoladeti.api_know_hall.entity.Usuario;
 import br.com.escoladeti.api_know_hall.enums.OrdenacaoDirecao;
 import br.com.escoladeti.api_know_hall.enums.OrdenacaoTipo;
+import br.com.escoladeti.api_know_hall.enums.OrderBy;
 import br.com.escoladeti.api_know_hall.enums.TagOperador;
 import br.com.escoladeti.api_know_hall.service.PostService;
 import jakarta.validation.Valid;
@@ -74,7 +75,8 @@ public class PostController {
     @RequestParam(required = false) List<BigInteger> tagIds,
     @RequestParam(required = false, defaultValue = "OR") TagOperador tagOperador,
     @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInicio,
-    @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim
+    @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim,
+    @RequestParam(required = false, defaultValue = "RELEVANCE") OrderBy orderBy
   ) {
     Usuario usuario = postService.findUserByPrincipal(principal.getName());
     FeedRequestDTO request = new FeedRequestDTO(
@@ -85,7 +87,8 @@ public class PostController {
       tagIds,
       tagOperador,
       dataInicio,
-      dataFim
+      dataFim,
+      orderBy
     );
     FeedResponseDTO feed = postService.getFeed(request);
     return ResponseEntity.ok(feed);

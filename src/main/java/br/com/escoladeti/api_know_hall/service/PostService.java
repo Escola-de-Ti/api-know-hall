@@ -9,6 +9,7 @@ import br.com.escoladeti.api_know_hall.entity.Post;
 import br.com.escoladeti.api_know_hall.entity.Tag;
 import br.com.escoladeti.api_know_hall.entity.Usuario;
 import br.com.escoladeti.api_know_hall.enums.OrdenacaoTipo;
+import br.com.escoladeti.api_know_hall.enums.OrderBy;
 import br.com.escoladeti.api_know_hall.projection.comentario.ComentarioProjection;
 import br.com.escoladeti.api_know_hall.projection.post.PostBuscaProjection;
 import br.com.escoladeti.api_know_hall.projection.post.PostFeedProjection;
@@ -149,7 +150,14 @@ public class PostService {
     Long usuarioIdLong = request.usuarioId().longValue();
     Long lastPostIdLong = request.lastPostId() != null ? request.lastPostId().longValue() : null;
 
-    Integer fetchSize = request.pageSize() + 1;
+    Integer fetchSize;
+    boolean usePagination = request.orderBy() == OrderBy.RELEVANCE;
+
+    if (usePagination) {
+      fetchSize = request.pageSize() + 1;
+    } else {
+      fetchSize = 10000;
+    }
 
     String filterTagIds = convertTagIdsToCommaSeparatedString(request.tagIds());
     Integer filterTagCount = request.tagIds() != null ? request.tagIds().size() : null;
@@ -157,6 +165,8 @@ public class PostService {
 
     String dataInicio = request.dataInicio() != null ? request.dataInicio().toString() : null;
     String dataFim = request.dataFim() != null ? request.dataFim().toString() : null;
+
+    String orderBy = request.orderBy() != null ? request.orderBy().name() : OrderBy.RELEVANCE.name();
 
     List<PostFeedProjection> results = postRepository.findFeedPosts(
       usuarioIdLong,
@@ -167,12 +177,14 @@ public class PostService {
       tagOperador,
       filterTagCount,
       dataInicio,
-      dataFim
+      dataFim,
+      orderBy
     );
 
-    boolean hasMore = results.size() > request.pageSize();
+    boolean hasMore = false;
 
-    if (hasMore) {
+    if (usePagination && results.size() > request.pageSize()) {
+      hasMore = true;
       results = results.subList(0, request.pageSize());
     }
 
@@ -185,7 +197,7 @@ public class PostService {
     BigInteger lastPostId = null;
     Double lastScore = null;
 
-    if (!posts.isEmpty()) {
+    if (usePagination && !posts.isEmpty()) {
       PostFeedDTO lastPost = posts.get(posts.size() - 1);
       lastPostId = lastPost.id();
       lastScore = lastPost.relevanceScore();

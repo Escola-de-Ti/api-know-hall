@@ -98,12 +98,10 @@ class PostServiceTest {
   @Test
   @DisplayName("Deve criar post com sucesso")
   void deveCriarPostComSucesso() {
-    // ✅ Agora usa findByEmail ao invés de findById
     when(usuarioRepository.findByEmail("joao@email.com")).thenReturn(Optional.of(usuario));
     when(tagsRepository.findAllById(anyList())).thenReturn(List.of(tag));
     when(postRepository.save(any(Post.class))).thenReturn(post);
 
-    // ✅ Passa o email como segundo parâmetro
     PostResponseDTO resultado = postService.criarPost(postCreateDTO, "joao@email.com");
 
     assertThat(resultado).isNotNull();
@@ -120,7 +118,6 @@ class PostServiceTest {
   @Test
   @DisplayName("Deve lançar exceção ao criar post com usuário inexistente")
   void deveLancarExcecaoAoCriarPostComUsuarioInexistente() {
-    // ✅ Mock do findByEmail retornando vazio
     when(usuarioRepository.findByEmail(anyString())).thenReturn(Optional.empty());
 
     assertThatThrownBy(() -> postService.criarPost(postCreateDTO, "email@invalido.com"))
@@ -143,7 +140,6 @@ class PostServiceTest {
     when(usuarioRepository.findByEmail("joao@email.com")).thenReturn(Optional.of(usuario));
     when(postRepository.save(any(Post.class))).thenReturn(post);
 
-    // ✅ Passa o email
     PostResponseDTO resultado = postService.criarPost(dtoSemTags, "joao@email.com");
 
     assertThat(resultado).isNotNull();
@@ -153,14 +149,13 @@ class PostServiceTest {
   @Test
   @DisplayName("Deve lançar exceção ao criar post com tag inexistente")
   void deveLancarExcecaoAoCriarPostComTagInexistente() {
-    // Simula que apenas 1 tag foi encontrada quando foram solicitadas 2
     when(usuarioRepository.findByEmail("joao@email.com")).thenReturn(Optional.of(usuario));
-    when(tagsRepository.findAllById(anyList())).thenReturn(List.of(tag)); // retorna apenas 1 tag
+    when(tagsRepository.findAllById(anyList())).thenReturn(List.of(tag));
 
     PostCreateDTO dtoComTagsInvalidas = new PostCreateDTO(
       "Título",
       "Descrição",
-      List.of(BigInteger.ONE, BigInteger.TWO) // solicita 2 tags
+      List.of(BigInteger.ONE, BigInteger.TWO)
     );
 
     assertThatThrownBy(() -> postService.criarPost(dtoComTagsInvalidas, "joao@email.com"))
@@ -280,14 +275,13 @@ class PostServiceTest {
   @Test
   @DisplayName("Deve lançar exceção ao atualizar post com tag inexistente")
   void deveLancarExcecaoAoAtualizarPostComTagInexistente() {
-    // Simula que apenas 1 tag foi encontrada quando foram solicitadas 2
     when(postRepository.findById(BigInteger.ONE)).thenReturn(Optional.of(post));
-    when(tagsRepository.findAllById(anyList())).thenReturn(List.of(tag)); // retorna apenas 1 tag
+    when(tagsRepository.findAllById(anyList())).thenReturn(List.of(tag));
 
     PostUpdateDTO updateDTO = new PostUpdateDTO(
       null,
       null,
-      List.of(BigInteger.ONE, BigInteger.TWO) // solicita 2 tags
+      List.of(BigInteger.ONE, BigInteger.TWO)
     );
 
     assertThatThrownBy(() -> postService.atualizarPost(BigInteger.ONE, updateDTO))
@@ -325,7 +319,7 @@ class PostServiceTest {
     verify(postRepository, never()).deleteById(any());
   }
 
-  // ==================== TESTES DE FEED ====================
+  // ==================== TESTES DE FEED (CORRIGIDOS) ====================
 
   @Test
   @DisplayName("Deve buscar feed com sucesso")
@@ -338,12 +332,14 @@ class PostServiceTest {
       null,
       TagOperador.OR,
       null,
-      null
+      null,
+      OrderBy.RELEVANCE  // ✅ ADICIONADO
     );
 
     PostFeedProjection projection = createMockProjection();
     List<PostFeedProjection> projections = List.of(projection);
 
+    // ✅ CORRIGIDO: Adicionado o 10º parâmetro (orderBy)
     when(postRepository.findFeedPosts(
       anyLong(),
       any(),
@@ -353,7 +349,8 @@ class PostServiceTest {
       any(),
       any(),
       any(),
-      any()
+      any(),
+      any()  // ✅ orderBy
     )).thenReturn(projections);
 
     lenient().when(postRepository.findById(any())).thenReturn(Optional.of(post));
@@ -364,7 +361,8 @@ class PostServiceTest {
     assertThat(resultado.posts()).hasSize(1);
     assertThat(resultado.hasMore()).isFalse();
 
-    verify(postRepository).findFeedPosts(anyLong(), any(), any(), anyInt(), any(), any(), any(), any(), any());
+    // ✅ CORRIGIDO: Verifica com 10 parâmetros
+    verify(postRepository).findFeedPosts(anyLong(), any(), any(), anyInt(), any(), any(), any(), any(), any(), any());
   }
 
   @Test
@@ -378,16 +376,41 @@ class PostServiceTest {
       List.of(BigInteger.ONE, BigInteger.TWO),
       TagOperador.AND,
       null,
-      null
+      null,
+      OrderBy.RELEVANCE  // ✅ ADICIONADO
     );
 
-    when(postRepository.findFeedPosts(anyLong(), any(), any(), anyInt(), eq("1,2"), eq("AND"), eq(2), any(), any()))
-      .thenReturn(List.of());
+    // ✅ CORRIGIDO: Adicionado o 10º parâmetro (orderBy)
+    when(postRepository.findFeedPosts(
+      anyLong(),
+      any(),
+      any(),
+      anyInt(),
+      eq("1,2"),
+      eq("AND"),
+      eq(2),
+      any(),
+      any(),
+      any()  // ✅ orderBy
+    )).thenReturn(List.of());
 
     FeedResponseDTO resultado = postService.getFeed(request);
 
     assertThat(resultado.posts()).isEmpty();
-    verify(postRepository).findFeedPosts(anyLong(), any(), any(), anyInt(), eq("1,2"), eq("AND"), eq(2), any(), any());
+
+    // ✅ CORRIGIDO: Verifica com 10 parâmetros
+    verify(postRepository).findFeedPosts(
+      anyLong(),
+      any(),
+      any(),
+      anyInt(),
+      eq("1,2"),
+      eq("AND"),
+      eq(2),
+      any(),
+      any(),
+      any()  // ✅ orderBy
+    );
   }
 
   @Test
@@ -401,20 +424,40 @@ class PostServiceTest {
       null,
       TagOperador.OR,
       LocalDate.of(2025, 1, 1),
-      LocalDate.of(2025, 10, 22)
+      LocalDate.of(2025, 10, 22),
+      OrderBy.RELEVANCE  // ✅ ADICIONADO
     );
 
+    // ✅ CORRIGIDO: Adicionado o 10º parâmetro (orderBy)
     when(postRepository.findFeedPosts(
-      anyLong(), any(), any(), anyInt(), any(), any(), any(),
-      eq("2025-01-01"), eq("2025-10-22")
+      anyLong(),
+      any(),
+      any(),
+      anyInt(),
+      any(),
+      any(),
+      any(),
+      eq("2025-01-01"),
+      eq("2025-10-22"),
+      any()  // ✅ orderBy
     )).thenReturn(List.of());
 
     FeedResponseDTO resultado = postService.getFeed(request);
 
     assertThat(resultado.posts()).isEmpty();
+
+    // ✅ CORRIGIDO: Verifica com 10 parâmetros
     verify(postRepository).findFeedPosts(
-      anyLong(), any(), any(), anyInt(), any(), any(), any(),
-      eq("2025-01-01"), eq("2025-10-22")
+      anyLong(),
+      any(),
+      any(),
+      anyInt(),
+      any(),
+      any(),
+      any(),
+      eq("2025-01-01"),
+      eq("2025-10-22"),
+      any()  // ✅ orderBy
     );
   }
 
@@ -423,31 +466,33 @@ class PostServiceTest {
   void deveIndicarHasMoreQuandoHaMaisPosts() {
     FeedRequestDTO request = new FeedRequestDTO(
       BigInteger.ONE,
-      2, // pageSize = 2 → fetchSize = 3
+      2,
       null,
       null,
       null,
       TagOperador.OR,
       null,
-      null
+      null,
+      OrderBy.RELEVANCE  // ✅ ADICIONADO
     );
 
-    // Retorna 3 posts (pageSize + 1)
     PostFeedProjection proj1 = createMockProjection();
     PostFeedProjection proj2 = createMockProjection();
     PostFeedProjection proj3 = createMockProjection();
     List<PostFeedProjection> projections = List.of(proj1, proj2, proj3);
 
+    // ✅ CORRIGIDO: Adicionado o 10º parâmetro (orderBy)
     when(postRepository.findFeedPosts(
       anyLong(),
       any(),
       any(),
-      anyInt(), // aceita qualquer inteiro, inclusive 3
+      anyInt(),
       any(),
       any(),
       any(),
       any(),
-      any()
+      any(),
+      any()  // ✅ orderBy
     )).thenReturn(projections);
 
     lenient().when(postRepository.findById(any())).thenReturn(Optional.of(post));
@@ -457,7 +502,8 @@ class PostServiceTest {
     assertThat(resultado.hasMore()).isTrue();
     assertThat(resultado.posts()).hasSize(2);
 
-    verify(postRepository).findFeedPosts(anyLong(), any(), any(), anyInt(), any(), any(), any(), any(), any());
+    // ✅ CORRIGIDO: Verifica com 10 parâmetros
+    verify(postRepository).findFeedPosts(anyLong(), any(), any(), anyInt(), any(), any(), any(), any(), any(), any());
   }
 
   // ==================== TESTES DE BUSCA AVANÇADA ====================
@@ -518,7 +564,6 @@ class PostServiceTest {
     PostBuscaResponseDTO resultado = postService.buscarPosts(request);
 
     assertThat(resultado.lastValue()).isNotNull();
-    // lastValue deve ser timestamp / 1000 para ordenação por data
   }
 
   // ==================== MÉTODOS AUXILIARES ====================
@@ -660,7 +705,7 @@ class PostServiceTest {
       10,
       null,
       null,
-      "  spring boot  "  // Com espaços
+      "  spring boot  "
     );
 
     when(postRepository.buscarComFiltros(
@@ -679,7 +724,6 @@ class PostServiceTest {
   @Test
   @DisplayName("Deve buscar detalhes do post com sucesso")
   void deveBuscarDetalhesDoPostComSucesso() {
-    // Setup comentários
     ComentarioProjection comentario1 = createMockComentarioProjection(
       BigInteger.ONE, "Comentário 1", 5L, 2L
     );
@@ -687,19 +731,16 @@ class PostServiceTest {
       BigInteger.TWO, "Comentário 2", 3L, 1L
     );
 
-    // CORREÇÃO: Mock para buscar o usuário pelo email
     when(usuarioRepository.findByEmail("joao@email.com")).thenReturn(Optional.of(usuario));
     when(postRepository.findById(BigInteger.ONE)).thenReturn(Optional.of(post));
 
-    // CORREÇÃO: Mock da query de comentários agora inclui o usuarioId
     when(comentarioRepository.findComentariosByPostId(
-      eq(BigInteger.ONE), // postId
-      eq(null), // lastComentarioId
-      eq(11), // fetchSize (pageSize + 1)
-      eq(usuario.getId()) // usuarioId
+      eq(BigInteger.ONE),
+      eq(null),
+      eq(11),
+      eq(usuario.getId())
     )).thenReturn(List.of(comentario1, comentario2));
 
-    // CORREÇÃO: Passa o email do usuário
     PostDetalhesDTO resultado = postService.buscarDetalhesDoPost(BigInteger.ONE, 10, "joao@email.com");
 
     assertThat(resultado).isNotNull();
@@ -713,14 +754,12 @@ class PostServiceTest {
 
     verify(usuarioRepository).findByEmail("joao@email.com");
     verify(postRepository).findById(BigInteger.ONE);
-    // CORREÇÃO: Verifica a chamada com usuarioId
     verify(comentarioRepository).findComentariosByPostId(eq(BigInteger.ONE), eq(null), eq(11), eq(usuario.getId()));
   }
 
   @Test
   @DisplayName("Deve indicar hasMoreComentarios quando há mais comentários")
   void deveIndicarHasMoreComentariosQuandoHaMais() {
-    // Criar 11 comentários (pageSize = 10, fetchSize = 11)
     List<ComentarioProjection> comentarios = new java.util.ArrayList<>();
     for (int i = 1; i <= 11; i++) {
       comentarios.add(createMockComentarioProjection(
@@ -731,47 +770,40 @@ class PostServiceTest {
       ));
     }
 
-    // CORREÇÃO: Mock para buscar o usuário pelo email
     when(usuarioRepository.findByEmail("joao@email.com")).thenReturn(Optional.of(usuario));
     when(postRepository.findById(BigInteger.ONE)).thenReturn(Optional.of(post));
 
-    // CORREÇÃO: Mock da query de comentários agora inclui o usuarioId
     when(comentarioRepository.findComentariosByPostId(
       eq(BigInteger.ONE),
       eq(null),
       eq(11),
-      eq(usuario.getId()) // usuarioId
+      eq(usuario.getId())
     )).thenReturn(comentarios);
 
-    // CORREÇÃO: Passa o email do usuário
     PostDetalhesDTO resultado = postService.buscarDetalhesDoPost(BigInteger.ONE, 10, "joao@email.com");
 
     assertThat(resultado).isNotNull();
-    assertThat(resultado.comentarios()).hasSize(10); // Limitado ao pageSize
+    assertThat(resultado.comentarios()).hasSize(10);
     assertThat(resultado.hasMoreComentarios()).isTrue();
 
     verify(usuarioRepository).findByEmail("joao@email.com");
     verify(postRepository).findById(BigInteger.ONE);
-    // CORREÇÃO: Verifica a chamada com usuarioId
     verify(comentarioRepository).findComentariosByPostId(eq(BigInteger.ONE), eq(null), eq(11), eq(usuario.getId()));
   }
 
   @Test
   @DisplayName("Deve buscar detalhes do post sem comentários")
   void deveBuscarDetalhesDoPostSemComentarios() {
-    // CORREÇÃO: Mock para buscar o usuário pelo email
     when(usuarioRepository.findByEmail("joao@email.com")).thenReturn(Optional.of(usuario));
     when(postRepository.findById(BigInteger.ONE)).thenReturn(Optional.of(post));
 
-    // CORREÇÃO: Mock da query de comentários agora inclui o usuarioId
     when(comentarioRepository.findComentariosByPostId(
       eq(BigInteger.ONE),
       eq(null),
-      eq(11), // 10 + 1
-      eq(usuario.getId()) // usuarioId
+      eq(11),
+      eq(usuario.getId())
     )).thenReturn(List.of());
 
-    // CORREÇÃO: Passa o email do usuário
     PostDetalhesDTO resultado = postService.buscarDetalhesDoPost(BigInteger.ONE, 10, "joao@email.com");
 
     assertThat(resultado).isNotNull();
@@ -780,7 +812,6 @@ class PostServiceTest {
 
     verify(usuarioRepository).findByEmail("joao@email.com");
     verify(postRepository).findById(BigInteger.ONE);
-    // CORREÇÃO: Verifica a chamada com usuarioId
     verify(comentarioRepository).findComentariosByPostId(eq(BigInteger.ONE), eq(null), eq(11), eq(usuario.getId()));
   }
 
@@ -796,19 +827,16 @@ class PostServiceTest {
     postSemTags.setDataCriacao(Timestamp.from(Instant.now()));
     postSemTags.setTags(List.of());
 
-    // CORREÇÃO: Mock para buscar o usuário pelo email
     when(usuarioRepository.findByEmail("joao@email.com")).thenReturn(Optional.of(usuario));
     when(postRepository.findById(BigInteger.ONE)).thenReturn(Optional.of(postSemTags));
 
-    // CORREÇÃO: Mock da query de comentários agora inclui o usuarioId
     when(comentarioRepository.findComentariosByPostId(
       eq(BigInteger.ONE),
       eq(null),
-      eq(11), // 10 + 1
-      eq(usuario.getId()) // usuarioId
+      eq(11),
+      eq(usuario.getId())
     )).thenReturn(List.of());
 
-    // CORREÇÃO: Passa o email do usuário
     PostDetalhesDTO resultado = postService.buscarDetalhesDoPost(BigInteger.ONE, 10, "joao@email.com");
 
     assertThat(resultado).isNotNull();
@@ -817,7 +845,6 @@ class PostServiceTest {
 
     verify(usuarioRepository).findByEmail("joao@email.com");
     verify(postRepository).findById(BigInteger.ONE);
-    // CORREÇÃO: Verifica a chamada com usuarioId
     verify(comentarioRepository).findComentariosByPostId(eq(BigInteger.ONE), eq(null), eq(11), eq(usuario.getId()));
   }
 
@@ -834,26 +861,22 @@ class PostServiceTest {
       ));
     }
 
-    // CORREÇÃO: Mock para buscar o usuário pelo email
     when(usuarioRepository.findByEmail("joao@email.com")).thenReturn(Optional.of(usuario));
     when(postRepository.findById(BigInteger.ONE)).thenReturn(Optional.of(post));
 
-    // CORREÇÃO: Mock da query de comentários agora inclui o usuarioId
     when(comentarioRepository.findComentariosByPostId(
       eq(BigInteger.ONE),
       eq(null),
-      eq(6), // pageSize 5 + 1
-      eq(usuario.getId()) // usuarioId
+      eq(6),
+      eq(usuario.getId())
     )).thenReturn(comentarios);
 
-    // CORREÇÃO: Passa o email do usuário
     PostDetalhesDTO resultado = postService.buscarDetalhesDoPost(BigInteger.ONE, 5, "joao@email.com");
 
     assertThat(resultado.comentarios()).hasSize(5);
     assertThat(resultado.hasMoreComentarios()).isTrue();
 
     verify(usuarioRepository).findByEmail("joao@email.com");
-    // CORREÇÃO: Verifica a chamada com usuarioId
     verify(comentarioRepository).findComentariosByPostId(eq(BigInteger.ONE), eq(null), eq(6), eq(usuario.getId()));
   }
 
@@ -867,19 +890,16 @@ class PostServiceTest {
       3L
     );
 
-    // CORREÇÃO: Mock para buscar o usuário pelo email
     when(usuarioRepository.findByEmail("joao@email.com")).thenReturn(Optional.of(usuario));
     when(postRepository.findById(BigInteger.ONE)).thenReturn(Optional.of(post));
 
-    // CORREÇÃO: Mock da query de comentários agora inclui o usuarioId
     when(comentarioRepository.findComentariosByPostId(
       eq(BigInteger.ONE),
       eq(null),
-      eq(11), // 10 + 1
-      eq(usuario.getId()) // usuarioId
+      eq(11),
+      eq(usuario.getId())
     )).thenReturn(List.of(comentario));
 
-    // CORREÇÃO: Passa o email do usuário
     PostDetalhesDTO resultado = postService.buscarDetalhesDoPost(BigInteger.ONE, 10, "joao@email.com");
 
     assertThat(resultado.comentarios()).hasSize(1);
@@ -890,11 +910,9 @@ class PostServiceTest {
     assertThat(comentarioDTO.totalSuperVotes()).isEqualTo(3L);
     assertThat(comentarioDTO.usuarioNome()).isEqualTo("João Silva");
 
-    // O mock createMockComentarioProjection já retorna 'false' para getJaVotou()
     assertThat(comentarioDTO.jaVotou()).isFalse();
   }
 
-  // Método auxiliar para criar mock de ComentarioProjection
   private ComentarioProjection createMockComentarioProjection(
     BigInteger id,
     String texto,
@@ -942,7 +960,6 @@ class PostServiceTest {
         return null;
       }
 
-      // Este método já estava presente no seu mock, o que é ótimo.
       public Boolean getJaVotou() {
         return false;
       }

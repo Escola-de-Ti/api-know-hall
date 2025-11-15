@@ -1,5 +1,6 @@
 package br.com.escoladeti.api_know_hall.dto.post;
 
+import br.com.escoladeti.api_know_hall.enums.OrderBy;
 import br.com.escoladeti.api_know_hall.enums.TagOperador;
 
 import java.math.BigInteger;
@@ -14,7 +15,8 @@ public record FeedRequestDTO(
   List<BigInteger> tagIds,
   TagOperador tagOperador,
   LocalDate dataInicio,
-  LocalDate dataFim
+  LocalDate dataFim,
+  OrderBy orderBy
 ) {
   public FeedRequestDTO {
     if (pageSize == null || pageSize <= 0) {
