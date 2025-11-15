@@ -26,5 +26,6 @@ public class UsuarioDetalhesResponseDTO {
   private Integer qtdSuperVotes;
   private Integer qtdWorkshops;
   private String imagemUrl;
+  private Long posicaoRanking;
 
 }

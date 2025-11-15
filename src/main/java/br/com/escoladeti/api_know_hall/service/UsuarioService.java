@@ -307,6 +307,8 @@ public class UsuarioService {
     var detalhes = usuarioRepository.findDetalhesUsuarioById(id_usuario)
       .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
 
+    Long posicaoUsuario = usuarioRepository.findPosicaoNoRanking(usuario.getId());
+
     boolean isProprioUsuario = email != null && email.equals(usuario.getEmail());
 
     Long tokens = isProprioUsuario ? detalhes.getTokens() : null;
@@ -323,7 +325,8 @@ public class UsuarioService {
       detalhes.getQtdUpVotes(),
       detalhes.getQtdSuperVotes(),
       detalhes.getQtdWorkshops(),
-      detalhes.getImagemUrl()
+      detalhes.getImagemUrl(),
+      posicaoUsuario
     );
   }
 
