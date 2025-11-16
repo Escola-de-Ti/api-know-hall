@@ -511,5 +511,75 @@
     </addColumn>
   </changeSet>
 
+  <changeSet id="KH-44" author="GABRIEL MARASSI">
+    <preConditions onFail="MARK_RAN">
+      <and>
+        <tableExists tableName="USUARIO"/>
+        <columnExists tableName="USUARIO" columnName="nivel"/>
+      </and>
+    </preConditions>
+
+    <comment>Corrige os níveis dos usuários baseado no XP atual</comment>
+
+    <update tableName="USUARIO">
+      <column name="qntd_xp" value="0"/>
+      <where>qntd_xp IS NULL</where>
+    </update>
+
+    <update tableName="USUARIO">
+      <column name="qntd_token" value="0"/>
+      <where>qntd_token IS NULL</where>
+    </update>
+
+    <sql>
+      UPDATE USUARIO
+      SET qntd_xp = 0
+      WHERE qntd_xp IS NULL;
+
+      UPDATE USUARIO
+      SET qntd_token = 0
+      WHERE qntd_token IS NULL;
+
+      UPDATE USUARIO
+      SET nivel = CASE
+        WHEN qntd_xp >= 180339 THEN 30
+        WHEN qntd_xp >= 160532 THEN 29
+        WHEN qntd_xp >= 142847 THEN 28
+        WHEN qntd_xp >= 127057 THEN 27
+        WHEN qntd_xp >= 112959 THEN 26
+        WHEN qntd_xp >= 100371 THEN 25
+        WHEN qntd_xp >= 89132 THEN 24
+        WHEN qntd_xp >= 79097 THEN 23
+        WHEN qntd_xp >= 70137 THEN 22
+        WHEN qntd_xp >= 62137 THEN 21
+        WHEN qntd_xp >= 54837 THEN 20
+        WHEN qntd_xp >= 48037 THEN 19
+        WHEN qntd_xp >= 41737 THEN 18
+        WHEN qntd_xp >= 35937 THEN 17
+        WHEN qntd_xp >= 30637 THEN 16
+        WHEN qntd_xp >= 25837 THEN 15
+        WHEN qntd_xp >= 21537 THEN 14
+        WHEN qntd_xp >= 17737 THEN 13
+        WHEN qntd_xp >= 14437 THEN 12
+        WHEN qntd_xp >= 11637 THEN 11
+        WHEN qntd_xp >= 9125 THEN 10
+        WHEN qntd_xp >= 7008 THEN 9
+        WHEN qntd_xp >= 5206 THEN 8
+        WHEN qntd_xp >= 3703 THEN 7
+        WHEN qntd_xp >= 2484 THEN 6
+        WHEN qntd_xp >= 1532 THEN 5
+        WHEN qntd_xp >= 830 THEN 4
+        WHEN qntd_xp >= 364 THEN 3
+        WHEN qntd_xp >= 100 THEN 2
+        ELSE 1
+      END;
+    </sql>
+
+    <rollback>
+      <update tableName="USUARIO">
+        <column name="nivel" value="1"/>
+      </update>
+    </rollback>
+  </changeSet>
 
 </databaseChangeLog>
