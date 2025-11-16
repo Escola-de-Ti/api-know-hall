@@ -18,6 +18,7 @@ import br.com.escoladeti.api_know_hall.repository.UsuarioRepository;
 import br.com.escoladeti.api_know_hall.repository.WorkshopRepository;
 import br.com.escoladeti.api_know_hall.service.HistoricoTransacaoService;
 import br.com.escoladeti.api_know_hall.service.InscricaoService;
+import br.com.escoladeti.api_know_hall.util.LevelService;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -38,6 +39,8 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -55,6 +58,9 @@ class InscricaoServiceTest {
 
   @Mock
   private HistoricoTransacaoService historicoTransacaoService;
+
+  @Mock
+  private LevelService levelService;
 
   @InjectMocks
   private InscricaoService inscricaoService;
@@ -75,6 +81,7 @@ class InscricaoServiceTest {
     instrutor.setStatusUsuario(StatusUsuario.ATIVO);
     instrutor.setQntdToken(100L);
     instrutor.setQntdXp(100L);
+    instrutor.setNivel(1);
 
     // Setup Usuário
     usuario = new Usuario();
@@ -85,6 +92,7 @@ class InscricaoServiceTest {
     usuario.setStatusUsuario(StatusUsuario.ATIVO);
     usuario.setQntdToken(50L);
     usuario.setQntdXp(50L);
+    usuario.setNivel(1);
 
     // Setup Workshop
     workshop = new Workshop();
@@ -134,6 +142,7 @@ class InscricaoServiceTest {
       verify(inscricaoRepository).save(any(Inscricao.class));
       verify(usuarioRepository, times(2)).save(any(Usuario.class)); // Salva usuário e instrutor
       verify(historicoTransacaoService, times(2)).registrarTransacao(any(Usuario.class), anyLong(), any(MotivoTransacao.class), anyString());
+      verify(levelService).processLevelChange(eq(instrutor), eq(100L), anyLong());
     }
 
     @Test
@@ -150,6 +159,7 @@ class InscricaoServiceTest {
       verify(usuarioRepository).findByEmail(usuario.getEmail());
       verify(workshopRepository, never()).findById(any());
       verify(inscricaoRepository, never()).save(any());
+      verify(levelService, never()).processLevelChange(any(), anyLong(), anyLong());
     }
 
     @Test
@@ -167,6 +177,7 @@ class InscricaoServiceTest {
       verify(usuarioRepository).findByEmail(usuario.getEmail());
       verify(workshopRepository).findById(workshop.getId());
       verify(inscricaoRepository, never()).save(any());
+      verify(levelService, never()).processLevelChange(any(), anyLong(), anyLong());
     }
 
     @Test
@@ -183,6 +194,7 @@ class InscricaoServiceTest {
         .hasMessage("Usuário já está inscrito neste workshop.");
 
       verify(inscricaoRepository, never()).save(any());
+      verify(levelService, never()).processLevelChange(any(), anyLong(), anyLong());
     }
 
     @Test
@@ -199,6 +211,7 @@ class InscricaoServiceTest {
         .hasMessage("Instrutor não pode se inscrever em seu próprio workshop.");
 
       verify(inscricaoRepository, never()).save(any());
+      verify(levelService, never()).processLevelChange(any(), anyLong(), anyLong());
     }
 
     @Test
@@ -218,6 +231,7 @@ class InscricaoServiceTest {
         .hasMessage("Usuário não possui tokens suficientes para se inscrever neste workshop.");
 
       verify(inscricaoRepository, never()).save(any());
+      verify(levelService, never()).processLevelChange(any(), anyLong(), anyLong());
     }
 
     @Test
@@ -236,6 +250,7 @@ class InscricaoServiceTest {
         .hasMessage("Inscrições só podem ser feitas em workshops com status ABERTO.");
 
       verify(inscricaoRepository, never()).save(any());
+      verify(levelService, never()).processLevelChange(any(), anyLong(), anyLong());
     }
 
     @Test
@@ -253,6 +268,7 @@ class InscricaoServiceTest {
         .hasMessage("Apenas usuários ativos podem se inscrever em workshops.");
 
       verify(inscricaoRepository, never()).save(any());
+      verify(levelService, never()).processLevelChange(any(), anyLong(), anyLong());
     }
 
     @Test
@@ -271,6 +287,7 @@ class InscricaoServiceTest {
         .hasMessage("Não é possível se inscrever em um workshop que já começou.");
 
       verify(inscricaoRepository, never()).save(any());
+      verify(levelService, never()).processLevelChange(any(), anyLong(), anyLong());
     }
 
     @Test
@@ -283,6 +300,7 @@ class InscricaoServiceTest {
 
       usuario.setQntdToken(tokensUsuarioAntes);
       instrutor.setQntdToken(tokensInstrutorAntes);
+      instrutor.setQntdXp(100L);
       workshop.setCusto(custoWorkshop);
 
       when(usuarioRepository.findByEmail(usuario.getEmail())).thenReturn(Optional.of(usuario));
@@ -311,6 +329,7 @@ class InscricaoServiceTest {
         eq(MotivoTransacao.INSCRICAO_WORKSHOP_INSTRUTOR),
         anyString()
       );
+      verify(levelService).processLevelChange(eq(instrutor), eq(100L), eq(110L));
     }
   }
 
@@ -336,6 +355,7 @@ class InscricaoServiceTest {
       verify(inscricaoRepository).save(any(Inscricao.class));
       verify(usuarioRepository, times(2)).save(any(Usuario.class)); // Salva usuário e instrutor
       verify(historicoTransacaoService, times(2)).registrarTransacao(any(Usuario.class), anyLong(), any(MotivoTransacao.class), anyString());
+      verify(levelService).processLevelChange(eq(instrutor), anyLong(), anyLong());
     }
 
     @Test
@@ -353,6 +373,7 @@ class InscricaoServiceTest {
         .hasMessage("Inscrição não encontrada para este usuário nesse workshop.");
 
       verify(inscricaoRepository, never()).save(any());
+      verify(levelService, never()).processLevelChange(any(), anyLong(), anyLong());
     }
 
     @Test
@@ -372,6 +393,7 @@ class InscricaoServiceTest {
         .hasMessage("A inscrição não pode ser cancelada no status atual.");
 
       verify(inscricaoRepository, never()).save(any());
+      verify(levelService, never()).processLevelChange(any(), anyLong(), anyLong());
     }
 
     @Test
@@ -391,6 +413,7 @@ class InscricaoServiceTest {
         .hasMessage("Não é possível cancelar inscrição em um workshop que já começou.");
 
       verify(inscricaoRepository, never()).save(any());
+      verify(levelService, never()).processLevelChange(any(), anyLong(), anyLong());
     }
 
     @Test
@@ -399,10 +422,12 @@ class InscricaoServiceTest {
       // Arrange
       Long tokensUsuarioAntes = 40L;
       Long tokensInstrutorAntes = 110L;
+      Long xpInstrutorAntes = 110L;
       Integer custoWorkshop = 10;
 
       usuario.setQntdToken(tokensUsuarioAntes);
       instrutor.setQntdToken(tokensInstrutorAntes);
+      instrutor.setQntdXp(xpInstrutorAntes);
       workshop.setCusto(custoWorkshop);
 
       when(usuarioRepository.findByEmail(usuario.getEmail())).thenReturn(Optional.of(usuario));
@@ -433,6 +458,7 @@ class InscricaoServiceTest {
         eq(MotivoTransacao.CANCELAMENTO_WORKSHOP_INSTRUTOR),
         anyString()
       );
+      verify(levelService).processLevelChange(eq(instrutor), eq(xpInstrutorAntes), eq(100L));
     }
   }
 

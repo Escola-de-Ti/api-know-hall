@@ -319,7 +319,7 @@ class HistoricoTransacaoTest {
   @Test
   @DisplayName("Deve validar todos os motivos do enum")
   void deveValidarTodosMotivosDEnum() {
-    assertThat(MotivoTransacao.values()).hasSize(12);
+    assertThat(MotivoTransacao.values()).hasSize(13);
     assertThat(MotivoTransacao.values()).contains(
       MotivoTransacao.UP_VOTE_COMENTARIO,
       MotivoTransacao.SUPER_VOTE,
@@ -332,7 +332,8 @@ class HistoricoTransacaoTest {
       MotivoTransacao.CANCELAMENTO_WORKSHOP_ALUNO,
       MotivoTransacao.CANCELAMENTO_WORKSHOP_INSTRUTOR,
       MotivoTransacao.PUNICAO,
-      MotivoTransacao.STREAK_LOGIN
+      MotivoTransacao.STREAK_LOGIN,
+      MotivoTransacao.LEVEL_UP
     );
   }
 

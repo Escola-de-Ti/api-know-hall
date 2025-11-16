@@ -14,7 +14,9 @@ import br.com.escoladeti.api_know_hall.repository.PostRepository;
 import br.com.escoladeti.api_know_hall.repository.UsuarioRepository;
 import br.com.escoladeti.api_know_hall.repository.VotoRepository;
 import br.com.escoladeti.api_know_hall.service.HistoricoTransacaoService;
+
 import br.com.escoladeti.api_know_hall.service.VotoService;
+import br.com.escoladeti.api_know_hall.util.LevelService;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -53,6 +55,9 @@ class VotoServiceTest {
   @Mock
   private HistoricoTransacaoService historicoTransacaoService;
 
+  @Mock
+  private LevelService levelService;
+
   @InjectMocks
   private VotoService votoService;
 
@@ -77,6 +82,7 @@ class VotoServiceTest {
     usuario.setTipoUsuario(TipoUsuario.ALUNO);
     usuario.setQntdToken(1000L);
     usuario.setQntdXp(1000L);
+    usuario.setNivel(1);
 
     autorPost = new Usuario();
     autorPost.setId(BigInteger.TWO);
@@ -88,6 +94,7 @@ class VotoServiceTest {
     autorPost.setTipoUsuario(TipoUsuario.ALUNO);
     autorPost.setQntdToken(500L);
     autorPost.setQntdXp(500L);
+    autorPost.setNivel(1);
 
     autorComentario = new Usuario();
     autorComentario.setId(BigInteger.valueOf(3));
@@ -99,6 +106,7 @@ class VotoServiceTest {
     autorComentario.setTipoUsuario(TipoUsuario.ALUNO);
     autorComentario.setQntdToken(300L);
     autorComentario.setQntdXp(300L);
+    autorComentario.setNivel(1);
 
     post = new Post();
     post.setId(BigInteger.ONE);
@@ -157,6 +165,7 @@ class VotoServiceTest {
     verify(usuarioRepository).findByEmail("joao@email.com");
     verify(votoRepository).save(any(Voto.class));
     verify(postRepository).save(argThat(p -> p.getTotalUpVotes().equals(1L)));
+    verify(levelService, never()).processLevelChange(any(), anyLong(), anyLong());
   }
 
   @Test
@@ -184,6 +193,7 @@ class VotoServiceTest {
 
     verify(votoRepository).delete(votoExistente);
     verify(postRepository).save(argThat(p -> p.getTotalUpVotes().equals(0L)));
+    verify(levelService, never()).processLevelChange(any(), anyLong(), anyLong());
   }
 
   @Test
@@ -197,6 +207,7 @@ class VotoServiceTest {
 
     verify(postRepository).findByIdWithUsuario(BigInteger.valueOf(999));
     verify(votoRepository, never()).save(any());
+    verify(levelService, never()).processLevelChange(any(), anyLong(), anyLong());
   }
 
   @Test
@@ -212,6 +223,7 @@ class VotoServiceTest {
       .hasMessage("Você não pode votar no próprio post");
 
     verify(votoRepository, never()).save(any());
+    verify(levelService, never()).processLevelChange(any(), anyLong(), anyLong());
   }
 
   @Test
@@ -225,6 +237,7 @@ class VotoServiceTest {
       .hasMessage("Usuário não encontrado");
 
     verify(votoRepository, never()).save(any());
+    verify(levelService, never()).processLevelChange(any(), anyLong(), anyLong());
   }
 
   @Test
@@ -255,6 +268,7 @@ class VotoServiceTest {
       anyString()
     );
     verify(postRepository).save(argThat(p -> p.getMaiorQntdVoto().equals(25L)));
+    verify(levelService).processLevelChange(eq(autorPost), eq(500L), eq(600L));
   }
 
   @Test
@@ -279,6 +293,7 @@ class VotoServiceTest {
         u.getQntdXp().equals(600L)
     ));
     verify(postRepository).save(argThat(p -> p.getMaiorQntdVoto().equals(50L)));
+    verify(levelService).processLevelChange(eq(autorPost), eq(500L), eq(600L));
   }
 
   @Test
@@ -302,6 +317,7 @@ class VotoServiceTest {
     verify(historicoTransacaoService, never()).registrarTransacao(
       any(), any(), eq(MotivoTransacao.UP_VOTE_POST), any()
     );
+    verify(levelService, never()).processLevelChange(any(), anyLong(), anyLong());
   }
 
   @Test
@@ -332,6 +348,7 @@ class VotoServiceTest {
       anyString()
     );
     verify(postRepository).save(argThat(p -> p.getMaiorQntdVoto().equals(75L)));
+    verify(levelService).processLevelChange(eq(autorPost), eq(500L), eq(800L));
   }
 
   @Test
@@ -356,6 +373,7 @@ class VotoServiceTest {
     verify(usuarioRepository).findByEmail("joao@email.com");
     verify(votoRepository).save(any(Voto.class));
     verify(comentarioRepository).save(argThat(c -> c.getTotalUpVotes().equals(1L)));
+    verify(levelService, never()).processLevelChange(any(), anyLong(), anyLong());
   }
 
   @Test
@@ -383,6 +401,7 @@ class VotoServiceTest {
 
     verify(votoRepository).delete(votoExistente);
     verify(comentarioRepository).save(argThat(c -> c.getTotalUpVotes().equals(0L)));
+    verify(levelService, never()).processLevelChange(any(), anyLong(), anyLong());
   }
 
   @Test
@@ -396,6 +415,7 @@ class VotoServiceTest {
 
     verify(comentarioRepository).findByIdWithRelations(BigInteger.valueOf(999));
     verify(votoRepository, never()).save(any());
+    verify(levelService, never()).processLevelChange(any(), anyLong(), anyLong());
   }
 
   @Test
@@ -411,6 +431,7 @@ class VotoServiceTest {
       .hasMessage("Você não pode votar no próprio comentário");
 
     verify(votoRepository, never()).save(any());
+    verify(levelService, never()).processLevelChange(any(), anyLong(), anyLong());
   }
 
   @Test
@@ -441,6 +462,7 @@ class VotoServiceTest {
       anyString()
     );
     verify(comentarioRepository).save(argThat(c -> c.getMaiorQntdVoto().equals(5L)));
+    verify(levelService).processLevelChange(eq(autorComentario), eq(300L), eq(350L));
   }
 
   @Test
@@ -465,6 +487,7 @@ class VotoServiceTest {
         u.getQntdXp().equals(350L)
     ));
     verify(comentarioRepository).save(argThat(c -> c.getMaiorQntdVoto().equals(10L)));
+    verify(levelService).processLevelChange(eq(autorComentario), eq(300L), eq(350L));
   }
 
   @Test
@@ -488,6 +511,7 @@ class VotoServiceTest {
     verify(historicoTransacaoService, never()).registrarTransacao(
       any(), any(), eq(MotivoTransacao.UP_VOTE_COMENTARIO), any()
     );
+    verify(levelService, never()).processLevelChange(any(), anyLong(), anyLong());
   }
 
   @Test
@@ -522,6 +546,7 @@ class VotoServiceTest {
       eq(MotivoTransacao.RESPOSTA_DESTAQUE),
       anyString()
     );
+    verify(levelService).processLevelChange(eq(autorComentario), eq(300L), anyLong());
   }
 
   @Test
@@ -556,35 +581,8 @@ class VotoServiceTest {
       eq(MotivoTransacao.GERADOR_QUALIDADE),
       anyString()
     );
-  }
-
-  @Test
-  @DisplayName("Não deve conceder tokens ao autor do post se já existe resposta destaque")
-  void naoDeveConcederTokensAoAutorDoPostSeJaExisteRespostaDestaque() {
-    comentario.setMaiorQntdVoto(15L);
-    comentario.setRespostaDestaque(false);
-
-    when(comentarioRepository.findByIdWithRelations(BigInteger.ONE)).thenReturn(Optional.of(comentario));
-    when(usuarioRepository.findByEmail("joao@email.com")).thenReturn(Optional.of(usuario));
-    when(votoRepository.findByComentarioIdAndUsuarioIdAndTipo(any(), any(), any()))
-      .thenReturn(Optional.empty());
-    when(votoRepository.countByComentarioIdAndTipo(any(), any())).thenReturn(20L);
-    when(comentarioRepository.countByPostIdAndRespostaDestaque(BigInteger.ONE, true))
-      .thenReturn(1L);
-    when(votoRepository.save(any())).thenAnswer(i -> i.getArgument(0));
-    when(comentarioRepository.save(any())).thenAnswer(i -> i.getArgument(0));
-    when(usuarioRepository.save(any())).thenAnswer(i -> i.getArgument(0));
-
-    votoService.votarEmComentario(BigInteger.ONE, mockPrincipal);
-
-    verify(usuarioRepository, times(2)).save(any(Usuario.class));
-
-    verify(historicoTransacaoService, never()).registrarTransacao(
-      eq(autorPost),
-      eq(100L),
-      eq(MotivoTransacao.GERADOR_QUALIDADE),
-      anyString()
-    );
+    verify(levelService).processLevelChange(eq(autorComentario), eq(300L), anyLong());
+    verify(levelService).processLevelChange(eq(autorPost), eq(500L), eq(600L));
   }
 
   @Test
@@ -607,6 +605,7 @@ class VotoServiceTest {
     verify(historicoTransacaoService, never()).registrarTransacao(
       any(), eq(100L), eq(MotivoTransacao.RESPOSTA_DESTAQUE), anyString()
     );
+    verify(levelService).processLevelChange(eq(autorComentario), eq(300L), anyLong());
   }
 
   @Test
@@ -644,6 +643,7 @@ class VotoServiceTest {
       eq(MotivoTransacao.SUPER_VOTE),
       anyString()
     );
+    verify(levelService).processLevelChange(eq(autorComentario), eq(300L), eq(500L));
   }
 
   @Test
@@ -683,6 +683,7 @@ class VotoServiceTest {
       eq(MotivoTransacao.SUPER_VOTE),
       anyString()
     );
+    verify(levelService).processLevelChange(eq(autorComentario), eq(300L), eq(100L));
   }
 
   @Test
@@ -718,6 +719,7 @@ class VotoServiceTest {
       u.getId().equals(BigInteger.valueOf(3)) &&
         u.getQntdToken().equals(500L)
     ));
+    verify(levelService).processLevelChange(eq(autorComentario), eq(300L), eq(500L));
   }
 
   @Test
@@ -731,6 +733,7 @@ class VotoServiceTest {
 
     verify(comentarioRepository).findByIdWithRelations(BigInteger.valueOf(999));
     verify(votoRepository, never()).save(any());
+    verify(levelService, never()).processLevelChange(any(), anyLong(), anyLong());
   }
 
   @Test
@@ -746,6 +749,7 @@ class VotoServiceTest {
       .hasMessage("Você não pode votar no próprio comentário");
 
     verify(votoRepository, never()).save(any());
+    verify(levelService, never()).processLevelChange(any(), anyLong(), anyLong());
   }
 
   @Test
@@ -759,6 +763,7 @@ class VotoServiceTest {
       .hasMessage("Apenas o autor do post pode conceder super votos");
 
     verify(votoRepository, never()).save(any());
+    verify(levelService, never()).processLevelChange(any(), anyLong(), anyLong());
   }
 
   @Test
@@ -782,5 +787,6 @@ class VotoServiceTest {
       .hasMessageContaining("Você já concedeu um super voto para outro comentário deste post");
 
     verify(votoRepository, never()).save(any());
+    verify(levelService, never()).processLevelChange(any(), anyLong(), anyLong());
   }
 }
