@@ -76,4 +76,23 @@ public interface UsuarioRepository extends JpaRepository<Usuario, BigInteger> {
     GROUP BY u.id, u.nome, u.biografia, u.nivel, u.qntd_xp, u.qntd_token, img.url
     """, nativeQuery = true)
   Optional<UsuarioDetalhesProjection> findDetalhesUsuarioById(@Param("usuarioId") BigInteger usuarioId);
+
+  @Query(value = """
+    SELECT
+        u.id,
+        u.nome,
+        u.qntd_xp,
+        u.nivel,
+        ranking.posicao
+    FROM usuario u
+    INNER JOIN (
+        SELECT
+            id,
+            ROW_NUMBER() OVER (ORDER BY qntd_xp DESC) as posicao
+        FROM usuario
+    ) ranking ON u.id = ranking.id
+    WHERE LOWER(u.nome) LIKE LOWER(CONCAT('%', :nome, '%'))
+    ORDER BY u.qntd_xp DESC
+    """, nativeQuery = true)
+  List<UsuarioRankingProjection> buscarUsuariosPorNome(@Param("nome") String nome);
 }

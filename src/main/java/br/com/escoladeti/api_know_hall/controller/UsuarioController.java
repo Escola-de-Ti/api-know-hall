@@ -91,4 +91,11 @@ public class UsuarioController {
     UsuarioDetalhesResponseDTO detalhes = usuarioService.obterDetalhesUsuario(principal.getName(), usuarioId);
     return ResponseEntity.ok(detalhes);
   }
+
+  @GetMapping("/buscar")
+  public ResponseEntity<List<UsuarioRankingDTO>> buscarUsuariosPorNome(
+    @RequestParam String nome) {
+    List<UsuarioRankingDTO> usuarios = usuarioService.buscarUsuariosPorNome(nome);
+    return ResponseEntity.ok(usuarios);
+  }
 }

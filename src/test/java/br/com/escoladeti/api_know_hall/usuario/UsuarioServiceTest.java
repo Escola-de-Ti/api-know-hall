@@ -1105,4 +1105,211 @@ class UsuarioServiceTest {
     verify(tagsRepository, never()).findAllById(anyList());
     verify(usuarioRepository, times(1)).save(any(Usuario.class));
   }
+
+  @Test
+  void buscarUsuariosPorNome_WithValidName_ShouldReturnUsuariosList() {
+    String nome = "Test";
+
+    UsuarioRankingProjection projection1 = mock(UsuarioRankingProjection.class);
+    when(projection1.getId()).thenReturn(BigInteger.valueOf(1));
+    when(projection1.getPosicao()).thenReturn(1L);
+    when(projection1.getNome()).thenReturn("Test User 1");
+    when(projection1.getQntdXp()).thenReturn(5000);
+    when(projection1.getNivel()).thenReturn(10);
+
+    UsuarioRankingProjection projection2 = mock(UsuarioRankingProjection.class);
+    when(projection2.getId()).thenReturn(BigInteger.valueOf(2));
+    when(projection2.getPosicao()).thenReturn(5L);
+    when(projection2.getNome()).thenReturn("Test User 2");
+    when(projection2.getQntdXp()).thenReturn(3000);
+    when(projection2.getNivel()).thenReturn(7);
+
+    List<UsuarioRankingProjection> projections = Arrays.asList(projection1, projection2);
+
+    when(usuarioRepository.buscarUsuariosPorNome(nome)).thenReturn(projections);
+
+    List<UsuarioRankingDTO> result = usuarioService.buscarUsuariosPorNome(nome);
+
+    assertNotNull(result);
+    assertEquals(2, result.size());
+
+    assertEquals(BigInteger.valueOf(1), result.get(0).getId());
+    assertEquals(1L, result.get(0).getPosicao());
+    assertEquals("Test User 1", result.get(0).getNome());
+    assertEquals(5000, result.get(0).getQntdXp());
+    assertEquals(10, result.get(0).getNivel());
+
+    assertEquals(BigInteger.valueOf(2), result.get(1).getId());
+    assertEquals(5L, result.get(1).getPosicao());
+    assertEquals("Test User 2", result.get(1).getNome());
+    assertEquals(3000, result.get(1).getQntdXp());
+    assertEquals(7, result.get(1).getNivel());
+
+    verify(usuarioRepository, times(1)).buscarUsuariosPorNome(nome);
+  }
+
+  @Test
+  void buscarUsuariosPorNome_WithNoResults_ShouldReturnEmptyList() {
+    String nome = "NomeInexistente";
+
+    when(usuarioRepository.buscarUsuariosPorNome(nome)).thenReturn(Arrays.asList());
+
+    List<UsuarioRankingDTO> result = usuarioService.buscarUsuariosPorNome(nome);
+
+    assertNotNull(result);
+    assertTrue(result.isEmpty());
+    assertEquals(0, result.size());
+
+    verify(usuarioRepository, times(1)).buscarUsuariosPorNome(nome);
+  }
+
+  @Test
+  void buscarUsuariosPorNome_WithEmptyString_ShouldReturnEmptyList() {
+    String nome = "";
+
+    when(usuarioRepository.buscarUsuariosPorNome(nome)).thenReturn(Arrays.asList());
+
+    List<UsuarioRankingDTO> result = usuarioService.buscarUsuariosPorNome(nome);
+
+    assertNotNull(result);
+    assertTrue(result.isEmpty());
+
+    verify(usuarioRepository, times(1)).buscarUsuariosPorNome(nome);
+  }
+
+  @Test
+  void buscarUsuariosPorNome_WithPartialMatch_ShouldReturnMatchingUsers() {
+    String nome = "Mari";
+
+    UsuarioRankingProjection projection1 = mock(UsuarioRankingProjection.class);
+    when(projection1.getId()).thenReturn(BigInteger.valueOf(10));
+    when(projection1.getPosicao()).thenReturn(3L);
+    when(projection1.getNome()).thenReturn("Maria Silva");
+    when(projection1.getQntdXp()).thenReturn(4200);
+    when(projection1.getNivel()).thenReturn(9);
+
+    UsuarioRankingProjection projection2 = mock(UsuarioRankingProjection.class);
+    when(projection2.getId()).thenReturn(BigInteger.valueOf(15));
+    when(projection2.getPosicao()).thenReturn(8L);
+    when(projection2.getNome()).thenReturn("Mario Santos");
+    when(projection2.getQntdXp()).thenReturn(2800);
+    when(projection2.getNivel()).thenReturn(6);
+
+    List<UsuarioRankingProjection> projections = Arrays.asList(projection1, projection2);
+
+    when(usuarioRepository.buscarUsuariosPorNome(nome)).thenReturn(projections);
+
+    List<UsuarioRankingDTO> result = usuarioService.buscarUsuariosPorNome(nome);
+
+    assertNotNull(result);
+    assertEquals(2, result.size());
+    assertEquals("Maria Silva", result.get(0).getNome());
+    assertEquals("Mario Santos", result.get(1).getNome());
+
+    verify(usuarioRepository, times(1)).buscarUsuariosPorNome(nome);
+  }
+
+  @Test
+  void buscarUsuariosPorNome_WithSpecialCharacters_ShouldReturnResults() {
+    String nome = "José";
+
+    UsuarioRankingProjection projection = mock(UsuarioRankingProjection.class);
+    when(projection.getId()).thenReturn(BigInteger.valueOf(20));
+    when(projection.getPosicao()).thenReturn(12L);
+    when(projection.getNome()).thenReturn("José Oliveira");
+    when(projection.getQntdXp()).thenReturn(1500);
+    when(projection.getNivel()).thenReturn(5);
+
+    when(usuarioRepository.buscarUsuariosPorNome(nome)).thenReturn(Arrays.asList(projection));
+
+    List<UsuarioRankingDTO> result = usuarioService.buscarUsuariosPorNome(nome);
+
+    assertNotNull(result);
+    assertEquals(1, result.size());
+    assertEquals("José Oliveira", result.get(0).getNome());
+
+    verify(usuarioRepository, times(1)).buscarUsuariosPorNome(nome);
+  }
+
+  @Test
+  void buscarUsuariosPorNome_WhenRepositoryThrowsException_ShouldPropagateException() {
+    String nome = "Test";
+
+    when(usuarioRepository.buscarUsuariosPorNome(nome))
+      .thenThrow(new RuntimeException("Database error"));
+
+    RuntimeException exception = assertThrows(
+      RuntimeException.class,
+      () -> usuarioService.buscarUsuariosPorNome(nome)
+    );
+
+    assertEquals("Database error", exception.getMessage());
+    verify(usuarioRepository, times(1)).buscarUsuariosPorNome(nome);
+  }
+
+  @Test
+  void buscarUsuariosPorNome_WithCaseInsensitiveSearch_ShouldReturnResults() {
+    String nome = "test";
+
+    UsuarioRankingProjection projection = mock(UsuarioRankingProjection.class);
+    when(projection.getId()).thenReturn(BigInteger.valueOf(5));
+    when(projection.getPosicao()).thenReturn(2L);
+    when(projection.getNome()).thenReturn("TEST USER");
+    when(projection.getQntdXp()).thenReturn(3500);
+    when(projection.getNivel()).thenReturn(8);
+
+    when(usuarioRepository.buscarUsuariosPorNome(nome)).thenReturn(Arrays.asList(projection));
+
+    List<UsuarioRankingDTO> result = usuarioService.buscarUsuariosPorNome(nome);
+
+    assertNotNull(result);
+    assertEquals(1, result.size());
+    assertEquals("TEST USER", result.get(0).getNome());
+
+    verify(usuarioRepository, times(1)).buscarUsuariosPorNome(nome);
+  }
+
+  @Test
+  void buscarUsuariosPorNome_ShouldOrderByXpDescending() {
+    String nome = "User";
+
+    UsuarioRankingProjection projection1 = mock(UsuarioRankingProjection.class);
+    when(projection1.getId()).thenReturn(BigInteger.valueOf(1));
+    when(projection1.getPosicao()).thenReturn(1L);
+    when(projection1.getNome()).thenReturn("User A");
+    when(projection1.getQntdXp()).thenReturn(5000);
+    when(projection1.getNivel()).thenReturn(10);
+
+    UsuarioRankingProjection projection2 = mock(UsuarioRankingProjection.class);
+    when(projection2.getId()).thenReturn(BigInteger.valueOf(2));
+    when(projection2.getPosicao()).thenReturn(2L);
+    when(projection2.getNome()).thenReturn("User B");
+    when(projection2.getQntdXp()).thenReturn(4000);
+    when(projection2.getNivel()).thenReturn(9);
+
+    UsuarioRankingProjection projection3 = mock(UsuarioRankingProjection.class);
+    when(projection3.getId()).thenReturn(BigInteger.valueOf(3));
+    when(projection3.getPosicao()).thenReturn(3L);
+    when(projection3.getNome()).thenReturn("User C");
+    when(projection3.getQntdXp()).thenReturn(3000);
+    when(projection3.getNivel()).thenReturn(7);
+
+    List<UsuarioRankingProjection> projections = Arrays.asList(projection1, projection2, projection3);
+
+    when(usuarioRepository.buscarUsuariosPorNome(nome)).thenReturn(projections);
+
+    List<UsuarioRankingDTO> result = usuarioService.buscarUsuariosPorNome(nome);
+
+    assertNotNull(result);
+    assertEquals(3, result.size());
+
+    assertTrue(result.get(0).getQntdXp() >= result.get(1).getQntdXp());
+    assertTrue(result.get(1).getQntdXp() >= result.get(2).getQntdXp());
+
+    assertEquals(5000, result.get(0).getQntdXp());
+    assertEquals(4000, result.get(1).getQntdXp());
+    assertEquals(3000, result.get(2).getQntdXp());
+
+    verify(usuarioRepository, times(1)).buscarUsuariosPorNome(nome);
+  }
 }

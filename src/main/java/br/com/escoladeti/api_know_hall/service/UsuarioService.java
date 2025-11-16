@@ -8,6 +8,7 @@ import br.com.escoladeti.api_know_hall.entity.Tag;
 import br.com.escoladeti.api_know_hall.entity.Usuario;
 import br.com.escoladeti.api_know_hall.enums.StatusUsuario;
 import br.com.escoladeti.api_know_hall.exception.*;
+import br.com.escoladeti.api_know_hall.projection.usuario.UsuarioRankingProjection;
 import br.com.escoladeti.api_know_hall.repository.*;
 import br.com.escoladeti.api_know_hall.service.utils.PalavrasProibidasService;
 import br.com.escoladeti.api_know_hall.util.*;
@@ -334,5 +335,12 @@ public class UsuarioService {
     Usuario usuario = usuarioRepository.findByEmail(email)
       .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
     return new UsuarioResponseDTO(usuario);
+  }
+
+  public List<UsuarioRankingDTO> buscarUsuariosPorNome(String nome) {
+    List<UsuarioRankingProjection> usuarios = usuarioRepository.buscarUsuariosPorNome(nome);
+    return usuarios.stream()
+      .map(UsuarioRankingDTO::new)
+      .collect(Collectors.toList());
   }
 }

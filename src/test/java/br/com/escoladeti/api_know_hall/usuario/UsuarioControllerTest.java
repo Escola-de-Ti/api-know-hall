@@ -839,4 +839,121 @@ class UsuarioControllerTest {
 
     verify(usuarioService, times(1)).obterDetalhesUsuario(email, usuarioId);
   }
+
+  @Test
+  void buscarUsuariosPorNome_WithValidName_ShouldReturnUsuariosList() throws Exception {
+    String nome = "Test";
+
+    UsuarioRankingDTO usuario1 = new UsuarioRankingDTO(BigInteger.valueOf(1), 1L, "Test User 1", 5000, 10);
+    UsuarioRankingDTO usuario2 = new UsuarioRankingDTO(BigInteger.valueOf(2), 5L, "Test User 2", 3000, 7);
+
+    List<UsuarioRankingDTO> resultados = Arrays.asList(usuario1, usuario2);
+
+    when(usuarioService.buscarUsuariosPorNome(nome)).thenReturn(resultados);
+
+    mockMvc.perform(get("/api/usuarios/buscar")
+        .param("nome", nome))
+      .andExpect(status().isOk())
+      .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+      .andExpect(jsonPath("$").isArray())
+      .andExpect(jsonPath("$.length()").value(2))
+      .andExpect(jsonPath("$[0].id").value(1))
+      .andExpect(jsonPath("$[0].posicao").value(1))
+      .andExpect(jsonPath("$[0].nome").value("Test User 1"))
+      .andExpect(jsonPath("$[0].qntdXp").value(5000))
+      .andExpect(jsonPath("$[0].nivel").value(10))
+      .andExpect(jsonPath("$[1].id").value(2))
+      .andExpect(jsonPath("$[1].posicao").value(5))
+      .andExpect(jsonPath("$[1].nome").value("Test User 2"))
+      .andExpect(jsonPath("$[1].qntdXp").value(3000))
+      .andExpect(jsonPath("$[1].nivel").value(7));
+
+    verify(usuarioService, times(1)).buscarUsuariosPorNome(nome);
+  }
+
+  @Test
+  void buscarUsuariosPorNome_WithNoResults_ShouldReturnEmptyList() throws Exception {
+    String nome = "NomeInexistente";
+
+    when(usuarioService.buscarUsuariosPorNome(nome)).thenReturn(Arrays.asList());
+
+    mockMvc.perform(get("/api/usuarios/buscar")
+        .param("nome", nome))
+      .andExpect(status().isOk())
+      .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+      .andExpect(jsonPath("$").isArray())
+      .andExpect(jsonPath("$.length()").value(0));
+
+    verify(usuarioService, times(1)).buscarUsuariosPorNome(nome);
+  }
+
+  @Test
+  void buscarUsuariosPorNome_WithEmptyString_ShouldReturnEmptyList() throws Exception {
+    String nome = "";
+
+    when(usuarioService.buscarUsuariosPorNome(nome)).thenReturn(Arrays.asList());
+
+    mockMvc.perform(get("/api/usuarios/buscar")
+        .param("nome", nome))
+      .andExpect(status().isOk())
+      .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+      .andExpect(jsonPath("$").isArray())
+      .andExpect(jsonPath("$.length()").value(0));
+
+    verify(usuarioService, times(1)).buscarUsuariosPorNome(nome);
+  }
+
+  @Test
+  void buscarUsuariosPorNome_WithPartialMatch_ShouldReturnMatchingUsers() throws Exception {
+    String nome = "Mari";
+
+    UsuarioRankingDTO usuario1 = new UsuarioRankingDTO(BigInteger.valueOf(10), 3L, "Maria Silva", 4200, 9);
+    UsuarioRankingDTO usuario2 = new UsuarioRankingDTO(BigInteger.valueOf(15), 8L, "Mario Santos", 2800, 6);
+
+    List<UsuarioRankingDTO> resultados = Arrays.asList(usuario1, usuario2);
+
+    when(usuarioService.buscarUsuariosPorNome(nome)).thenReturn(resultados);
+
+    mockMvc.perform(get("/api/usuarios/buscar")
+        .param("nome", nome))
+      .andExpect(status().isOk())
+      .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+      .andExpect(jsonPath("$.length()").value(2))
+      .andExpect(jsonPath("$[0].nome").value("Maria Silva"))
+      .andExpect(jsonPath("$[1].nome").value("Mario Santos"));
+
+    verify(usuarioService, times(1)).buscarUsuariosPorNome(nome);
+  }
+
+  @Test
+  void buscarUsuariosPorNome_WhenServiceThrowsException_ShouldReturnInternalServerError() throws Exception {
+    String nome = "Test";
+
+    when(usuarioService.buscarUsuariosPorNome(nome))
+      .thenThrow(new RuntimeException("Database error"));
+
+    mockMvc.perform(get("/api/usuarios/buscar")
+        .param("nome", nome))
+      .andExpect(status().isInternalServerError());
+
+    verify(usuarioService, times(1)).buscarUsuariosPorNome(nome);
+  }
+
+  @Test
+  void buscarUsuariosPorNome_WithSpecialCharacters_ShouldReturnResults() throws Exception {
+    String nome = "José";
+
+    UsuarioRankingDTO usuario = new UsuarioRankingDTO(BigInteger.valueOf(20), 12L, "José Oliveira", 1500, 5);
+
+    when(usuarioService.buscarUsuariosPorNome(nome)).thenReturn(Arrays.asList(usuario));
+
+    mockMvc.perform(get("/api/usuarios/buscar")
+        .param("nome", nome))
+      .andExpect(status().isOk())
+      .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+      .andExpect(jsonPath("$.length()").value(1))
+      .andExpect(jsonPath("$[0].nome").value("José Oliveira"));
+
+    verify(usuarioService, times(1)).buscarUsuariosPorNome(nome);
+  }
 }
