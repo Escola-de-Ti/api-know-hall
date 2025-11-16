@@ -11,6 +11,7 @@ import br.com.escoladeti.api_know_hall.repository.ComentarioRepository;
 import br.com.escoladeti.api_know_hall.repository.PostRepository;
 import br.com.escoladeti.api_know_hall.repository.UsuarioRepository;
 import br.com.escoladeti.api_know_hall.repository.VotoRepository;
+import br.com.escoladeti.api_know_hall.util.LevelService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -29,6 +30,7 @@ public class VotoService {
   private final ComentarioRepository comentarioRepository;
   private final UsuarioRepository usuarioRepository;
   private final HistoricoTransacaoService historicoTransacaoService;
+  private final LevelService levelService;
 
   @Transactional
   public VotoResponseDTO votarEmPost(BigInteger postId, Principal principal) {
@@ -209,6 +211,8 @@ public class VotoService {
     return new VotoResponseDTO(votado, totalSuperVotes);
   }
 
+  // ========== MÉTODOS MODIFICADOS COM INTEGRAÇÃO DE NÍVEIS ==========
+
   private void concederTokensPostPopular(Usuario autorPost, Long totalAnterior, Long totalAtual, Post post) {
     long marcosAntes = totalAnterior / 25;
     long marcosAgora = totalAtual / 25;
@@ -218,8 +222,15 @@ public class VotoService {
     if (novosMarcos > 0) {
       long tokensGanhos = novosMarcos * 100;
 
+      // MODIFICADO: Captura XP antigo antes de modificar
+      long oldXp = autorPost.getQntdXp();
+
       autorPost.setQntdToken(autorPost.getQntdToken() + tokensGanhos);
       autorPost.setQntdXp(autorPost.getQntdXp() + tokensGanhos);
+
+      // NOVO: Processa mudança de nível
+      levelService.processLevelChange(autorPost, oldXp, autorPost.getQntdXp());
+
       usuarioRepository.save(autorPost);
 
       String descricao = String.format(
@@ -247,8 +258,15 @@ public class VotoService {
     if (novosMarcos > 0) {
       long tokensGanhos = novosMarcos * 50;
 
+      // MODIFICADO: Captura XP antigo antes de modificar
+      long oldXp = autorComentario.getQntdXp();
+
       autorComentario.setQntdToken(autorComentario.getQntdToken() + tokensGanhos);
       autorComentario.setQntdXp(autorComentario.getQntdXp() + tokensGanhos);
+
+      // NOVO: Processa mudança de nível
+      levelService.processLevelChange(autorComentario, oldXp, autorComentario.getQntdXp());
+
       usuarioRepository.save(autorComentario);
 
       String descricao = String.format(
@@ -280,8 +298,15 @@ public class VotoService {
 
       comentario.setRespostaDestaque(true);
 
+      // MODIFICADO: Captura XP antigo do autor do comentário
+      long oldXpComentario = autorComentario.getQntdXp();
+
       autorComentario.setQntdToken(autorComentario.getQntdToken() + 100);
       autorComentario.setQntdXp(autorComentario.getQntdXp() + 100);
+
+      // NOVO: Processa mudança de nível do autor do comentário
+      levelService.processLevelChange(autorComentario, oldXpComentario, autorComentario.getQntdXp());
+
       usuarioRepository.save(autorComentario);
 
       String descricaoComentario = String.format(
@@ -303,8 +328,15 @@ public class VotoService {
       );
 
       if (totalRespostasDestaque == 0) {
+        // MODIFICADO: Captura XP antigo do autor do post
+        long oldXpPost = autorPost.getQntdXp();
+
         autorPost.setQntdToken(autorPost.getQntdToken() + 100);
         autorPost.setQntdXp(autorPost.getQntdXp() + 100);
+
+        // NOVO: Processa mudança de nível do autor do post
+        levelService.processLevelChange(autorPost, oldXpPost, autorPost.getQntdXp());
+
         usuarioRepository.save(autorPost);
 
         String descricaoPost = String.format(
@@ -324,8 +356,15 @@ public class VotoService {
   }
 
   private void concederTokensSuperVote(Usuario autorComentario, Comentario comentario) {
+    // MODIFICADO: Captura XP antigo antes de modificar
+    long oldXp = autorComentario.getQntdXp();
+
     autorComentario.setQntdToken(autorComentario.getQntdToken() + 200);
     autorComentario.setQntdXp(autorComentario.getQntdXp() + 200);
+
+    // NOVO: Processa mudança de nível
+    levelService.processLevelChange(autorComentario, oldXp, autorComentario.getQntdXp());
+
     usuarioRepository.save(autorComentario);
 
     String descricao = String.format(
@@ -343,8 +382,15 @@ public class VotoService {
   }
 
   private void removerTokensSuperVote(Usuario autorComentario, Comentario comentario) {
+    // MODIFICADO: Captura XP antigo antes de modificar
+    long oldXp = autorComentario.getQntdXp();
+
     autorComentario.setQntdToken(autorComentario.getQntdToken() - 200);
     autorComentario.setQntdXp(autorComentario.getQntdXp() - 200);
+
+    // NOVO: Processa mudança de nível (pode perder nível!)
+    levelService.processLevelChange(autorComentario, oldXp, autorComentario.getQntdXp());
+
     usuarioRepository.save(autorComentario);
 
     String descricao = String.format(

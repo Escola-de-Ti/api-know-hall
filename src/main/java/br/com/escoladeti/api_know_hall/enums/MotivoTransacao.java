@@ -12,7 +12,8 @@ public enum MotivoTransacao {
   CANCELAMENTO_WORKSHOP_ALUNO("Cancelamento de inscrição em workshop como aluno"),
   CANCELAMENTO_WORKSHOP_INSTRUTOR("Reembolso pago por workshop"),
   PUNICAO("Punição por denúncia aceita"),
-  STREAK_LOGIN("Bônus por login consecutivo");
+  STREAK_LOGIN("Bônus por login consecutivo"),
+  LEVEL_UP("Level up"),;
 
   private final String descricao;
 

@@ -15,6 +15,7 @@ import br.com.escoladeti.api_know_hall.exception.ValidationException;
 import br.com.escoladeti.api_know_hall.repository.InscricaoRepository;
 import br.com.escoladeti.api_know_hall.repository.UsuarioRepository;
 import br.com.escoladeti.api_know_hall.repository.WorkshopRepository;
+import br.com.escoladeti.api_know_hall.util.LevelService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -42,6 +43,9 @@ public class InscricaoService {
 
   @Autowired
   private HistoricoTransacaoService historicoTransacaoService;
+
+  @Autowired
+  private LevelService levelService;
 
   @Transactional
   public InscricaoResponseDTO inscrever(String email, BigInteger workshopId) {
@@ -104,9 +108,16 @@ public class InscricaoService {
     String descricaoInscricaoInstrutor = String.format(
       "Usuario " + usuario.getId() + " se inscreveu no workshop" + workshop.getId()
     );
+
     Usuario instrutor = workshop.getInstrutor();
+
+    long oldXp = instrutor.getQntdXp();
+
     instrutor.setQntdToken(instrutor.getQntdToken() + workshop.getCusto());
     instrutor.setQntdXp(instrutor.getQntdXp() + workshop.getCusto());
+
+    levelService.processLevelChange(instrutor, oldXp, instrutor.getQntdXp());
+
     usuarioRepository.save(instrutor);
     historicoTransacaoService.registrarTransacao(
       instrutor,
@@ -158,9 +169,16 @@ public class InscricaoService {
     String descricaoCancelamentoInstrutor = String.format(
       "Usuário " + usuario.getId() + " cancelou inscrição no workshop " + workshop.getId()
     );
+
     Usuario instrutor = workshop.getInstrutor();
+
+    long oldXp = instrutor.getQntdXp();
+
     instrutor.setQntdToken(instrutor.getQntdToken() - workshop.getCusto());
     instrutor.setQntdXp(instrutor.getQntdXp() - workshop.getCusto());
+
+    levelService.processLevelChange(instrutor, oldXp, instrutor.getQntdXp());
+
     usuarioRepository.save(instrutor);
     historicoTransacaoService.registrarTransacao(
       instrutor,

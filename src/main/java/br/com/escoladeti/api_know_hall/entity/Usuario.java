@@ -127,9 +127,10 @@ public class Usuario {
     this.senhaHash = dto.getSenha();
     this.statusUsuario = StatusUsuario.ATIVO;
     this.tipoUsuario = dto.getTipoUsuario();
-    this.tags = new ArrayList<>(); // Será preenchido pelo service
+    this.tags = new ArrayList<>();
     this.qntdToken = 0L;
     this.qntdXp = 0L;
+    this.nivel = 1;
   }
 
   public void applyUpdate(UsuarioUpdateDTO dto) {
