@@ -74,6 +74,7 @@ class InscricaoServiceTest {
     instrutor.setTipoUsuario(TipoUsuario.INSTRUTOR);
     instrutor.setStatusUsuario(StatusUsuario.ATIVO);
     instrutor.setQntdToken(100L);
+    instrutor.setQntdXp(100L);
 
     // Setup Usuário
     usuario = new Usuario();
@@ -83,6 +84,7 @@ class InscricaoServiceTest {
     usuario.setTipoUsuario(TipoUsuario.ALUNO);
     usuario.setStatusUsuario(StatusUsuario.ATIVO);
     usuario.setQntdToken(50L);
+    usuario.setQntdXp(50L);
 
     // Setup Workshop
     workshop = new Workshop();

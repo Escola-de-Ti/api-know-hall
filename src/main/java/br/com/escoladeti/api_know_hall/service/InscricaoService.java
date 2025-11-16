@@ -106,6 +106,7 @@ public class InscricaoService {
     );
     Usuario instrutor = workshop.getInstrutor();
     instrutor.setQntdToken(instrutor.getQntdToken() + workshop.getCusto());
+    instrutor.setQntdXp(instrutor.getQntdXp() + workshop.getCusto());
     usuarioRepository.save(instrutor);
     historicoTransacaoService.registrarTransacao(
       instrutor,
@@ -159,6 +160,7 @@ public class InscricaoService {
     );
     Usuario instrutor = workshop.getInstrutor();
     instrutor.setQntdToken(instrutor.getQntdToken() - workshop.getCusto());
+    instrutor.setQntdXp(instrutor.getQntdXp() - workshop.getCusto());
     usuarioRepository.save(instrutor);
     historicoTransacaoService.registrarTransacao(
       instrutor,
