@@ -189,9 +189,10 @@ public class PostService {
     }
 
     Map<BigInteger, List<TagResponseDTO>> tagsByPostId = fetchTagsForPosts(results);
+    Map<BigInteger, List<ImagemPostDTO>> imagensByPostId = fetchImagensForPosts(results);
 
     List<PostFeedDTO> posts = results.stream()
-      .map(projection -> mapToPostFeedDTO(projection, tagsByPostId))
+      .map(projection -> mapToPostFeedDTO(projection, tagsByPostId, imagensByPostId))
       .collect(Collectors.toList());
 
     BigInteger lastPostId = null;
@@ -230,11 +231,37 @@ public class PostService {
       ));
   }
 
+  private Map<BigInteger, List<ImagemPostDTO>> fetchImagensForPosts(List<PostFeedProjection> projections) {
+    if (projections.isEmpty()) {
+      return new HashMap<>();
+    }
+
+    List<BigInteger> postIds = projections.stream()
+      .map(PostFeedProjection::getId)
+      .collect(Collectors.toList());
+
+    List<Post> posts = postRepository.findAllById(postIds);
+
+    return posts.stream()
+      .collect(Collectors.toMap(
+        Post::getId,
+        post -> post.getImagens().stream()
+          .map(ImagemPostDTO::fromEntity)
+          .collect(Collectors.toList())
+      ));
+  }
+
   private PostFeedDTO mapToPostFeedDTO(
     PostFeedProjection projection,
-    Map<BigInteger, List<TagResponseDTO>> tagsByPostId) {
+    Map<BigInteger, List<TagResponseDTO>> tagsByPostId,
+    Map<BigInteger, List<ImagemPostDTO>> imagensByPostId) {
 
     List<TagResponseDTO> tags = tagsByPostId.getOrDefault(
+      projection.getId(),
+      new ArrayList<>()
+    );
+
+    List<ImagemPostDTO> imagens = imagensByPostId.getOrDefault(
       projection.getId(),
       new ArrayList<>()
     );
@@ -250,7 +277,8 @@ public class PostService {
       projection.getDataCriacao(),
       projection.getRelevanceScore(),
       projection.getTagsEmComum(),
-      projection.getJaVotou()
+      projection.getJaVotou(),
+      imagens
     );
   }
 

@@ -204,7 +204,7 @@ class PostDTOTest {
   void feedResponseDTO_deveCriarRespostaComPosts() {
     PostFeedDTO feedDTO = new PostFeedDTO(
       BigInteger.ONE, BigInteger.ONE, "João", "Título", "Desc",
-      10L, List.of(), Timestamp.from(Instant.now()), 50.0, 2, true
+      10L, List.of(), Timestamp.from(Instant.now()), 50.0, 2, true, List.of()
     );
 
     FeedResponseDTO dto = new FeedResponseDTO(
@@ -345,7 +345,8 @@ class PostDTOTest {
       Timestamp.from(Instant.now()),
       75.5,
       3,
-      false
+      false,
+      List.of()
     );
 
     assertThat(dto.relevanceScore()).isEqualTo(75.5);

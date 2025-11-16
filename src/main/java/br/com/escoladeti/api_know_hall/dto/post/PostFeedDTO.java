@@ -1,5 +1,6 @@
 package br.com.escoladeti.api_know_hall.dto.post;
 
+import br.com.escoladeti.api_know_hall.dto.ImagemPostDTO;
 import br.com.escoladeti.api_know_hall.dto.tags.TagResponseDTO;
 
 import java.math.BigInteger;
@@ -17,5 +18,7 @@ public record PostFeedDTO(
   Timestamp dataCriacao,
   Double relevanceScore,
   Integer tagsEmComum,
-  Boolean jaVotou
-) {}
+  Boolean jaVotou,
+  List<ImagemPostDTO> imagens
+) {
+}

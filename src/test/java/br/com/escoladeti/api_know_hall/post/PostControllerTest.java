@@ -240,7 +240,7 @@ class PostControllerTest {
   void deveBuscarFeedBasico() throws Exception {
     PostFeedDTO feedDTO = new PostFeedDTO(
       BigInteger.ONE, BigInteger.ONE, "João", "Título", "Desc",
-      10L, List.of(), Timestamp.from(Instant.now()), 50.0, 2, false
+      10L, List.of(), Timestamp.from(Instant.now()), 50.0, 2, false, List.of()
     );
     FeedResponseDTO feedResponse = new FeedResponseDTO(
       List.of(feedDTO), false, BigInteger.ONE, 50.0
