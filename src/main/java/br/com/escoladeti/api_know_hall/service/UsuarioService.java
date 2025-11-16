@@ -314,7 +314,10 @@ public class UsuarioService {
 
     Long tokens = isProprioUsuario ? detalhes.getTokens() : null;
 
-    return new UsuarioDetalhesResponseDTO(
+    Long xpAtual = detalhes.getXp() != null ? detalhes.getXp() : 0L;
+    Long xpProximoNivel = LevelConfiguration.getXpToNextLevel(xpAtual);
+
+    UsuarioDetalhesResponseDTO response = new UsuarioDetalhesResponseDTO(
       detalhes.getNome(),
       usuario.getTags(),
       detalhes.getBiografia(),
@@ -327,8 +330,11 @@ public class UsuarioService {
       detalhes.getQtdSuperVotes(),
       detalhes.getQtdWorkshops(),
       detalhes.getImagemUrl(),
-      posicaoUsuario
+      posicaoUsuario,
+      xpProximoNivel
     );
+
+    return response;
   }
 
   public UsuarioResponseDTO obterUsuarioPorToken(String email) {

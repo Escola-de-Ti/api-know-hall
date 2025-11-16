@@ -28,4 +28,6 @@ public class UsuarioDetalhesResponseDTO {
   private String imagemUrl;
   private Long posicaoRanking;
 
+  private Long xpProximoNivel;
+
 }
