@@ -20,6 +20,7 @@ public record PostDetalhesDTO(
   List<ComentarioResponseDTO> comentarios,
   boolean hasMoreComentarios,
   Boolean jaVotou,
-  List<ImagemPostDTO> urlsImagens
+  List<ImagemPostDTO> urlsImagens,
+  Integer nivel
 ) {
 }

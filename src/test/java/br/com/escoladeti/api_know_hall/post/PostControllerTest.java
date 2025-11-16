@@ -396,7 +396,8 @@ class PostControllerTest {
       2L,
       null,
       Timestamp.from(Instant.now()),
-      false
+      false,
+      1
     );
 
     PostDetalhesDTO detalhesDTO = new PostDetalhesDTO(
@@ -411,7 +412,8 @@ class PostControllerTest {
       List.of(comentario1),
       false,
       false,
-      List.of()
+      List.of(),
+      1
     );
 
     when(postService.buscarDetalhesDoPost(eq(BigInteger.ONE), eq(10), eq("joao@email.com")))
@@ -450,7 +452,8 @@ class PostControllerTest {
       List.of(),
       false,
       false,
-      List.of()
+      List.of(),
+      1
     );
 
     when(postService.buscarDetalhesDoPost(eq(BigInteger.ONE), eq(10), eq("joao@email.com")))
@@ -490,13 +493,15 @@ class PostControllerTest {
         BigInteger.ONE, BigInteger.ONE, BigInteger.ONE,
         "User1", "Comentário 1", 5L, 2L, null,
         Timestamp.from(Instant.now()),
-        false
+        false,
+        1
       ),
       new ComentarioResponseDTO(
         BigInteger.TWO, BigInteger.ONE, BigInteger.TWO,
         "User2", "Comentário 2", 3L, 1L, null,
         Timestamp.from(Instant.now()),
-        false
+        false,
+        1
       )
     );
 
@@ -512,7 +517,8 @@ class PostControllerTest {
       comentarios,
       true,
       true,
-      List.of()
+      List.of(),
+      1
     );
 
     when(postService.buscarDetalhesDoPost(eq(BigInteger.ONE), eq(2), eq("joao@email.com")))
@@ -545,7 +551,8 @@ class PostControllerTest {
       List.of(),
       false,
       false,
-      List.of()
+      List.of(),
+      1
     );
 
     when(postService.buscarDetalhesDoPost(eq(BigInteger.ONE), anyInt(), eq("joao@email.com")))
@@ -577,7 +584,8 @@ class PostControllerTest {
       List.of(),
       false,
       false,
-      List.of()
+      List.of(),
+      1
     );
 
     when(postService.buscarDetalhesDoPost(eq(BigInteger.ONE), eq(20), eq("joao@email.com")))

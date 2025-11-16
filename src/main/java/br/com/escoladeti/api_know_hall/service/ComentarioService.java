@@ -217,7 +217,8 @@ public class ComentarioService {
       comentario.getTotalSuperVotes(),
       comentario.getComentarioPai() != null ? comentario.getComentarioPai().getId() : null,
       comentario.getDataCriacao(),
-      false
+      false,
+      comentario.getUsuario().getNivel()
     );
   }
 
@@ -232,7 +233,8 @@ public class ComentarioService {
       projection.getTotalSuperVotes(),
       projection.getComentarioPaiId(),
       projection.getDataCriacao(),
-      projection.getJaVotou()
+      projection.getJaVotou(),
+      projection.getNivel()
     );
   }
 

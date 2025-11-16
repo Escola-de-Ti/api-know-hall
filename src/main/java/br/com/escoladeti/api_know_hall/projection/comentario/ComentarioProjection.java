@@ -14,4 +14,5 @@ public interface ComentarioProjection {
   BigInteger getComentarioPaiId();
   Timestamp getDataCriacao();
   Boolean getJaVotou();
+  Integer getNivel();
 }

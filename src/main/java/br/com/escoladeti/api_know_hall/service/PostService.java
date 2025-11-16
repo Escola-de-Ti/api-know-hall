@@ -390,7 +390,8 @@ public class PostService {
       comentarios,
       hasMoreComentarios,
       jaVotou,
-      imagemDTOs
+      imagemDTOs,
+      post.getUsuario().getNivel()
     );
   }
 
@@ -405,7 +406,8 @@ public class PostService {
       projection.getTotalSuperVotes(),
       projection.getComentarioPaiId(),
       projection.getDataCriacao(),
-      projection.getJaVotou()
+      projection.getJaVotou(),
+      projection.getNivel()
     );
   }
 

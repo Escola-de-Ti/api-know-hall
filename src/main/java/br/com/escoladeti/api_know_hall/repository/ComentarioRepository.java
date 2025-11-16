@@ -24,7 +24,8 @@ public interface ComentarioRepository extends JpaRepository<Comentario, BigInteg
            c.total_super_votes as totalSuperVotes,
            c.comentario_pai_id as comentarioPaiId,
            c.data_criacao as dataCriacao,
-           CASE WHEN v.id IS NOT NULL THEN true ELSE false END AS jaVotou
+           CASE WHEN v.id IS NOT NULL THEN true ELSE false END AS jaVotou,
+           u.nivel as nivel
     FROM comentario c
     INNER JOIN usuario u ON c.usuario_id = u.id
     LEFT JOIN votos v ON v.comentario_id = c.id AND v.usuario_id = :usuarioId AND v.tipo = 'UP_VOTE'
@@ -51,7 +52,8 @@ public interface ComentarioRepository extends JpaRepository<Comentario, BigInteg
            c.total_super_votes as totalSuperVotes,
            c.comentario_pai_id as comentarioPaiId,
            c.data_criacao as dataCriacao,
-           CASE WHEN v.id IS NOT NULL THEN true ELSE false END AS jaVotou
+           CASE WHEN v.id IS NOT NULL THEN true ELSE false END AS jaVotou,
+           u.nivel as nivel
     FROM comentario c
     INNER JOIN usuario u ON c.usuario_id = u.id
     LEFT JOIN votos v ON v.comentario_id = c.id AND v.usuario_id = :usuarioId

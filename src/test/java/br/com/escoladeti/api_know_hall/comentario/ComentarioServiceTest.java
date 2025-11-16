@@ -669,6 +669,11 @@ class ComentarioServiceTest {
       public Timestamp getDataCriacao() {
         return Timestamp.from(Instant.now());
       }
+
+      @Override
+      public Integer getNivel() {
+        return 1;
+      }
     };
   }
 }

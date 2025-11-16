@@ -76,7 +76,8 @@ class ComentarioControllerTest {
       2L,
       null,
       Timestamp.from(Instant.now()),
-      false
+      false,
+      1
     );
 
     comentarioCreate = new ComentarioCreateDTO(
@@ -206,7 +207,8 @@ class ComentarioControllerTest {
       1L,
       BigInteger.ONE,
       Timestamp.from(Instant.now()),
-      false
+      false,
+      1
     );
 
     ComentarioListResponseDTO response = new ComentarioListResponseDTO(
@@ -272,7 +274,8 @@ class ComentarioControllerTest {
       2L,
       null,
       Timestamp.from(Instant.now()),
-      false
+      false,
+      1
     );
 
     when(comentarioService.atualizarComentario(
