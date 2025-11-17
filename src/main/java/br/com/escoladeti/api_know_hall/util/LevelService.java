@@ -58,6 +58,7 @@ public class LevelService {
 
     if (tokensRecompensa > 0) {
       usuario.setQntdToken(usuario.getQntdToken() + tokensRecompensa);
+      usuario.setQntdXp(usuario.getQntdXp() + tokensRecompensa);
 
       String descricao = String.format(
         "Recompensa por atingir o nível %d%s",
