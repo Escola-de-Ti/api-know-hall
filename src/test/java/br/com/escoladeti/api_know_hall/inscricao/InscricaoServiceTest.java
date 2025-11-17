@@ -123,7 +123,7 @@ class InscricaoServiceTest {
       // Arrange
       when(usuarioRepository.findByEmail(usuario.getEmail())).thenReturn(Optional.of(usuario));
       when(workshopRepository.findById(workshop.getId())).thenReturn(Optional.of(workshop));
-      when(inscricaoRepository.existsByUsuarioIdAndWorkshopId(usuario.getId(), workshop.getId())).thenReturn(false);
+      when(inscricaoRepository.findByUsuarioIdAndWorkshopId(usuario.getId(), workshop.getId())).thenReturn(Optional.empty());
       when(inscricaoRepository.save(any(Inscricao.class))).thenReturn(inscricao);
       when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuario).thenReturn(instrutor);
 
@@ -138,7 +138,7 @@ class InscricaoServiceTest {
 
       verify(usuarioRepository).findByEmail(usuario.getEmail());
       verify(workshopRepository).findById(workshop.getId());
-      verify(inscricaoRepository).existsByUsuarioIdAndWorkshopId(usuario.getId(), workshop.getId());
+      verify(inscricaoRepository).findByUsuarioIdAndWorkshopId(usuario.getId(), workshop.getId());
       verify(inscricaoRepository).save(any(Inscricao.class));
       verify(usuarioRepository, times(2)).save(any(Usuario.class)); // Salva usuário e instrutor
       verify(historicoTransacaoService, times(2)).registrarTransacao(any(Usuario.class), anyLong(), any(MotivoTransacao.class), anyString());
@@ -186,7 +186,7 @@ class InscricaoServiceTest {
       // Arrange
       when(usuarioRepository.findByEmail(usuario.getEmail())).thenReturn(Optional.of(usuario));
       when(workshopRepository.findById(workshop.getId())).thenReturn(Optional.of(workshop));
-      when(inscricaoRepository.existsByUsuarioIdAndWorkshopId(usuario.getId(), workshop.getId())).thenReturn(true);
+      when(inscricaoRepository.findByUsuarioIdAndWorkshopId(usuario.getId(), workshop.getId())).thenReturn(Optional.of(inscricao));
 
       // Act & Assert
       assertThatThrownBy(() -> inscricaoService.inscrever(usuario.getEmail(), workshop.getId()))
@@ -203,7 +203,7 @@ class InscricaoServiceTest {
       // Arrange
       when(usuarioRepository.findByEmail(instrutor.getEmail())).thenReturn(Optional.of(instrutor));
       when(workshopRepository.findById(workshop.getId())).thenReturn(Optional.of(workshop));
-      when(inscricaoRepository.existsByUsuarioIdAndWorkshopId(instrutor.getId(), workshop.getId())).thenReturn(false);
+      when(inscricaoRepository.findByUsuarioIdAndWorkshopId(instrutor.getId(), workshop.getId())).thenReturn(Optional.empty());
 
       // Act & Assert
       assertThatThrownBy(() -> inscricaoService.inscrever(instrutor.getEmail(), workshop.getId()))
@@ -223,7 +223,7 @@ class InscricaoServiceTest {
 
       when(usuarioRepository.findByEmail(usuario.getEmail())).thenReturn(Optional.of(usuario));
       when(workshopRepository.findById(workshop.getId())).thenReturn(Optional.of(workshop));
-      when(inscricaoRepository.existsByUsuarioIdAndWorkshopId(usuario.getId(), workshop.getId())).thenReturn(false);
+      when(inscricaoRepository.findByUsuarioIdAndWorkshopId(usuario.getId(), workshop.getId())).thenReturn(Optional.empty());
 
       // Act & Assert
       assertThatThrownBy(() -> inscricaoService.inscrever(usuario.getEmail(), workshop.getId()))
@@ -242,7 +242,7 @@ class InscricaoServiceTest {
 
       when(usuarioRepository.findByEmail(usuario.getEmail())).thenReturn(Optional.of(usuario));
       when(workshopRepository.findById(workshop.getId())).thenReturn(Optional.of(workshop));
-      when(inscricaoRepository.existsByUsuarioIdAndWorkshopId(usuario.getId(), workshop.getId())).thenReturn(false);
+      when(inscricaoRepository.findByUsuarioIdAndWorkshopId(usuario.getId(), workshop.getId())).thenReturn(Optional.empty());
 
       // Act & Assert
       assertThatThrownBy(() -> inscricaoService.inscrever(usuario.getEmail(), workshop.getId()))
@@ -279,7 +279,7 @@ class InscricaoServiceTest {
 
       when(usuarioRepository.findByEmail(usuario.getEmail())).thenReturn(Optional.of(usuario));
       when(workshopRepository.findById(workshop.getId())).thenReturn(Optional.of(workshop));
-      when(inscricaoRepository.existsByUsuarioIdAndWorkshopId(usuario.getId(), workshop.getId())).thenReturn(false);
+      when(inscricaoRepository.findByUsuarioIdAndWorkshopId(usuario.getId(), workshop.getId())).thenReturn(Optional.empty());
 
       // Act & Assert
       assertThatThrownBy(() -> inscricaoService.inscrever(usuario.getEmail(), workshop.getId()))
@@ -305,7 +305,7 @@ class InscricaoServiceTest {
 
       when(usuarioRepository.findByEmail(usuario.getEmail())).thenReturn(Optional.of(usuario));
       when(workshopRepository.findById(workshop.getId())).thenReturn(Optional.of(workshop));
-      when(inscricaoRepository.existsByUsuarioIdAndWorkshopId(usuario.getId(), workshop.getId())).thenReturn(false);
+      when(inscricaoRepository.findByUsuarioIdAndWorkshopId(usuario.getId(), workshop.getId())).thenReturn(Optional.empty());
       when(inscricaoRepository.save(any(Inscricao.class))).thenReturn(inscricao);
       when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuario).thenReturn(instrutor);
 
@@ -330,6 +330,42 @@ class InscricaoServiceTest {
         anyString()
       );
       verify(levelService).processLevelChange(eq(instrutor), eq(100L), eq(110L));
+    }
+
+    @Test
+    @DisplayName("Deve permitir reinscrição quando a inscrição anterior estava cancelada")
+    void devePermitirReinscricaoQuandoInscricaoAnteriorCancelada() {
+      // Arrange
+      Inscricao inscricaoCancelada = new Inscricao();
+      inscricaoCancelada.setId(BigInteger.valueOf(100));
+      inscricaoCancelada.setUsuario(usuario);
+      inscricaoCancelada.setWorkshop(workshop);
+      inscricaoCancelada.setStatus(StatusInscricao.CANCELADO);
+      inscricaoCancelada.setDataInscricao(Timestamp.from(Instant.now()));
+
+      when(usuarioRepository.findByEmail(usuario.getEmail())).thenReturn(Optional.of(usuario));
+      when(workshopRepository.findById(workshop.getId())).thenReturn(Optional.of(workshop));
+      when(inscricaoRepository.findByUsuarioIdAndWorkshopId(usuario.getId(), workshop.getId()))
+        .thenReturn(Optional.of(inscricaoCancelada));
+      when(inscricaoRepository.save(any(Inscricao.class))).thenAnswer(invocation -> {
+        Inscricao insc = invocation.getArgument(0);
+        insc.setStatus(StatusInscricao.INSCRITO);
+        return insc;
+      });
+      when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuario).thenReturn(instrutor);
+
+      // Act
+      InscricaoResponseDTO resultado = inscricaoService.inscrever(usuario.getEmail(), workshop.getId());
+
+      // Assert
+      assertThat(resultado).isNotNull();
+      assertThat(inscricaoCancelada.getStatus()).isEqualTo(StatusInscricao.INSCRITO);
+
+      verify(inscricaoRepository).findByUsuarioIdAndWorkshopId(usuario.getId(), workshop.getId());
+      verify(inscricaoRepository).save(inscricaoCancelada); // Reutiliza a inscrição existente
+      verify(usuarioRepository, times(2)).save(any(Usuario.class));
+      verify(historicoTransacaoService, times(2)).registrarTransacao(any(Usuario.class), anyLong(), any(MotivoTransacao.class), anyString());
+      verify(levelService).processLevelChange(eq(instrutor), anyLong(), anyLong());
     }
   }
 

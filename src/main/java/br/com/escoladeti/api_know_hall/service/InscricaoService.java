@@ -27,6 +27,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -61,8 +62,13 @@ public class InscricaoService {
       throw new UsuarioInativoException("Apenas usuários ativos podem se inscrever em workshops.");
     }
 
-    if (inscricaoRepository.existsByUsuarioIdAndWorkshopId(usuario.getId(), workshop.getId())) {
-      throw new DuplicateResourceException("Usuário já está inscrito neste workshop.");
+    Optional<Inscricao> inscricaoExistente = inscricaoRepository.findByUsuarioIdAndWorkshopId(usuario.getId(), workshop.getId());
+
+    if (inscricaoExistente.isPresent()) {
+      Inscricao inscricao = inscricaoExistente.get();
+      if (inscricao.getStatus() == StatusInscricao.INSCRITO) {
+        throw new DuplicateResourceException("Usuário já está inscrito neste workshop.");
+      }
     }
 
     if (workshop.getInstrutor().getId().equals(usuario.getId())) {
@@ -82,10 +88,18 @@ public class InscricaoService {
       throw new ValidationException("Não é possível se inscrever em um workshop que já começou.");
     }
 
-    Inscricao inscricao = new Inscricao();
-    inscricao.setUsuario(usuario);
-    inscricao.setWorkshop(workshop);
-    inscricao.setStatus(StatusInscricao.INSCRITO);
+    Inscricao inscricao;
+    if (inscricaoExistente.isPresent()) {
+      // Reutiliza a inscrição existente (que estava cancelada)
+      inscricao = inscricaoExistente.get();
+      inscricao.setStatus(StatusInscricao.INSCRITO);
+    } else {
+      // Cria uma nova inscrição
+      inscricao = new Inscricao();
+      inscricao.setUsuario(usuario);
+      inscricao.setWorkshop(workshop);
+      inscricao.setStatus(StatusInscricao.INSCRITO);
+    }
 
     Inscricao inscricaoSalva = inscricaoRepository.save(inscricao);
 
